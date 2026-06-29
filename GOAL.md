@@ -178,7 +178,7 @@ problem).
 | PRD ref | Behavior | Unit | Integration | E2E |
 |---|---|---|---|---|
 | FR-1.1–1.3 | Event gating: act on `pull_request`, no-op + exit 0 otherwise; PR number/base/head from context | U-EVT-01..03 | I-EVT-01..02 | E-EVT-01 |
-| FR-2.1–2.3 | Base ref default + `base-ref` override; explicit `--pr origin/<base>`; require `fetch-depth: 0` + best-effort unshallow; unresolvable merge-base → error | U-BASE-01..04 | I-BASE-01..03 | E-BASE-01 |
+| FR-2.1–2.3 | Base ref default + `base-ref` override; explicit `--pr=origin/<base>`; require `fetch-depth: 0` + best-effort unshallow; unresolvable merge-base → error | U-BASE-01..04 | I-BASE-01..03 | E-BASE-01 |
 | FR-3.1–3.4 | difftree invocation: `--pr --committed --no-color`; `level`/`dirs-only`/`extra-args` pass-through; stdout/exit capture | U-INV-01..05 | I-INV-01..02 | covered by E-* |
 | FR-4.1–4.5 | Comment body composition; sticky create vs update by marker; `comment:false` skip; empty-tree body; size truncation | U-CMT-01..06 | I-CMT-01..04 | E-CMT-01..02 (open→push→update) |
 | FR-5.1–5.4 | Errors: binary missing, not-a-repo/bad-base, fork read-only warning (exit 0), `difftree-action:` prefix | U-ERR-01..04 | I-ERR-01..03 | E-ERR-01 (fork PR) |

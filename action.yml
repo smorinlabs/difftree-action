@@ -108,7 +108,9 @@ runs:
           git fetch --no-tags origin "$BASE" 2>/dev/null || true
         fi
 
-        ARGS=( --pr "origin/$BASE" --committed --no-color )
+        # The --pr base MUST be passed as --pr=<ref>; the space form
+        # (--pr <ref>) is parsed as the positional PATH and fails.
+        ARGS=( "--pr=origin/$BASE" --committed --no-color )
         [ -n "${INPUT_LEVEL:-}" ] && ARGS+=( --level "$INPUT_LEVEL" )
         [ "${INPUT_DIRS_ONLY:-false}" = "true" ] && ARGS+=( --dirs-only )
         # shellcheck disable=SC2206
@@ -122,12 +124,18 @@ runs:
           exit 1
         fi
 
-        # Reliable change count from JSON (not the human summary line).
-        FILES="$(difftree --pr "origin/$BASE" --committed --json 2>/dev/null \
+        # Reliable change count from JSON (not the human summary line). An empty
+        # result means the count is UNKNOWN (parse failure) — not zero — so a
+        # JSON change can never silently blank the tree.
+        COUNT="$(difftree "--pr=origin/$BASE" --committed --json 2>/dev/null \
           | node "${GITHUB_ACTION_PATH}/scripts/files-changed.js")"
-        FILES="${FILES:-0}"
-        EMPTY=false
-        [ "$FILES" = "0" ] && EMPTY=true
+        if [ "$COUNT" = "0" ]; then
+          FILES=0; EMPTY=true
+        elif [ -n "$COUNT" ]; then
+          FILES="$COUNT"; EMPTY=false
+        else
+          FILES=0; EMPTY=false   # count unknown; still render the tree
+        fi
 
         {
           echo "base=origin/$BASE"
@@ -145,6 +153,10 @@ runs:
       if: ${{ github.event_name == 'pull_request' && inputs.comment == 'true' }}
       uses: actions/github-script@v7
       env:
+        # github.action_path is THIS composite action's dir, evaluated before
+        # github-script runs. Do NOT use process.env.GITHUB_ACTION_PATH inside
+        # the script — that resolves to github-script's own action dir.
+        ACTION_PATH: ${{ github.action_path }}
         DIFFTREE_TREE_FILE: ${{ steps.difftree.outputs.tree-file }}
         DIFFTREE_EMPTY: ${{ steps.difftree.outputs.empty }}
       with:
@@ -152,7 +164,7 @@ runs:
         script: |
           const fs = require('fs');
           const path = require('path');
-          const mod = require(path.join(process.env.GITHUB_ACTION_PATH, 'scripts', 'comment.js'));
+          const mod = require(path.join(process.env.ACTION_PATH, 'scripts', 'comment.js'));
 
           const prNumber = context.payload.pull_request.number;
           const rawTree = fs.readFileSync(process.env.DIFFTREE_TREE_FILE, 'utf8');

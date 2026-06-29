@@ -63,6 +63,12 @@ jobs:
           comment: false
 
       - name: Assert the action produced a change count
+        env:
+          FILES: ${{ steps.dt.outputs.files-changed }}
+          TREE: ${{ steps.dt.outputs.tree }}
         run: |
-          echo "files-changed=${{ steps.dt.outputs.files-changed }}"
-          test -n "${{ steps.dt.outputs.files-changed }}"
+          echo "files-changed=$FILES"
+          # This PR always changes files, so a real run must report > 0;
+          # catches an always-zero parse (e.g. a difftree JSON-shape change).
+          test "${FILES:-0}" -gt 0
+          test -n "$TREE"

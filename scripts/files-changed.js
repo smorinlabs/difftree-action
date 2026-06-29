@@ -1,18 +1,27 @@
 "use strict";
 
-// Read `difftree --json` from stdin and print summary.files_changed (or 0).
-// Used by action.yml to get a reliable change count without parsing the
-// human-readable summary line.
+// Extract summary.files_changed from `difftree --json` output.
+// Returns the integer count, or null when the JSON is missing/invalid/unexpected
+// — callers must treat null as "unknown" (NOT zero), so a parse failure never
+// masquerades as an empty diff.
 
-let buf = "";
-process.stdin.on("data", (d) => (buf += d));
-process.stdin.on("end", () => {
-  let n = 0;
+function countFromJson(text) {
   try {
-    const parsed = JSON.parse(buf);
-    n = (parsed.summary || {}).files_changed ?? 0;
+    const n = (JSON.parse(text).summary || {}).files_changed;
+    return Number.isInteger(n) ? n : null;
   } catch {
-    n = 0;
+    return null;
   }
-  process.stdout.write(String(n));
-});
+}
+
+module.exports = { countFromJson };
+
+// CLI: read stdin, print the count, or an empty string when unknown.
+if (require.main === module) {
+  let buf = "";
+  process.stdin.on("data", (d) => (buf += d));
+  process.stdin.on("end", () => {
+    const n = countFromJson(buf);
+    process.stdout.write(n === null ? "" : String(n));
+  });
+}

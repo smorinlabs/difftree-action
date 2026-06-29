@@ -115,7 +115,9 @@ a glance, with zero per-reviewer setup.
 - **`--pr` mode** — `difftree`'s PR-style comparison: it resolves a base, computes
   `merge-base(base, HEAD)`, and shows what changed from there to `HEAD`. Base is
   auto-detected (`origin/HEAD` → `main` → `master`) unless an explicit ref is
-  passed: `difftree --pr <ref>`.
+  passed. The explicit base **must use the `=` form** — `difftree --pr=<ref>` (or
+  the separate `difftree --pr --pr-base <ref>`). The space form `--pr <ref>` is
+  parsed as the positional path and fails; the action uses `--pr=origin/<base>`.
 - **`--committed`** — restricts `--pr` to committed branch commits
   (merge-base→HEAD), excluding any working-tree state. The action uses it for
   determinism (the CI checkout has no relevant working-tree changes).
@@ -146,7 +148,7 @@ a glance, with zero per-reviewer setup.
 
 - FR-2.1 The base ref defaults to the PR base branch
   (`github.event.pull_request.base.ref`) and is passed **explicitly** as the
-  remote-tracking ref `origin/<base>` to `difftree --pr origin/<base>`. The CI
+  remote-tracking ref `origin/<base>` to `difftree --pr=origin/<base>`. The CI
   checkout is a detached HEAD with no local `main` branch, so the remote-tracking
   form is what resolves; bare `<base>` may not. The action does not rely on
   `difftree`'s `origin/HEAD → main → master` auto-detection, which is unreliable
@@ -169,7 +171,7 @@ a glance, with zero per-reviewer setup.
 
 ### 6.3 difftree Invocation
 
-- FR-3.1 The action invokes `difftree --pr origin/<base> --committed` with color
+- FR-3.1 The action invokes `difftree --pr=origin/<base> --committed` with color
   disabled (`--no-color`) so the output is clean ASCII suitable for a markdown
   code block.
 - FR-3.2 Curated pass-through flags are appended when their inputs are set:
@@ -239,7 +241,7 @@ a glance, with zero per-reviewer setup.
 | `difftree-version` | pinned default | Which `difftree` release/tag the action uses (Phase 1) or builds (Phase 0). |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. |
 
-Hardcoded internally (not inputs): `--pr origin/<base>`, `--committed`,
+Hardcoded internally (not inputs): `--pr=origin/<base>`, `--committed`,
 `--no-color`.
 
 ### 7.2 Action Outputs

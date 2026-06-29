@@ -28,7 +28,7 @@ permissions, and proper error handling around the rendered code block.
 
 ## What "good" looks like
 
-- On a `pull_request`, the action runs `difftree --pr origin/<base> --committed
+- On a `pull_request`, the action runs `difftree --pr=origin/<base> --committed
   --no-color` and posts the captured tree in a fenced code block.
 - The comment is **sticky**: one comment per PR (hidden marker
   `<!-- difftree-action -->`), updated in place on each push — never duplicated.

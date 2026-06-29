@@ -81,7 +81,7 @@ On a `pull_request` event the action:
 
 1. installs `difftree` from crates.io (cached with `Swatinem/rust-cache`);
 2. resolves the base ref (default: the PR base) and ensures its history is present;
-3. runs `difftree --pr origin/<base> --committed --no-color`;
+3. runs `difftree --pr=origin/<base> --committed --no-color`;
 4. upserts **one** sticky comment (hidden marker `<!-- difftree-action -->`),
    updating it in place on each push rather than stacking duplicates.
 
