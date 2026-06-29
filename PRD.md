@@ -274,12 +274,13 @@ jobs:
 
 ### 8.1 Phase 0 — Composite action (ships without changing difftree)
 
-`runs: using: composite`. Steps: set up the Rust toolchain
-(`dtolnay/rust-toolchain`), restore a build cache (`Swatinem/rust-cache`),
-`cargo install` `difftree` pinned to a tag/rev, ensure base history
-(`git fetch`), run `difftree --pr`, then post the sticky comment via a small
-`actions/github-script` step using `github.token`. This works today; cold-cache
-runs pay a Rust compile (~1–3 min), warm-cache runs are fast.
+`runs: using: composite`. Steps: restore a build cache (`Swatinem/rust-cache`),
+`cargo install difftree@<version>` from **crates.io** (default `0.3.0`; rustup is
+preinstalled on GitHub-hosted runners), ensure base history (`git fetch`), run
+`difftree --pr`, then post the sticky comment via a small `actions/github-script`
+step using `github.token`. This works today — `difftree 0.3.0` (with `--pr`) is
+published on crates.io. Cold-cache runs pay a Rust compile (~1–3 min), warm-cache
+runs are fast.
 
 ### 8.2 Phase 1 — node24 action (the target, mirrors contributors-please-action)
 
@@ -300,16 +301,17 @@ a fresh build, identical to the contributors-please-action discipline.
 
 Phase 1 requires `difftree` to publish **prebuilt, cross-platform binaries**
 (linux/macos/windows × x86_64/arm64) attached to versioned GitHub Releases —
-e.g. via `cargo-dist` or a release workflow. Today `difftree` has no crates.io
-publish, no prebuilt binaries, and no git tags. This is `difftree`-side work and
-a hard gate on Phase 1; it is tracked as a "Therefore" step in
-[`GOAL.md`](./GOAL.md). Phase 0 deliberately removes this dependency so the
-action is shippable in the interim.
+e.g. via `cargo-dist` or a release workflow. As of 2026-06-29 `difftree` **is**
+published to crates.io (`0.3.0`, with `--pr`) and has tag `v0.3.0`, but has **no
+prebuilt-binary GitHub Release assets** yet — that is the remaining hard gate on
+Phase 1. It is `difftree`-side work, tracked as a "Therefore" step in
+[`GOAL.md`](./GOAL.md). Phase 0 installs from crates.io (`cargo install
+difftree@0.3.0`) and so does not need the binaries.
 
 ### 8.4 Version pinning
 
-The `difftree-version` input (default pinned in the action) selects which
-`difftree` release the action runs, analogous to
+The `difftree-version` input (default `0.3.0`, pinned in the action) selects which
+`difftree` crates.io version the action installs, analogous to
 `contributors-please-action`'s `.contributors-please-engine-ref`. The default is
 bumped via PR when a new `difftree` release is adopted.
 
@@ -365,8 +367,9 @@ bumped via PR when a new `difftree` release is adopted.
 
 - OQ1. Exact `difftree` rendering flags for best GitHub-comment legibility
   (`--format`, `--marks`) — resolved by visual verification in implementation.
-- OQ2. Whether Phase 0 should pin `difftree` by git tag (requires `difftree` to
-  cut a tag) or by commit rev in the interim.
+- OQ2. ~~Whether Phase 0 should pin `difftree` by git tag or commit rev.~~
+  **Resolved (2026-06-29):** `difftree 0.3.0` is on crates.io, so Phase 0 pins to
+  the crates.io version (`cargo install difftree@0.3.0`).
 - OQ3. Whether to adopt `pull_request_target` for fork support in a later minor,
   given the read-only nature of the action.
 - OQ4. `difftree` is `git2`/libgit2-backed; confirm during Phase 0 exactly how it

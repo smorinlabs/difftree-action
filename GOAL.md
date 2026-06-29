@@ -62,7 +62,7 @@ by the action rather than bundled as a library dependency.
 
 | Repository | Contents | Distribution |
 |---|---|---|
-| `smorinlabs/difftree` | The Rust CLI engine. Already exists; already implements `--pr`, `--against`, `--range`, `--json`, status marks. Needs binary releases for Phase 1. | Prebuilt binaries on GitHub Releases (to be added); optionally crates.io. |
+| `smorinlabs/difftree` | The Rust CLI engine. Already exists; implements `--pr`, `--against`, `--range`, `--json`, status marks. Published as `0.3.0` on crates.io; needs prebuilt-binary releases for Phase 1. | crates.io (`difftree 0.3.0`, live); prebuilt GitHub Release binaries to be added. |
 | `smorinlabs/difftree-action` | The GitHub Action wrapper: `action.yml`, comment upsert, base-ref/fetch handling. Phase 0 = composite; Phase 1 = node24 TS with committed `dist/`. | GitHub Action: `smorinlabs/difftree-action@v1` (Marketplace). |
 
 Both checkouts exist locally at `/Users/stevemorin/c/difftree/` and
@@ -231,8 +231,9 @@ All five must pass for `v1` acceptance.
 
 ## 10. Open Items
 
-- OI1. Phase 0 `difftree` pinning: cut a `difftree` git tag to pin against, or pin
-  by commit rev in the interim (PRD OQ2).
+- OI1. ~~Phase 0 `difftree` pinning.~~ **Resolved (2026-06-29):** `difftree 0.3.0`
+  (with `--pr`) is published on crates.io and tagged `v0.3.0`; Phase 0 pins to the
+  crates.io version (`cargo install difftree@0.3.0`).
 - OI2. Fork-PR support via `pull_request_target` — deferred to a post-v1 minor;
   decision recorded in PRD §9 / OQ3.
 - OI3. Final rendering flags for comment legibility (PRD OQ1) — settled during

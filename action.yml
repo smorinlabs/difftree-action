@@ -1,0 +1,195 @@
+name: difftree PR diff-tree comment
+description: >-
+  Post an ASCII diff-tree of a pull request's changes as a single, self-updating
+  PR comment, rendered by the difftree CLI (difftree --pr).
+author: smorinlabs
+branding:
+  icon: git-pull-request
+  color: purple
+
+inputs:
+  base-ref:
+    description: >-
+      Branch/ref to diff against. Defaults to the pull request base
+      (github.event.pull_request.base.ref). Compared as origin/<base-ref>.
+    required: false
+    default: ""
+  comment:
+    description: Post/update the PR comment. Set to "false" to compute outputs only.
+    required: false
+    default: "true"
+  level:
+    description: Maximum tree depth (difftree --level N). Unset means no limit.
+    required: false
+    default: ""
+  dirs-only:
+    description: Show directories only (difftree --dirs-only).
+    required: false
+    default: "false"
+  extra-args:
+    description: Extra arguments appended verbatim to the difftree invocation.
+    required: false
+    default: ""
+  difftree-version:
+    description: difftree crates.io version to install.
+    required: false
+    default: "0.3.0"
+  github-token:
+    description: Token used to post the PR comment.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  tree:
+    description: The full rendered ASCII diff-tree text.
+    value: ${{ steps.difftree.outputs.tree }}
+  files-changed:
+    description: Number of files changed between the base and the PR head.
+    value: ${{ steps.difftree.outputs.files-changed }}
+  comment-url:
+    description: HTML URL of the created/updated PR comment, when one was posted.
+    value: ${{ steps.comment.outputs.comment-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Skip when not a pull request
+      if: ${{ github.event_name != 'pull_request' }}
+      shell: bash
+      run: |
+        echo "difftree-action: not a pull_request event (${{ github.event_name }}); nothing to do."
+
+    - name: Cache difftree binary
+      id: difftree-cache
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin/difftree
+        key: difftree-${{ runner.os }}-${{ runner.arch }}-${{ inputs.difftree-version }}
+
+    - name: Install difftree
+      if: ${{ github.event_name == 'pull_request' && steps.difftree-cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      env:
+        DIFFTREE_VERSION: ${{ inputs.difftree-version }}
+      run: |
+        set -euo pipefail
+        VER="${DIFFTREE_VERSION:-0.3.0}"
+        cargo install "difftree@${VER}" --quiet
+        difftree --version
+
+    - name: Run difftree
+      id: difftree
+      if: ${{ github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        INPUT_BASE_REF: ${{ inputs.base-ref }}
+        PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        INPUT_LEVEL: ${{ inputs.level }}
+        INPUT_DIRS_ONLY: ${{ inputs.dirs-only }}
+        INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
+      run: |
+        set -euo pipefail
+
+        BASE="${INPUT_BASE_REF:-}"
+        [ -z "$BASE" ] && BASE="${PR_BASE_REF:-}"
+        if [ -z "$BASE" ]; then
+          echo "difftree-action: no base ref resolved (no base-ref input and no pull_request base)." >&2
+          exit 1
+        fi
+
+        # difftree --pr needs the base history to compute merge-base, and difftree
+        # is libgit2-backed (poor shallow support). Consumers should checkout with
+        # fetch-depth: 0; as a best effort, deepen a shallow clone here.
+        if [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+          git fetch --unshallow --no-tags origin "$BASE" 2>/dev/null \
+            || git fetch --no-tags origin "$BASE" 2>/dev/null || true
+        else
+          git fetch --no-tags origin "$BASE" 2>/dev/null || true
+        fi
+
+        ARGS=( --pr "origin/$BASE" --committed --no-color )
+        [ -n "${INPUT_LEVEL:-}" ] && ARGS+=( --level "$INPUT_LEVEL" )
+        [ "${INPUT_DIRS_ONLY:-false}" = "true" ] && ARGS+=( --dirs-only )
+        # shellcheck disable=SC2206
+        [ -n "${INPUT_EXTRA_ARGS:-}" ] && ARGS+=( ${INPUT_EXTRA_ARGS} )
+
+        OUT="${RUNNER_TEMP}/difftree-tree.txt"
+        ERR="${RUNNER_TEMP}/difftree.err"
+        if ! difftree "${ARGS[@]}" >"$OUT" 2>"$ERR"; then
+          echo "difftree-action: difftree failed for base 'origin/$BASE'. If this is a shallow checkout, set 'fetch-depth: 0' on actions/checkout." >&2
+          sed 's/^/difftree-action: /' "$ERR" >&2 || true
+          exit 1
+        fi
+
+        # Reliable change count from JSON (not the human summary line).
+        FILES="$(difftree --pr "origin/$BASE" --committed --json 2>/dev/null \
+          | node "${GITHUB_ACTION_PATH}/scripts/files-changed.js")"
+        FILES="${FILES:-0}"
+        EMPTY=false
+        [ "$FILES" = "0" ] && EMPTY=true
+
+        {
+          echo "base=origin/$BASE"
+          echo "tree-file=$OUT"
+          echo "files-changed=$FILES"
+          echo "empty=$EMPTY"
+          echo "tree<<__DIFFTREE_EOF__"
+          cat "$OUT"
+          echo
+          echo "__DIFFTREE_EOF__"
+        } >>"$GITHUB_OUTPUT"
+
+    - name: Post diff-tree comment
+      id: comment
+      if: ${{ github.event_name == 'pull_request' && inputs.comment == 'true' }}
+      uses: actions/github-script@v7
+      env:
+        DIFFTREE_TREE_FILE: ${{ steps.difftree.outputs.tree-file }}
+        DIFFTREE_EMPTY: ${{ steps.difftree.outputs.empty }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          const mod = require(path.join(process.env.GITHUB_ACTION_PATH, 'scripts', 'comment.js'));
+
+          const prNumber = context.payload.pull_request.number;
+          const rawTree = fs.readFileSync(process.env.DIFFTREE_TREE_FILE, 'utf8');
+          const empty = process.env.DIFFTREE_EMPTY === 'true';
+          const { tree, truncated } = mod.truncateTree(rawTree);
+          const body = mod.composeBody(tree, { empty, truncated });
+
+          try {
+            const res = await mod.upsertComment({
+              github,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issueNumber: prNumber,
+              body,
+            });
+            core.setOutput('comment-url', res.url);
+            core.info(`difftree-action: ${res.action} comment ${res.url}`);
+          } catch (err) {
+            if (err.status === 403) {
+              core.warning('difftree-action: could not post the comment (read-only token, e.g. a fork PR). The diff-tree is available in the job log and the `tree` output.');
+            } else {
+              throw err;
+            }
+          }
+
+    - name: Job summary
+      if: ${{ github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        DT_BASE: ${{ steps.difftree.outputs.base }}
+        DT_FILES: ${{ steps.difftree.outputs.files-changed }}
+        DT_URL: ${{ steps.comment.outputs.comment-url }}
+      run: |
+        {
+          echo "### difftree-action"
+          echo
+          echo "- Base: \`${DT_BASE:-unknown}\`"
+          echo "- Files changed: ${DT_FILES:-0}"
+          if [ -n "${DT_URL:-}" ]; then echo "- Comment: ${DT_URL}"; fi
+        } >>"$GITHUB_STEP_SUMMARY"

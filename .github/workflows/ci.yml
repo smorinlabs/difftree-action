@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Unit tests
+        run: node --test
+
+      - name: actionlint
+        uses: raven-actions/actionlint@v2
+
+      - name: shellcheck action.yml embedded bash
+        run: |
+          python3 - <<'PY'
+          import re, subprocess, sys, tempfile, os, yaml
+          d = yaml.safe_load(open("action.yml"))
+          rc = 0
+          for st in d["runs"]["steps"]:
+              if st.get("shell") == "bash" and "run" in st:
+                  script = re.sub(r"\$\{\{.*?\}\}", "EXPR", st["run"])
+                  with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False) as f:
+                      f.write("#!/usr/bin/env bash\n" + script)
+                      path = f.name
+                  r = subprocess.run(["shellcheck", "-S", "warning", path],
+                                     capture_output=True, text=True)
+                  if r.returncode:
+                      rc = 1
+                      print(f"## {st.get('name')}")
+                      print(r.stdout)
+                  os.unlink(path)
+          sys.exit(rc)
+          PY
+
+  smoke:
+    # End-to-end smoke: actually install difftree and run the action against this
+    # PR, computing outputs without posting a comment (works on forks too).
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: dt
+        uses: ./
+        with:
+          comment: false
+
+      - name: Assert the action produced a change count
+        run: |
+          echo "files-changed=${{ steps.dt.outputs.files-changed }}"
+          test -n "${{ steps.dt.outputs.files-changed }}"
