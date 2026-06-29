@@ -285,8 +285,12 @@ Files:
 
 ## Completion Audit
 
-- [ ] Phase 0 composite action posts a sticky diff-tree comment on a scratch PR
-  and a `difftree` PR (GOAL D3).
+- [x] Phase 0 composite action posts a sticky diff-tree comment on a scratch PR
+  (GOAL D3). **Validated 2026-06-29** against scratch repo
+  `smorinlabs/difftree-action-test#1` (action ref `@feat/phase0-composite`):
+  run `28403342440` created comment id `4837151013` with the diff-tree; a second
+  push (run `28403478738`) updated the **same** comment in place (count stayed 1,
+  body refreshed +16→+18). Both runs concluded `success`.
 - [ ] `difftree` publishes cross-platform binary releases (GOAL D4).
 - [ ] Phase 1 node24 action: reproducible `dist/`, outputs gate green,
   `release-please` wired, `v1` moving tag (GOAL D5).
