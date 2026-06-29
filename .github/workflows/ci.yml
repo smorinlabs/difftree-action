@@ -25,26 +25,23 @@ jobs:
         uses: raven-actions/actionlint@v2
 
       - name: shellcheck action.yml embedded bash
+        # Uses yq (preinstalled on the runner) — no PyYAML / pip dependency.
         run: |
-          python3 - <<'PY'
-          import re, subprocess, sys, tempfile, os, yaml
-          d = yaml.safe_load(open("action.yml"))
-          rc = 0
-          for st in d["runs"]["steps"]:
-              if st.get("shell") == "bash" and "run" in st:
-                  script = re.sub(r"\$\{\{.*?\}\}", "EXPR", st["run"])
-                  with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False) as f:
-                      f.write("#!/usr/bin/env bash\n" + script)
-                      path = f.name
-                  r = subprocess.run(["shellcheck", "-S", "warning", path],
-                                     capture_output=True, text=True)
-                  if r.returncode:
-                      rc = 1
-                      print(f"## {st.get('name')}")
-                      print(r.stdout)
-                  os.unlink(path)
-          sys.exit(rc)
-          PY
+          set -euo pipefail
+          rc=0
+          count="$(yq '.runs.steps | length' action.yml)"
+          for i in $(seq 0 $((count - 1))); do
+            shell="$(yq ".runs.steps[$i].shell // \"\"" action.yml)"
+            [ "$shell" = "bash" ] || continue
+            name="$(yq ".runs.steps[$i].name // \"\"" action.yml)"
+            { echo '#!/usr/bin/env bash'; yq ".runs.steps[$i].run" action.yml; } >/tmp/step.sh
+            sed -i 's/[$][{][{][^}]*[}][}]/EXPR/g' /tmp/step.sh   # neutralize GHA expressions
+            if ! shellcheck -S warning /tmp/step.sh; then
+              echo "## shellcheck findings in step: $name"
+              rc=1
+            fi
+          done
+          exit $rc
 
   smoke:
     # End-to-end smoke: actually install difftree and run the action against this

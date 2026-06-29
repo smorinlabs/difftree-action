@@ -79,7 +79,8 @@ guaranteed; if the base history is missing the action fails with a clear message
 
 On a `pull_request` event the action:
 
-1. installs `difftree` from crates.io (cached with `Swatinem/rust-cache`);
+1. installs `difftree` from crates.io (the built binary is cached across runs
+   with `actions/cache`);
 2. resolves the base ref (default: the PR base) and ensures its history is present;
 3. runs `difftree --pr=origin/<base> --committed --no-color`;
 4. upserts **one** sticky comment (hidden marker `<!-- difftree-action -->`),

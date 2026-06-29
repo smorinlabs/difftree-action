@@ -75,7 +75,7 @@ runs:
       run: |
         set -euo pipefail
         VER="${DIFFTREE_VERSION:-0.3.0}"
-        cargo install "difftree@${VER}" --quiet
+        cargo install "difftree@${VER}" --locked --quiet
         difftree --version
 
     - name: Run difftree
@@ -108,44 +108,53 @@ runs:
           git fetch --no-tags origin "$BASE" 2>/dev/null || true
         fi
 
+        # Shared filter args, applied to BOTH the tree render and the JSON count
+        # so the count always matches the displayed scope. extra-args is split
+        # with `read -ra` (not an unquoted expansion) so whitespace splits without
+        # shell glob expansion of *, ?, [.
+        FILTERS=()
+        [ -n "${INPUT_LEVEL:-}" ] && FILTERS+=( --level "$INPUT_LEVEL" )
+        [ "${INPUT_DIRS_ONLY:-false}" = "true" ] && FILTERS+=( --dirs-only )
+        if [ -n "${INPUT_EXTRA_ARGS:-}" ]; then
+          read -ra _extra <<<"$INPUT_EXTRA_ARGS"
+          FILTERS+=( "${_extra[@]}" )
+        fi
+
         # The --pr base MUST be passed as --pr=<ref>; the space form
         # (--pr <ref>) is parsed as the positional PATH and fails.
-        ARGS=( "--pr=origin/$BASE" --committed --no-color )
-        [ -n "${INPUT_LEVEL:-}" ] && ARGS+=( --level "$INPUT_LEVEL" )
-        [ "${INPUT_DIRS_ONLY:-false}" = "true" ] && ARGS+=( --dirs-only )
-        # shellcheck disable=SC2206
-        [ -n "${INPUT_EXTRA_ARGS:-}" ] && ARGS+=( ${INPUT_EXTRA_ARGS} )
-
         OUT="${RUNNER_TEMP}/difftree-tree.txt"
         ERR="${RUNNER_TEMP}/difftree.err"
-        if ! difftree "${ARGS[@]}" >"$OUT" 2>"$ERR"; then
+        if ! difftree "--pr=origin/$BASE" --committed --no-color "${FILTERS[@]}" >"$OUT" 2>"$ERR"; then
           echo "difftree-action: difftree failed for base 'origin/$BASE'. If this is a shallow checkout, set 'fetch-depth: 0' on actions/checkout." >&2
           sed 's/^/difftree-action: /' "$ERR" >&2 || true
           exit 1
         fi
 
-        # Reliable change count from JSON (not the human summary line). An empty
-        # result means the count is UNKNOWN (parse failure) — not zero — so a
-        # JSON change can never silently blank the tree.
-        COUNT="$(difftree "--pr=origin/$BASE" --committed --json 2>/dev/null \
+        # Reliable change count from JSON, using the SAME filters as the tree. An
+        # empty result means the count is UNKNOWN (parse failure) — not zero — so
+        # a JSON change can never silently blank the tree or report a false 0.
+        COUNT="$(difftree "--pr=origin/$BASE" --committed --json "${FILTERS[@]}" 2>/dev/null \
           | node "${GITHUB_ACTION_PATH}/scripts/files-changed.js")"
         if [ "$COUNT" = "0" ]; then
           FILES=0; EMPTY=true
         elif [ -n "$COUNT" ]; then
           FILES="$COUNT"; EMPTY=false
         else
-          FILES=0; EMPTY=false   # count unknown; still render the tree
+          FILES=""; EMPTY=false   # count unknown — emit empty (not 0); still render the tree
         fi
 
+        # Unique per-run delimiter for the multiline output (GitHub-recommended):
+        # a difftree line can never prematurely close the heredoc or inject outputs.
+        DELIM="DIFFTREE_EOF_${RANDOM}${RANDOM}${RANDOM}"
         {
           echo "base=origin/$BASE"
           echo "tree-file=$OUT"
           echo "files-changed=$FILES"
           echo "empty=$EMPTY"
-          echo "tree<<__DIFFTREE_EOF__"
+          echo "tree<<$DELIM"
           cat "$OUT"
           echo
-          echo "__DIFFTREE_EOF__"
+          echo "$DELIM"
         } >>"$GITHUB_OUTPUT"
 
     - name: Post diff-tree comment
@@ -202,6 +211,6 @@ runs:
           echo "### difftree-action"
           echo
           echo "- Base: \`${DT_BASE:-unknown}\`"
-          echo "- Files changed: ${DT_FILES:-0}"
+          echo "- Files changed: ${DT_FILES:-unknown}"
           if [ -n "${DT_URL:-}" ]; then echo "- Comment: ${DT_URL}"; fi
         } >>"$GITHUB_STEP_SUMMARY"
