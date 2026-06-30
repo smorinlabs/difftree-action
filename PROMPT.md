@@ -28,7 +28,7 @@ permissions, and proper error handling around the rendered code block.
 
 ## What "good" looks like
 
-- On a `pull_request`, the action runs `difftree --pr origin/<base> --committed
+- On a `pull_request`, the action runs `difftree --pr=origin/<base> --committed
   --no-color` and posts the captured tree in a fenced code block.
 - The comment is **sticky**: one comment per PR (hidden marker
   `<!-- difftree-action -->`), updated in place on each push — never duplicated.
@@ -48,10 +48,11 @@ permissions, and proper error handling around the rendered code block.
 Because `difftree` is a compiled Rust binary with **no published releases yet**,
 "how the action obtains the binary" is the defining decision. Build in two phases:
 
-1. **Phase 0 — composite action (ships now):** `using: composite`; build
-   `difftree` from source with `cargo` + `Swatinem/rust-cache`, fetch the base,
-   run it, post the comment via `actions/github-script`. No `difftree` changes
-   required.
+1. **Phase 0 — composite action (ships now):** `using: composite`; install
+   `difftree` from crates.io (`cargo install difftree@0.3.0`, with
+   `Swatinem/rust-cache`), fetch the base, run it, post the comment via
+   `actions/github-script`. No `difftree` changes required — `0.3.0` (with `--pr`)
+   is already on crates.io.
 2. **Phase 1 — node24 action (the target):** TypeScript wrapper that downloads a
    prebuilt `difftree` binary via `@actions/tool-cache`, runs it via
    `@actions/exec`, and posts the comment via `@actions/github`. **Prerequisite:**

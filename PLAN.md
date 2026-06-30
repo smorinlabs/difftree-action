@@ -32,17 +32,21 @@ versioning, GitHub Actions for CI/E2E gates.
   - `/Users/stevemorin/c/difftree-action/` — this repo. Currently scaffolded with
     `README.md` + `LICENSE` (MIT, 2026) on `main`; the four planning docs
     (`PROMPT.md`, `GOAL.md`, `PRD.md`, `PLAN.md`) added by this work.
-  - `/Users/stevemorin/c/difftree/` — the engine. Rust CLI, version `0.1.0`
-    (Cargo.toml), MIT. **Already implements** `--pr [<ref>]` (merge-base→HEAD,
+  - `/Users/stevemorin/c/difftree/` — the engine. Rust CLI, MIT. **Already
+    implements** `--pr [<ref>]` (merge-base→HEAD,
     base auto-detect `origin/HEAD → main → master`), `--committed`, `--against`,
     `--range`, `--json` (schema `difftree.v1`), git status marks, `--no-color`,
     `--level`, `--dirs-only`. CLI defined in `src/app.rs`; comparison routing in
     `src/main.rs`; diff logic + `resolve_pr_base` in `src/lib.rs`; `--pr` tests in
     `tests/cli.rs`. Uses the `git2`/libgit2 crate (11 `git2::` call sites, no
     shelling out to `git`), which constrains shallow-checkout behavior and is why
-    the action requires `fetch-depth: 0` (PRD FR-2.3 / OQ4). **No crates.io
-    publish, no prebuilt binaries, no git tags** as of 2026-06-27 — this is the
-    Phase 1 gate (PRD §8.3).
+    the action requires `fetch-depth: 0` (PRD FR-2.3 / OQ4). **Released as
+    `difftree 0.3.0` on crates.io and git tag `v0.3.0`** (PR #4, merged
+    2026-06-28; `--pr` confirmed in both `origin/main` and the tag, verified
+    2026-06-29) — so Phase 0 installs via `cargo install difftree@0.3.0` (OI1
+    resolved). **Still no prebuilt GitHub Release binaries** — that remains the
+    Phase 1 gate (PRD §8.3); difftree now has a release-please / crates.io
+    pipeline (its PR #8) that could add them.
   - `/Users/stevemorin/c/github-actions/contributors-please-action/` — the
     structural template: node24 action, `action.yml`, `src/index.ts` thin
     wrapper, `maybeCommentOnPullRequest()` sticky comment via
@@ -120,10 +124,10 @@ Files:
 - [ ] Step 1: Write `action.yml` with `using: composite` and inputs from PRD §7.1
   (`base-ref`, `comment`, `level`, `dirs-only`, `extra-args`, `difftree-version`,
   `github-token`).
-- [ ] Step 2: Add composite steps: `dtolnay/rust-toolchain@stable`,
-  `Swatinem/rust-cache@v2`, then `cargo install --git
-  https://github.com/smorinlabs/difftree --tag <pin> difftree` (or `--rev` until
-  difftree tags — OI1).
+- [ ] Step 2: Add composite steps: `Swatinem/rust-cache@v2` (rustup is preinstalled
+  on GitHub-hosted runners), then `cargo install difftree@${{ inputs.difftree-version }}`
+  from crates.io (default `0.3.0`). OI1 resolved — pin to the crates.io version,
+  not a git tag/rev.
 - [ ] Step 3: Resolve `$BASE_REF` from the `base-ref` input or
   `github.event.pull_request.base.ref`. Require `fetch-depth: 0` in the README /
   workflow example (PRD FR-2.3). As best-effort, when the checkout is shallow
@@ -168,18 +172,22 @@ Files:
 - [ ] Step 3: Write base ref used / files changed / comment posted to
   `$GITHUB_STEP_SUMMARY` (PRD FR-6.2).
 
-## Task 4: Phase 0 — E2E + dogfood
+## Task 4: Phase 0 — CI, dogfood, RUNBOOK
 
 Files:
-- Create: `.github/workflows/e2e.yml`
+- Create: `.github/workflows/ci.yml` (lint + unit + smoke)
+- Create: `.github/workflows/difftree.yml` (dogfood usage on this repo's PRs)
 - Create: `docs/RUNBOOK.md`
 
-- [ ] Step 1: E2E workflow (manual/scheduled) opens a PR on a scratch repo,
-  asserts one marker comment with a code fence; pushes again, asserts in-place
-  update (GOAL §7.3 steps 1–3).
-- [ ] Step 2: RUNBOOK documents the manual dogfood on a real `difftree` PR and the
-  visual legibility check that settles rendering flags (PRD OQ1 / OI3).
-- [ ] Step 3: Tag `v0.x`; open a `difftree` PR using `smorinlabs/difftree-action@v0`.
+- [x] Step 1: `ci.yml` runs `node --test`, `actionlint`, shellcheck of the
+  embedded `action.yml` bash, and a `smoke` job that runs `uses: ./` with
+  `comment: false` and asserts a change count (works on forks; no side effects).
+- [x] Step 2: `difftree.yml` dogfoods the action on this repo's own PRs
+  (`comment: true`, `pull-requests: write`) — the live open→push→update check.
+- [x] Step 3: RUNBOOK documents the manual acceptance (open→push→update sticky,
+  `comment:false`, fork PR) and the rendering-flag legibility check (PRD OQ1 / OI3).
+- [ ] Step 4: Tag `v0.x` and move major tag `v0`; a fully scripted scratch-repo
+  E2E (programmatic PR open→push) is deferred beyond Phase 0 (see RUNBOOK).
 
 ## Task 5: difftree binary releases (engine prerequisite — separate repo)
 
@@ -277,8 +285,12 @@ Files:
 
 ## Completion Audit
 
-- [ ] Phase 0 composite action posts a sticky diff-tree comment on a scratch PR
-  and a `difftree` PR (GOAL D3).
+- [x] Phase 0 composite action posts a sticky diff-tree comment on a scratch PR
+  (GOAL D3). **Validated 2026-06-29** against scratch repo
+  `smorinlabs/difftree-action-test#1` (action ref `@feat/phase0-composite`):
+  run `28403342440` created comment id `4837151013` with the diff-tree; a second
+  push (run `28403478738`) updated the **same** comment in place (count stayed 1,
+  body refreshed +16→+18). Both runs concluded `success`.
 - [ ] `difftree` publishes cross-platform binary releases (GOAL D4).
 - [ ] Phase 1 node24 action: reproducible `dist/`, outputs gate green,
   `release-please` wired, `v1` moving tag (GOAL D5).

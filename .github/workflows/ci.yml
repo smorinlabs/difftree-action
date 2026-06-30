@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Unit tests
+        run: node --test
+
+      - name: actionlint
+        uses: raven-actions/actionlint@v2
+
+      - name: shellcheck action.yml embedded bash
+        # Uses yq (preinstalled on the runner) — no PyYAML / pip dependency.
+        run: |
+          set -euo pipefail
+          rc=0
+          count="$(yq '.runs.steps | length' action.yml)"
+          for i in $(seq 0 $((count - 1))); do
+            shell="$(yq ".runs.steps[$i].shell // \"\"" action.yml)"
+            [ "$shell" = "bash" ] || continue
+            name="$(yq ".runs.steps[$i].name // \"\"" action.yml)"
+            { echo '#!/usr/bin/env bash'; yq ".runs.steps[$i].run" action.yml; } >/tmp/step.sh
+            sed -i 's/[$][{][{][^}]*[}][}]/EXPR/g' /tmp/step.sh   # neutralize GHA expressions
+            if ! shellcheck -S warning /tmp/step.sh; then
+              echo "## shellcheck findings in step: $name"
+              rc=1
+            fi
+          done
+          exit $rc
+
+  smoke:
+    # End-to-end smoke: actually install difftree and run the action against this
+    # PR, computing outputs without posting a comment (works on forks too).
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: dt
+        uses: ./
+        with:
+          comment: false
+
+      - name: Assert the action produced a change count
+        env:
+          FILES: ${{ steps.dt.outputs.files-changed }}
+          TREE: ${{ steps.dt.outputs.tree }}
+        run: |
+          echo "files-changed=$FILES"
+          # This PR always changes files, so a real run must report > 0;
+          # catches an always-zero parse (e.g. a difftree JSON-shape change).
+          test "${FILES:-0}" -gt 0
+          test -n "$TREE"

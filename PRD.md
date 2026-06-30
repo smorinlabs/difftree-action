@@ -115,7 +115,9 @@ a glance, with zero per-reviewer setup.
 - **`--pr` mode** — `difftree`'s PR-style comparison: it resolves a base, computes
   `merge-base(base, HEAD)`, and shows what changed from there to `HEAD`. Base is
   auto-detected (`origin/HEAD` → `main` → `master`) unless an explicit ref is
-  passed: `difftree --pr <ref>`.
+  passed. The explicit base **must use the `=` form** — `difftree --pr=<ref>` (or
+  the separate `difftree --pr --pr-base <ref>`). The space form `--pr <ref>` is
+  parsed as the positional path and fails; the action uses `--pr=origin/<base>`.
 - **`--committed`** — restricts `--pr` to committed branch commits
   (merge-base→HEAD), excluding any working-tree state. The action uses it for
   determinism (the CI checkout has no relevant working-tree changes).
@@ -146,7 +148,7 @@ a glance, with zero per-reviewer setup.
 
 - FR-2.1 The base ref defaults to the PR base branch
   (`github.event.pull_request.base.ref`) and is passed **explicitly** as the
-  remote-tracking ref `origin/<base>` to `difftree --pr origin/<base>`. The CI
+  remote-tracking ref `origin/<base>` to `difftree --pr=origin/<base>`. The CI
   checkout is a detached HEAD with no local `main` branch, so the remote-tracking
   form is what resolves; bare `<base>` may not. The action does not rely on
   `difftree`'s `origin/HEAD → main → master` auto-detection, which is unreliable
@@ -169,7 +171,7 @@ a glance, with zero per-reviewer setup.
 
 ### 6.3 difftree Invocation
 
-- FR-3.1 The action invokes `difftree --pr origin/<base> --committed` with color
+- FR-3.1 The action invokes `difftree --pr=origin/<base> --committed` with color
   disabled (`--no-color`) so the output is clean ASCII suitable for a markdown
   code block.
 - FR-3.2 Curated pass-through flags are appended when their inputs are set:
@@ -239,7 +241,7 @@ a glance, with zero per-reviewer setup.
 | `difftree-version` | pinned default | Which `difftree` release/tag the action uses (Phase 1) or builds (Phase 0). |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. |
 
-Hardcoded internally (not inputs): `--pr origin/<base>`, `--committed`,
+Hardcoded internally (not inputs): `--pr=origin/<base>`, `--committed`,
 `--no-color`.
 
 ### 7.2 Action Outputs
@@ -274,12 +276,13 @@ jobs:
 
 ### 8.1 Phase 0 — Composite action (ships without changing difftree)
 
-`runs: using: composite`. Steps: set up the Rust toolchain
-(`dtolnay/rust-toolchain`), restore a build cache (`Swatinem/rust-cache`),
-`cargo install` `difftree` pinned to a tag/rev, ensure base history
-(`git fetch`), run `difftree --pr`, then post the sticky comment via a small
-`actions/github-script` step using `github.token`. This works today; cold-cache
-runs pay a Rust compile (~1–3 min), warm-cache runs are fast.
+`runs: using: composite`. Steps: restore a build cache (`Swatinem/rust-cache`),
+`cargo install difftree@<version>` from **crates.io** (default `0.3.0`; rustup is
+preinstalled on GitHub-hosted runners), ensure base history (`git fetch`), run
+`difftree --pr`, then post the sticky comment via a small `actions/github-script`
+step using `github.token`. This works today — `difftree 0.3.0` (with `--pr`) is
+published on crates.io. Cold-cache runs pay a Rust compile (~1–3 min), warm-cache
+runs are fast.
 
 ### 8.2 Phase 1 — node24 action (the target, mirrors contributors-please-action)
 
@@ -300,16 +303,17 @@ a fresh build, identical to the contributors-please-action discipline.
 
 Phase 1 requires `difftree` to publish **prebuilt, cross-platform binaries**
 (linux/macos/windows × x86_64/arm64) attached to versioned GitHub Releases —
-e.g. via `cargo-dist` or a release workflow. Today `difftree` has no crates.io
-publish, no prebuilt binaries, and no git tags. This is `difftree`-side work and
-a hard gate on Phase 1; it is tracked as a "Therefore" step in
-[`GOAL.md`](./GOAL.md). Phase 0 deliberately removes this dependency so the
-action is shippable in the interim.
+e.g. via `cargo-dist` or a release workflow. As of 2026-06-29 `difftree` **is**
+published to crates.io (`0.3.0`, with `--pr`) and has tag `v0.3.0`, but has **no
+prebuilt-binary GitHub Release assets** yet — that is the remaining hard gate on
+Phase 1. It is `difftree`-side work, tracked as a "Therefore" step in
+[`GOAL.md`](./GOAL.md). Phase 0 installs from crates.io (`cargo install
+difftree@0.3.0`) and so does not need the binaries.
 
 ### 8.4 Version pinning
 
-The `difftree-version` input (default pinned in the action) selects which
-`difftree` release the action runs, analogous to
+The `difftree-version` input (default `0.3.0`, pinned in the action) selects which
+`difftree` crates.io version the action installs, analogous to
 `contributors-please-action`'s `.contributors-please-engine-ref`. The default is
 bumped via PR when a new `difftree` release is adopted.
 
@@ -365,8 +369,9 @@ bumped via PR when a new `difftree` release is adopted.
 
 - OQ1. Exact `difftree` rendering flags for best GitHub-comment legibility
   (`--format`, `--marks`) — resolved by visual verification in implementation.
-- OQ2. Whether Phase 0 should pin `difftree` by git tag (requires `difftree` to
-  cut a tag) or by commit rev in the interim.
+- OQ2. ~~Whether Phase 0 should pin `difftree` by git tag or commit rev.~~
+  **Resolved (2026-06-29):** `difftree 0.3.0` is on crates.io, so Phase 0 pins to
+  the crates.io version (`cargo install difftree@0.3.0`).
 - OQ3. Whether to adopt `pull_request_target` for fork support in a later minor,
   given the read-only nature of the action.
 - OQ4. `difftree` is `git2`/libgit2-backed; confirm during Phase 0 exactly how it

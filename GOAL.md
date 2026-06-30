@@ -62,7 +62,7 @@ by the action rather than bundled as a library dependency.
 
 | Repository | Contents | Distribution |
 |---|---|---|
-| `smorinlabs/difftree` | The Rust CLI engine. Already exists; already implements `--pr`, `--against`, `--range`, `--json`, status marks. Needs binary releases for Phase 1. | Prebuilt binaries on GitHub Releases (to be added); optionally crates.io. |
+| `smorinlabs/difftree` | The Rust CLI engine. Already exists; implements `--pr`, `--against`, `--range`, `--json`, status marks. Published as `0.3.0` on crates.io; needs prebuilt-binary releases for Phase 1. | crates.io (`difftree 0.3.0`, live); prebuilt GitHub Release binaries to be added. |
 | `smorinlabs/difftree-action` | The GitHub Action wrapper: `action.yml`, comment upsert, base-ref/fetch handling. Phase 0 = composite; Phase 1 = node24 TS with committed `dist/`. | GitHub Action: `smorinlabs/difftree-action@v1` (Marketplace). |
 
 Both checkouts exist locally at `/Users/stevemorin/c/difftree/` and
@@ -178,7 +178,7 @@ problem).
 | PRD ref | Behavior | Unit | Integration | E2E |
 |---|---|---|---|---|
 | FR-1.1–1.3 | Event gating: act on `pull_request`, no-op + exit 0 otherwise; PR number/base/head from context | U-EVT-01..03 | I-EVT-01..02 | E-EVT-01 |
-| FR-2.1–2.3 | Base ref default + `base-ref` override; explicit `--pr origin/<base>`; require `fetch-depth: 0` + best-effort unshallow; unresolvable merge-base → error | U-BASE-01..04 | I-BASE-01..03 | E-BASE-01 |
+| FR-2.1–2.3 | Base ref default + `base-ref` override; explicit `--pr=origin/<base>`; require `fetch-depth: 0` + best-effort unshallow; unresolvable merge-base → error | U-BASE-01..04 | I-BASE-01..03 | E-BASE-01 |
 | FR-3.1–3.4 | difftree invocation: `--pr --committed --no-color`; `level`/`dirs-only`/`extra-args` pass-through; stdout/exit capture | U-INV-01..05 | I-INV-01..02 | covered by E-* |
 | FR-4.1–4.5 | Comment body composition; sticky create vs update by marker; `comment:false` skip; empty-tree body; size truncation | U-CMT-01..06 | I-CMT-01..04 | E-CMT-01..02 (open→push→update) |
 | FR-5.1–5.4 | Errors: binary missing, not-a-repo/bad-base, fork read-only warning (exit 0), `difftree-action:` prefix | U-ERR-01..04 | I-ERR-01..03 | E-ERR-01 (fork PR) |
@@ -231,8 +231,9 @@ All five must pass for `v1` acceptance.
 
 ## 10. Open Items
 
-- OI1. Phase 0 `difftree` pinning: cut a `difftree` git tag to pin against, or pin
-  by commit rev in the interim (PRD OQ2).
+- OI1. ~~Phase 0 `difftree` pinning.~~ **Resolved (2026-06-29):** `difftree 0.3.0`
+  (with `--pr`) is published on crates.io and tagged `v0.3.0`; Phase 0 pins to the
+  crates.io version (`cargo install difftree@0.3.0`).
 - OI2. Fork-PR support via `pull_request_target` — deferred to a post-v1 minor;
   decision recorded in PRD §9 / OQ3.
 - OI3. Final rendering flags for comment legibility (PRD OQ1) — settled during
