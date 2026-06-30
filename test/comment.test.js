@@ -48,6 +48,11 @@ test("pickExisting returns undefined when no marker and tolerates bad input", ()
   assert.equal(pickExisting(null), undefined);
 });
 
+test("pickExisting ignores a marker that is not the leading line", () => {
+  assert.equal(pickExisting([{ id: 1, body: `some text then ${MARKER}` }]), undefined);
+  assert.equal(pickExisting([{ id: 2, body: `${MARKER}\nbody` }]).id, 2);
+});
+
 test("truncateTree passes small trees through untouched", () => {
   const r = truncateTree("small");
   assert.equal(r.tree, "small");
@@ -157,4 +162,21 @@ test("upsertComment tolerates a failed duplicate delete (best-effort cleanup)", 
   assert.equal(gh.calls.update[0].comment_id, 10);
   assert.equal(res.removed, 0, "no duplicate actually removed");
   assert.equal(res.url, "https://x/upd");
+});
+
+test("upsertComment never touches a user comment that merely quotes the marker", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nours` }, // owned (leading marker)
+      { id: 21, body: `see the \`${MARKER}\` marker in the docs` }, // user comment quoting it
+    ],
+  });
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(res.action, "updated");
+  assert.equal(res.removed, 0);
+  assert.equal(gh.calls.update.length, 1);
+  assert.equal(gh.calls.update[0].comment_id, 10);
+  assert.equal(gh.calls.delete.length, 0, "must not delete a user comment quoting the marker");
 });

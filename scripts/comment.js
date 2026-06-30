@@ -39,11 +39,17 @@ function composeBody(tree, opts = {}) {
   return lines.join("\n");
 }
 
+// Ownership predicate: a comment is action-owned only when the marker is its
+// LEADING line (how composeBody writes it). A substring match would treat a user
+// comment that merely quotes the marker as ours — and the dedupe path deletes,
+// so a loose match could destroy user content.
+function isOwned(body, marker = MARKER) {
+  return typeof body === "string" && body.split(/\r?\n/, 1)[0] === marker;
+}
+
 function pickExisting(comments, marker = MARKER) {
   if (!Array.isArray(comments)) return undefined;
-  return comments.find(
-    (c) => c && typeof c.body === "string" && c.body.includes(marker)
-  );
+  return comments.find((c) => c && isOwned(c.body, marker));
 }
 
 // Find the action's prior comment(s) by marker, update one, and remove any
@@ -64,9 +70,7 @@ async function upsertComment({ github, owner, repo, issueNumber, body, marker = 
   });
 
   // listComments returns oldest-first; keep [0] as canonical.
-  const mine = comments.filter(
-    (c) => c && typeof c.body === "string" && c.body.includes(marker)
-  );
+  const mine = comments.filter((c) => c && isOwned(c.body, marker));
 
   if (mine.length === 0) {
     const { data } = await github.rest.issues.createComment({
