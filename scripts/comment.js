@@ -39,15 +39,28 @@ function composeBody(tree, opts = {}) {
   return lines.join("\n");
 }
 
-function pickExisting(comments, marker = MARKER) {
-  if (!Array.isArray(comments)) return undefined;
-  return comments.find(
-    (c) => c && typeof c.body === "string" && c.body.includes(marker)
-  );
+// Ownership predicate: a comment is action-owned only when the marker is its
+// LEADING line (how composeBody writes it). A substring match would treat a user
+// comment that merely quotes the marker as ours — and the dedupe path deletes,
+// so a loose match could destroy user content.
+function isOwned(body, marker = MARKER) {
+  return typeof body === "string" && body.split(/\r?\n/, 1)[0] === marker;
 }
 
-// Find the action's prior comment by marker and update it, else create one.
-// `github` is the actions/github-script client (has `.paginate` and `.rest`).
+function pickExisting(comments, marker = MARKER) {
+  if (!Array.isArray(comments)) return undefined;
+  return comments.find((c) => c && isOwned(c.body, marker));
+}
+
+// Find the action's prior comment(s) by marker, update one, and remove any
+// duplicates. `github` is the actions/github-script client (has `.paginate`
+// and `.rest`).
+//
+// The list-then-create check is a TOCTOU: two overlapping runs can both see no
+// marker and both create a comment. Consumers should add PR-scoped workflow
+// `concurrency` to prevent that race; as a self-healing backstop this keeps the
+// OLDEST marker comment as canonical and deletes the rest, so duplicates never
+// persist across runs.
 async function upsertComment({ github, owner, repo, issueNumber, body, marker = MARKER }) {
   const comments = await github.paginate(github.rest.issues.listComments, {
     owner,
@@ -56,24 +69,43 @@ async function upsertComment({ github, owner, repo, issueNumber, body, marker = 
     per_page: 100,
   });
 
-  const existing = pickExisting(comments, marker);
-  if (existing) {
-    const { data } = await github.rest.issues.updateComment({
+  // listComments returns oldest-first; keep [0] as canonical.
+  const mine = comments.filter((c) => c && isOwned(c.body, marker));
+
+  if (mine.length === 0) {
+    const { data } = await github.rest.issues.createComment({
       owner,
       repo,
-      comment_id: existing.id,
+      issue_number: issueNumber,
       body,
     });
-    return { action: "updated", url: data.html_url };
+    return { action: "created", url: data.html_url, removed: 0 };
   }
 
-  const { data } = await github.rest.issues.createComment({
+  const [canonical, ...dupes] = mine;
+  const { data } = await github.rest.issues.updateComment({
     owner,
     repo,
-    issue_number: issueNumber,
+    comment_id: canonical.id,
     body,
   });
-  return { action: "created", url: data.html_url };
+  // Duplicate cleanup is best-effort: the canonical comment is already updated,
+  // so a failed delete (404 if a concurrent run removed it, or 403 if the token
+  // can comment but not delete) must NOT fail the action.
+  let removed = 0;
+  for (const d of dupes) {
+    try {
+      await github.rest.issues.deleteComment({ owner, repo, comment_id: d.id });
+      removed += 1;
+    } catch {
+      // ignore — leave the duplicate; a later run will retry the cleanup.
+    }
+  }
+  return {
+    action: dupes.length ? "deduped" : "updated",
+    url: data.html_url,
+    removed,
+  };
 }
 
 module.exports = {

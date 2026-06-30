@@ -48,6 +48,11 @@ test("pickExisting returns undefined when no marker and tolerates bad input", ()
   assert.equal(pickExisting(null), undefined);
 });
 
+test("pickExisting ignores a marker that is not the leading line", () => {
+  assert.equal(pickExisting([{ id: 1, body: `some text then ${MARKER}` }]), undefined);
+  assert.equal(pickExisting([{ id: 2, body: `${MARKER}\nbody` }]).id, 2);
+});
+
 test("truncateTree passes small trees through untouched", () => {
   const r = truncateTree("small");
   assert.equal(r.tree, "small");
@@ -64,8 +69,8 @@ test("truncateTree shortens trees over the limit and flags it", () => {
 
 // ---- upsertComment: inject a fake github-script client ----
 
-function fakeGithub({ existing = [] } = {}) {
-  const calls = { create: [], update: [] };
+function fakeGithub({ existing = [], deleteFails = false } = {}) {
+  const calls = { create: [], update: [], delete: [] };
   return {
     calls,
     paginate: async () => existing,
@@ -79,6 +84,15 @@ function fakeGithub({ existing = [] } = {}) {
         updateComment: async (args) => {
           calls.update.push(args);
           return { data: { html_url: "https://x/upd", id: args.comment_id } };
+        },
+        deleteComment: async (args) => {
+          calls.delete.push(args);
+          if (deleteFails) {
+            const err = new Error("Not Found");
+            err.status = 404;
+            throw err;
+          }
+          return { data: {} };
         },
       },
     },
@@ -103,9 +117,66 @@ test("upsertComment updates the existing marker comment in place", async () => {
     github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
   });
   assert.equal(res.action, "updated");
+  assert.equal(res.removed, 0);
   assert.equal(res.url, "https://x/upd");
   assert.equal(gh.calls.update.length, 1);
   assert.equal(gh.calls.create.length, 0);
+  assert.equal(gh.calls.delete.length, 0);
   assert.equal(gh.calls.update[0].comment_id, 42);
   assert.equal(gh.calls.update[0].body, "new");
+});
+
+test("upsertComment dedupes: keeps the oldest marker comment, deletes the rest", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nfirst` }, // oldest -> canonical
+      { id: 11, body: "unrelated" },
+      { id: 12, body: `${MARKER}\nduplicate` },
+    ],
+  });
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(res.action, "deduped");
+  assert.equal(res.removed, 1);
+  assert.equal(gh.calls.update.length, 1);
+  assert.equal(gh.calls.update[0].comment_id, 10, "updates the oldest");
+  assert.equal(gh.calls.create.length, 0);
+  assert.equal(gh.calls.delete.length, 1);
+  assert.equal(gh.calls.delete[0].comment_id, 12, "deletes the duplicate");
+});
+
+test("upsertComment tolerates a failed duplicate delete (best-effort cleanup)", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nfirst` },
+      { id: 12, body: `${MARKER}\nduplicate` },
+    ],
+    deleteFails: true,
+  });
+  // Must not throw even though deleteComment 404s after the canonical update.
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(gh.calls.update.length, 1, "canonical still updated");
+  assert.equal(gh.calls.update[0].comment_id, 10);
+  assert.equal(res.removed, 0, "no duplicate actually removed");
+  assert.equal(res.url, "https://x/upd");
+});
+
+test("upsertComment never touches a user comment that merely quotes the marker", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nours` }, // owned (leading marker)
+      { id: 21, body: `see the \`${MARKER}\` marker in the docs` }, // user comment quoting it
+    ],
+  });
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(res.action, "updated");
+  assert.equal(res.removed, 0);
+  assert.equal(gh.calls.update.length, 1);
+  assert.equal(gh.calls.update[0].comment_id, 10);
+  assert.equal(gh.calls.delete.length, 0, "must not delete a user comment quoting the marker");
 });
