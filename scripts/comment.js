@@ -46,8 +46,15 @@ function pickExisting(comments, marker = MARKER) {
   );
 }
 
-// Find the action's prior comment by marker and update it, else create one.
-// `github` is the actions/github-script client (has `.paginate` and `.rest`).
+// Find the action's prior comment(s) by marker, update one, and remove any
+// duplicates. `github` is the actions/github-script client (has `.paginate`
+// and `.rest`).
+//
+// The list-then-create check is a TOCTOU: two overlapping runs can both see no
+// marker and both create a comment. Consumers should add PR-scoped workflow
+// `concurrency` to prevent that race; as a self-healing backstop this keeps the
+// OLDEST marker comment as canonical and deletes the rest, so duplicates never
+// persist across runs.
 async function upsertComment({ github, owner, repo, issueNumber, body, marker = MARKER }) {
   const comments = await github.paginate(github.rest.issues.listComments, {
     owner,
@@ -56,24 +63,36 @@ async function upsertComment({ github, owner, repo, issueNumber, body, marker = 
     per_page: 100,
   });
 
-  const existing = pickExisting(comments, marker);
-  if (existing) {
-    const { data } = await github.rest.issues.updateComment({
+  // listComments returns oldest-first; keep [0] as canonical.
+  const mine = comments.filter(
+    (c) => c && typeof c.body === "string" && c.body.includes(marker)
+  );
+
+  if (mine.length === 0) {
+    const { data } = await github.rest.issues.createComment({
       owner,
       repo,
-      comment_id: existing.id,
+      issue_number: issueNumber,
       body,
     });
-    return { action: "updated", url: data.html_url };
+    return { action: "created", url: data.html_url, removed: 0 };
   }
 
-  const { data } = await github.rest.issues.createComment({
+  const [canonical, ...dupes] = mine;
+  const { data } = await github.rest.issues.updateComment({
     owner,
     repo,
-    issue_number: issueNumber,
+    comment_id: canonical.id,
     body,
   });
-  return { action: "created", url: data.html_url };
+  for (const d of dupes) {
+    await github.rest.issues.deleteComment({ owner, repo, comment_id: d.id });
+  }
+  return {
+    action: dupes.length ? "deduped" : "updated",
+    url: data.html_url,
+    removed: dupes.length,
+  };
 }
 
 module.exports = {

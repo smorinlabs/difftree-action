@@ -131,10 +131,14 @@ runs:
         fi
 
         # Reliable change count from JSON, using the SAME filters as the tree. An
-        # empty result means the count is UNKNOWN (parse failure) — not zero — so
-        # a JSON change can never silently blank the tree or report a false 0.
-        COUNT="$(difftree "--pr=origin/$BASE" --committed --json "${FILTERS[@]}" 2>/dev/null \
-          | node "${GITHUB_ACTION_PATH}/scripts/files-changed.js")"
+        # empty result means the count is UNKNOWN — not zero — so a JSON change
+        # can never silently blank the tree or report a false 0. The `|| true`
+        # keeps a non-zero `difftree --json` exit from aborting the step under
+        # `set -euo pipefail` before the unknown-count fallback below runs.
+        COUNT="$(
+          { difftree "--pr=origin/$BASE" --committed --json "${FILTERS[@]}" 2>/dev/null || true; } \
+            | node "${GITHUB_ACTION_PATH}/scripts/files-changed.js"
+        )"
         if [ "$COUNT" = "0" ]; then
           FILES=0; EMPTY=true
         elif [ -n "$COUNT" ]; then

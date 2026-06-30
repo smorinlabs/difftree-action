@@ -6,6 +6,12 @@ name: PR Diff Tree
 on:
   pull_request:
 
+# One run per PR; a newer push cancels the in-flight run so two runs can't race
+# to create the sticky comment.
+concurrency:
+  group: difftree-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write

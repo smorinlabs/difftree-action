@@ -32,6 +32,10 @@ glance. It's a thin wrapper over the
 ```yaml
 name: PR Diff Tree
 on: pull_request
+# Recommended: one run per PR so overlapping runs can't race to post the comment.
+concurrency:
+  group: difftree-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 permissions:
   contents: read
   pull-requests: write        # required to post the comment
@@ -46,6 +50,10 @@ jobs:
         with:
           level: 3            # optional
 ```
+
+The action keeps a single sticky comment (hidden marker `<!-- difftree-action -->`).
+If two runs ever race past the `concurrency` guard and create duplicates, the next
+run self-heals: it keeps the oldest marker comment and deletes the extras.
 
 ### ⚠️ `fetch-depth: 0` is required
 

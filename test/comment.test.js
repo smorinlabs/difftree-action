@@ -65,7 +65,7 @@ test("truncateTree shortens trees over the limit and flags it", () => {
 // ---- upsertComment: inject a fake github-script client ----
 
 function fakeGithub({ existing = [] } = {}) {
-  const calls = { create: [], update: [] };
+  const calls = { create: [], update: [], delete: [] };
   return {
     calls,
     paginate: async () => existing,
@@ -79,6 +79,10 @@ function fakeGithub({ existing = [] } = {}) {
         updateComment: async (args) => {
           calls.update.push(args);
           return { data: { html_url: "https://x/upd", id: args.comment_id } };
+        },
+        deleteComment: async (args) => {
+          calls.delete.push(args);
+          return { data: {} };
         },
       },
     },
@@ -103,9 +107,31 @@ test("upsertComment updates the existing marker comment in place", async () => {
     github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
   });
   assert.equal(res.action, "updated");
+  assert.equal(res.removed, 0);
   assert.equal(res.url, "https://x/upd");
   assert.equal(gh.calls.update.length, 1);
   assert.equal(gh.calls.create.length, 0);
+  assert.equal(gh.calls.delete.length, 0);
   assert.equal(gh.calls.update[0].comment_id, 42);
   assert.equal(gh.calls.update[0].body, "new");
+});
+
+test("upsertComment dedupes: keeps the oldest marker comment, deletes the rest", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nfirst` }, // oldest -> canonical
+      { id: 11, body: "unrelated" },
+      { id: 12, body: `${MARKER}\nduplicate` },
+    ],
+  });
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(res.action, "deduped");
+  assert.equal(res.removed, 1);
+  assert.equal(gh.calls.update.length, 1);
+  assert.equal(gh.calls.update[0].comment_id, 10, "updates the oldest");
+  assert.equal(gh.calls.create.length, 0);
+  assert.equal(gh.calls.delete.length, 1);
+  assert.equal(gh.calls.delete[0].comment_id, 12, "deletes the duplicate");
 });
