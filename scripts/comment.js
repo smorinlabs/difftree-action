@@ -85,13 +85,22 @@ async function upsertComment({ github, owner, repo, issueNumber, body, marker = 
     comment_id: canonical.id,
     body,
   });
+  // Duplicate cleanup is best-effort: the canonical comment is already updated,
+  // so a failed delete (404 if a concurrent run removed it, or 403 if the token
+  // can comment but not delete) must NOT fail the action.
+  let removed = 0;
   for (const d of dupes) {
-    await github.rest.issues.deleteComment({ owner, repo, comment_id: d.id });
+    try {
+      await github.rest.issues.deleteComment({ owner, repo, comment_id: d.id });
+      removed += 1;
+    } catch {
+      // ignore — leave the duplicate; a later run will retry the cleanup.
+    }
   }
   return {
     action: dupes.length ? "deduped" : "updated",
     url: data.html_url,
-    removed: dupes.length,
+    removed,
   };
 }
 

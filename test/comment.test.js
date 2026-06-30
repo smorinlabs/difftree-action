@@ -64,7 +64,7 @@ test("truncateTree shortens trees over the limit and flags it", () => {
 
 // ---- upsertComment: inject a fake github-script client ----
 
-function fakeGithub({ existing = [] } = {}) {
+function fakeGithub({ existing = [], deleteFails = false } = {}) {
   const calls = { create: [], update: [], delete: [] };
   return {
     calls,
@@ -82,6 +82,11 @@ function fakeGithub({ existing = [] } = {}) {
         },
         deleteComment: async (args) => {
           calls.delete.push(args);
+          if (deleteFails) {
+            const err = new Error("Not Found");
+            err.status = 404;
+            throw err;
+          }
           return { data: {} };
         },
       },
@@ -134,4 +139,22 @@ test("upsertComment dedupes: keeps the oldest marker comment, deletes the rest",
   assert.equal(gh.calls.create.length, 0);
   assert.equal(gh.calls.delete.length, 1);
   assert.equal(gh.calls.delete[0].comment_id, 12, "deletes the duplicate");
+});
+
+test("upsertComment tolerates a failed duplicate delete (best-effort cleanup)", async () => {
+  const gh = fakeGithub({
+    existing: [
+      { id: 10, body: `${MARKER}\nfirst` },
+      { id: 12, body: `${MARKER}\nduplicate` },
+    ],
+    deleteFails: true,
+  });
+  // Must not throw even though deleteComment 404s after the canonical update.
+  const res = await upsertComment({
+    github: gh, owner: "o", repo: "r", issueNumber: 7, body: "new",
+  });
+  assert.equal(gh.calls.update.length, 1, "canonical still updated");
+  assert.equal(gh.calls.update[0].comment_id, 10);
+  assert.equal(res.removed, 0, "no duplicate actually removed");
+  assert.equal(res.url, "https://x/upd");
 });
