@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 
 const {
   MARKER,
+  ADVERTISEMENT,
   composeBody,
   pickExisting,
   truncateTree,
@@ -31,6 +32,29 @@ test("composeBody adds a truncation notice when truncated", () => {
   const body = composeBody("├── a", { truncated: true });
   assert.match(body, /```\n├── a\n```/);
   assert.match(body, /truncat/i);
+});
+
+test("composeBody includes the advertisement footer by default", () => {
+  const body = composeBody("├── a", {});
+  assert.ok(body.endsWith(ADVERTISEMENT), "footer is the last line by default");
+  assert.match(ADVERTISEMENT, /^<sub>/, "footer uses GitHub small-print sub style");
+  assert.ok(
+    ADVERTISEMENT.includes("https://github.com/smorinlabs/difftree-action"),
+    "footer links to the action repo"
+  );
+});
+
+test("composeBody omits the advertisement when advertise is false", () => {
+  const body = composeBody("├── a", { advertise: false });
+  assert.ok(!body.includes("<sub>"), "no footer when disabled");
+  assert.ok(!body.includes("difftree-action</a>"));
+});
+
+test("composeBody keeps the advertisement on empty-diff comments by default", () => {
+  const body = composeBody("", { empty: true });
+  assert.ok(body.endsWith(ADVERTISEMENT));
+  const off = composeBody("", { empty: true, advertise: false });
+  assert.ok(!off.includes("<sub>"));
 });
 
 test("pickExisting finds the comment carrying the marker", () => {

@@ -9,10 +9,16 @@
 const MARKER = "<!-- difftree-action -->";
 const HEADING = "🌳 difftree — changes in this PR";
 
+// Self-attribution footer, appended unless the `advertise` input is 'false'.
+// GitHub small-print style (<sub> + <a> both survive GitHub's comment
+// sanitizer — verified against the rendered body_html).
+const ADVERTISEMENT =
+  '<sub>🌳 Get your own diff tree at <a href="https://github.com/smorinlabs/difftree-action">smorinlabs/difftree-action</a></sub>';
+
 // GitHub caps issue/PR comment bodies at 65536 characters. Leave headroom for
 // the marker, heading, code fences, and the truncation notice.
 const GITHUB_COMMENT_LIMIT = 65536;
-const SCAFFOLD_BUDGET = 512;
+const SCAFFOLD_BUDGET = 768; // marker + heading + fences + truncation notice + ad footer
 
 function truncateTree(tree, limit = GITHUB_COMMENT_LIMIT) {
   const budget = limit - SCAFFOLD_BUDGET;
@@ -21,20 +27,28 @@ function truncateTree(tree, limit = GITHUB_COMMENT_LIMIT) {
 }
 
 function composeBody(tree, opts = {}) {
-  const { empty = false, truncated = false, heading = HEADING } = opts;
+  const {
+    empty = false,
+    truncated = false,
+    heading = HEADING,
+    advertise = true,
+  } = opts;
   const lines = [MARKER, `### ${heading}`, ""];
 
   if (empty) {
     lines.push("_No file changes between the base and this PR._");
-    return lines.join("\n");
+  } else {
+    lines.push("```", tree.replace(/\s+$/, ""), "```");
+    if (truncated) {
+      lines.push(
+        "",
+        "_Tree truncated to fit GitHub's comment size limit; see the action log for the full output._"
+      );
+    }
   }
 
-  lines.push("```", tree.replace(/\s+$/, ""), "```");
-  if (truncated) {
-    lines.push(
-      "",
-      "_Tree truncated to fit GitHub's comment size limit; see the action log for the full output._"
-    );
+  if (advertise) {
+    lines.push("", ADVERTISEMENT);
   }
   return lines.join("\n");
 }
@@ -111,6 +125,7 @@ async function upsertComment({ github, owner, repo, issueNumber, body, marker = 
 module.exports = {
   MARKER,
   HEADING,
+  ADVERTISEMENT,
   GITHUB_COMMENT_LIMIT,
   truncateTree,
   composeBody,

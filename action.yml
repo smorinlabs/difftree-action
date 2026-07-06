@@ -18,6 +18,12 @@ inputs:
     description: Post/update the PR comment. Set to "false" to compute outputs only.
     required: false
     default: "true"
+  advertise:
+    description: >-
+      Append a small "Get your own diff tree" attribution footer to the comment.
+      Set to "false" to disable.
+    required: false
+    default: "true"
   level:
     description: Maximum tree depth (difftree --level N). Unset means no limit.
     required: false
@@ -172,6 +178,7 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
         DIFFTREE_TREE_FILE: ${{ steps.difftree.outputs.tree-file }}
         DIFFTREE_EMPTY: ${{ steps.difftree.outputs.empty }}
+        DIFFTREE_ADVERTISE: ${{ inputs.advertise }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
@@ -182,8 +189,9 @@ runs:
           const prNumber = context.payload.pull_request.number;
           const rawTree = fs.readFileSync(process.env.DIFFTREE_TREE_FILE, 'utf8');
           const empty = process.env.DIFFTREE_EMPTY === 'true';
+          const advertise = process.env.DIFFTREE_ADVERTISE !== 'false';
           const { tree, truncated } = mod.truncateTree(rawTree);
-          const body = mod.composeBody(tree, { empty, truncated });
+          const body = mod.composeBody(tree, { empty, truncated, advertise });
 
           try {
             const res = await mod.upsertComment({
