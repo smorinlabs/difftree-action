@@ -35,7 +35,8 @@ versioning, GitHub Actions for CI/E2E gates.
   - `/Users/stevemorin/c/difftree/` — the engine. Rust CLI, MIT. **Already
     implements** `--pr [<ref>]` (merge-base→HEAD,
     base auto-detect `origin/HEAD → main → master`), `--committed`, `--against`,
-    `--range`, `--json` (schema `difftree.v1`), git status marks, `--no-color`,
+    `--range`, `--json` (schema `difftree.v2` as of 0.3.0 — the action never reads
+    `schema_version`, only `summary.files_changed`), git status marks, `--no-color`,
     `--level`, `--dirs-only`. CLI defined in `src/app.rs`; comparison routing in
     `src/main.rs`; diff logic + `resolve_pr_base` in `src/lib.rs`; `--pr` tests in
     `tests/cli.rs`. Uses the `git2`/libgit2 crate (11 `git2::` call sites, no
@@ -201,6 +202,21 @@ Files (in `smorinlabs/difftree`):
 
 > Gate: Phase 1 (Tasks 6–10) does not start until Task 5 ships at least one
 > release with downloadable binaries.
+>
+> **Status 2026-06-30:** difftree PR #12 (`ci/release-binaries`) implements this —
+> matrix builds on `release: published` + `workflow_dispatch(tag)` backfill.
+> Asset contract: `difftree-<tag>-<target>.tar.gz` (unix) / `.zip` (windows),
+> each with a `.sha256`; targets x86_64/aarch64 × linux-gnu/apple-darwin plus
+> x86_64-pc-windows-msvc. difftree `v0.3.1` is now released; backfill both
+> v0.3.0 and v0.3.1 after merge.
+>
+> **Phase 1 decision note (OI: binary-download vs cargo-install):** keep the
+> prebuilt-binary design. A node24 action that still `cargo install`s would pay
+> the same 1–3 min cold compile as Phase 0 and gain little; the binary download
+> is seconds and the asset contract above makes the OS/arch mapping
+> deterministic. Composite Phase 0 remains the fallback path. Follow-up (not
+> Phase 1-gated): bump the action's default `difftree-version` 0.3.0 → 0.3.1
+> after verifying `cargo install difftree@0.3.1 --locked`.
 
 ## Task 6: Phase 1 — node24 bootstrap
 
