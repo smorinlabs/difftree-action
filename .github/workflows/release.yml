@@ -2,10 +2,10 @@ name: Release
 
 # Fires on the `vX.Y.Z` tag that release-please pushes when a Release PR is
 # merged (the App token it uses is a distinct actor, so its tag push triggers
-# this workflow). Verifies the tag against version.txt, runs the unit tests,
-# then moves the floating major tag (v0 for 0.x, v1 for 1.x, ...) to the
-# release commit so `uses: smorinlabs/difftree-action@v0` consumers pick up
-# the new release.
+# this workflow). Verifies the tag against .release-please-manifest.json, runs
+# the unit tests, then moves the floating major tag (v0 for 0.x, v1 for 1.x,
+# ...) to the release commit so `uses: smorinlabs/difftree-action@v0`
+# consumers pick up the new release.
 on:
   push:
     tags:
@@ -25,17 +25,22 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Verify tag matches version.txt
+      - name: Verify tag matches the release-please manifest
+        # Verified empirically (release PR #5): release-please v5's `simple`
+        # strategy updates .release-please-manifest.json + CHANGELOG.md but
+        # does NOT create version.txt, so the manifest is the reliable
+        # version source to gate on.
         run: |
-          if [ ! -f version.txt ]; then
-            echo "::error::version.txt not found — this tag (${GITHUB_REF_NAME}) predates the first release-please release, which creates version.txt. Only release-please-cut tags are releasable." >&2
+          if [ ! -f .release-please-manifest.json ]; then
+            echo "::error::.release-please-manifest.json not found — only release-please-cut tags are releasable." >&2
             exit 1
           fi
-          VERSION="$(tr -d '[:space:]' < version.txt)"
+          VERSION="$(jq -r '."."' .release-please-manifest.json)"
           if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match version.txt v${VERSION}" >&2
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match .release-please-manifest.json v${VERSION}" >&2
             exit 1
           fi
+          echo "Tag ${GITHUB_REF_NAME} matches the manifest."
 
       - name: Unit tests
         run: node --test
