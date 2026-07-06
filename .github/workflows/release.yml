@@ -27,6 +27,10 @@ jobs:
 
       - name: Verify tag matches version.txt
         run: |
+          if [ ! -f version.txt ]; then
+            echo "::error::version.txt not found — this tag (${GITHUB_REF_NAME}) predates the first release-please release, which creates version.txt. Only release-please-cut tags are releasable." >&2
+            exit 1
+          fi
           VERSION="$(tr -d '[:space:]' < version.txt)"
           if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then
             echo "Tag ${GITHUB_REF_NAME} does not match version.txt v${VERSION}" >&2
