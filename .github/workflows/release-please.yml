@@ -1,0 +1,51 @@
+name: release-please
+
+# On every push to main, release-please inspects the Conventional Commits since
+# the last release tag and opens (or updates) a "Release PR" that bumps
+# version.txt, regenerates CHANGELOG.md, and updates
+# .release-please-manifest.json. Merging that PR pushes a `vX.Y.Z` tag and
+# publishes a GitHub Release, which triggers release.yml to verify the tag and
+# move the floating major tag (v0 today, v1 later).
+on:
+  push:
+    branches: [main]
+
+# Deny all GITHUB_TOKEN permissions at the top level; the job below mints a
+# short-lived GitHub App installation token and uses that for all mutating work.
+permissions: {}
+
+concurrency:
+  # Serialize per-ref runs. Rapid pushes to main can fire overlapping
+  # release-please runs that step on each other while updating the Release PR.
+  # Never cancel an in-flight run — its PR update is incremental, and a
+  # half-applied update can leave the Release PR inconsistent.
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # actual write happens via the App token minted below
+    steps:
+      # The default GITHUB_TOKEN cannot trigger other workflows (anti-loop
+      # protection), so a tag it pushes would never fire release.yml. A GitHub
+      # App installation token is a distinct actor whose tag push DOES trigger
+      # downstream workflows. The shared release-please App provides
+      # RELEASE_PLEASE_CLIENT_ID and RELEASE_PLEASE_PRIVATE_KEY (both repo
+      # secrets) — the same App and secret names used by smorinlabs/difftree.
+      # Pinned by SHA (= v3.2.0): `client-id` is the current input (`app-id`
+      # is deprecated upstream), but actionlint's embedded metadata for the
+      # `@v3` tag predates it and reports a false positive on tag refs.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ secrets.RELEASE_PLEASE_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
