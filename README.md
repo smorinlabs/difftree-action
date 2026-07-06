@@ -69,6 +69,7 @@ guaranteed; if the base history is missing the action fails with a clear message
 |-------|---------|-------------|
 | `base-ref` | PR base (`pull_request.base.ref`) | Ref to diff against; compared as `origin/<base-ref>`. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
+| `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
 | `level` | _(unset)_ | Max tree depth (`difftree --level N`). |
 | `dirs-only` | `false` | Show directories only (`difftree --dirs-only`). |
 | `extra-args` | `''` | Extra args appended verbatim to the difftree call. |

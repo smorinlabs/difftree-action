@@ -199,6 +199,11 @@ a glance, with zero per-reviewer setup.
 - FR-4.5 An over-long tree is truncated to stay within GitHub's comment size
   limit, with a trailing notice; the `tree` output (FR-6.x) always carries the
   full text.
+- FR-4.6 The comment ends with a small self-attribution footer — a `<sub>` line
+  reading "🌳 Get your own diff tree at …" linking to this repository — unless
+  the `advertise` input is `"false"` (default `"true"`). Both `<sub>` and the
+  `<a href>` survive GitHub's comment sanitizer (verified against the rendered
+  `body_html`). The footer appears on empty-diff comments too.
 
 ### 6.5 Error Handling & Edge Cases
 
@@ -235,6 +240,7 @@ a glance, with zero per-reviewer setup.
 |---|---|---|
 | `base-ref` | PR base (`pull_request.base.ref`) | Override the comparison base. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
+| `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
 | `level` | (unset) | Max tree depth → `difftree --level N`. |
 | `dirs-only` | `false` | Directories only → `difftree --dirs-only`. |
 | `extra-args` | `''` | Small escape hatch appended verbatim to the difftree call. |
