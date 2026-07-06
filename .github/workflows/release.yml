@@ -1,0 +1,54 @@
+name: Release
+
+# Fires on the `vX.Y.Z` tag that release-please pushes when a Release PR is
+# merged (the App token it uses is a distinct actor, so its tag push triggers
+# this workflow). Verifies the tag against version.txt, runs the unit tests,
+# then moves the floating major tag (v0 for 0.x, v1 for 1.x, ...) to the
+# release commit so `uses: smorinlabs/difftree-action@v0` consumers pick up
+# the new release.
+on:
+  push:
+    tags:
+      - v*.*.*
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # needed to force-push the floating major tag
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify tag matches version.txt
+        run: |
+          if [ ! -f version.txt ]; then
+            echo "::error::version.txt not found — this tag (${GITHUB_REF_NAME}) predates the first release-please release, which creates version.txt. Only release-please-cut tags are releasable." >&2
+            exit 1
+          fi
+          VERSION="$(tr -d '[:space:]' < version.txt)"
+          if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match version.txt v${VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Unit tests
+        run: node --test
+
+      - name: Update major version tag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            echo "Skipping major tag update for prerelease ${GITHUB_REF_NAME}"
+            exit 0
+          fi
+
+          MAJOR_VERSION="${GITHUB_REF_NAME#v}"
+          MAJOR_TAG="v${MAJOR_VERSION%%.*}"
+          TARGET_SHA="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+          git tag -f "${MAJOR_TAG}" "${TARGET_SHA}"
+          git push origin "refs/tags/${MAJOR_TAG}" --force
