@@ -1,0 +1,5 @@
+{
+  "companyAnnouncements": [
+    "difftree-action: GitHub Action that posts a self-updating ASCII diff-tree comment on PRs (wraps the difftree Rust CLI's --pr mode). No repo-native slash commands; useful external ones: /code-review (review a PR), /ci-audit (fix GitHub Actions), /version-check (compare local/tag/release versions). See GOAL.md, PRD.md, and PLAN.md for the phased plan (Phase 0 composite shipped as v0; Phase 1 node24 + prebuilt binaries pending difftree binary releases)."
+  ]
+}
