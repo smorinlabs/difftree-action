@@ -1,0 +1,45 @@
+# Canonical consumer workflow for smorinlabs/difftree-action.
+#
+# Copy this file into your repository at:
+#   .github/workflows/pr-diff-tree.yml
+#
+# It posts an ASCII diff-tree of a pull request's changes as a single,
+# self-updating PR comment (rendered by `difftree --pr`). This file is the
+# single source of truth for the recommended setup: the README links to it and
+# the `setup-difftree` skill scaffolds from it. Keep it working — CI lints it.
+name: PR Diff Tree
+
+on:
+  pull_request:
+
+# One run per PR so two overlapping runs can't race to post the comment.
+concurrency:
+  group: difftree-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write # REQUIRED — the action posts/updates the PR comment.
+
+jobs:
+  diff-tree:
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 is REQUIRED. `difftree --pr` computes
+      # merge-base(base, HEAD) to find what the PR changed, and difftree is
+      # libgit2-backed (poor shallow-clone support). The default shallow
+      # checkout (fetch-depth: 1) breaks this.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # @v0 is a floating major tag: you get non-breaking updates automatically.
+      # Pin to an exact tag (e.g. @v0.2.0) if you prefer reproducible runs.
+      - uses: smorinlabs/difftree-action@v0
+        # All inputs are optional. Uncomment to customize:
+        # with:
+        #   level: 3                  # max tree depth (difftree --level N)
+        #   dirs-only: "false"        # show directories only
+        #   difftree-version: "0.3.1" # crates.io version the action installs
+        #   comment: "true"           # set "false" to compute outputs only
+        #   advertise: "true"         # set "false" to drop the attribution footer
