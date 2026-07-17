@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/smorinlabs/difftree-action/compare/v0.2.0...v0.3.0) (2026-07-17)
+
+
+### Features
+
+* add setup-difftree skill and canonical example workflow ([755e8a3](https://github.com/smorinlabs/difftree-action/commit/755e8a37d174ff13dd70a2a215625a681f4a49c2))
+* add setup-difftree skill and canonical example workflow ([6b3e22c](https://github.com/smorinlabs/difftree-action/commit/6b3e22c22fda2382f733988f3245180d4f7c5b9f))
+
 ## [0.2.0](https://github.com/smorinlabs/difftree-action/compare/v0.1.0...v0.2.0) (2026-07-06)
 
 
