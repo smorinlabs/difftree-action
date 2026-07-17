@@ -51,6 +51,10 @@ jobs:
           level: 3            # optional
 ```
 
+> **Copy-paste ready:** the canonical version of this workflow is committed as
+> [`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml). Save it to
+> `.github/workflows/pr-diff-tree.yml` in your repo.
+
 The action keeps a single sticky comment (hidden marker `<!-- difftree-action -->`).
 If two runs ever race past the `concurrency` guard and create duplicates, the next
 run self-heals: it keeps the oldest marker comment and deletes the extras.
@@ -62,6 +66,16 @@ difftree uses libgit2 (which handles shallow clones poorly). `actions/checkout`
 defaults to a shallow `fetch-depth: 1`, which breaks this. **Set `fetch-depth: 0`.**
 The action attempts a best-effort un-shallow as a fallback, but it is not
 guaranteed; if the base history is missing the action fails with a clear message.
+
+## Set it up with an agent
+
+This repo ships the [`setup-difftree`](.claude/skills/setup-difftree/SKILL.md)
+skill — auto-discovered by Claude Code (`.claude/skills/`) and Codex
+(`.agents/skills/`) when working in this repo. Ask your agent to "set up difftree
+PR comments" and it installs the difftree CLI (when needed) and scaffolds
+[`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml) into your repo. To
+install the skill elsewhere, see
+[`docs/skills/setup-difftree.md`](docs/skills/setup-difftree.md).
 
 ## Inputs
 
