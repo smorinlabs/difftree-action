@@ -6,7 +6,7 @@
 # It posts an ASCII diff-tree of a pull request's changes as a single,
 # self-updating PR comment (rendered by `difftree --pr`). This file is the
 # single source of truth for the recommended setup: the README links to it and
-# the `setup-difftree` skill scaffolds from it. Keep it working — CI lints it.
+# the `difftree-action-setup` skill scaffolds from it. Keep it working — CI lints it.
 name: PR Diff Tree
 
 on:

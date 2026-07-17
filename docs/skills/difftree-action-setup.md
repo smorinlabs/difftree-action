@@ -1,4 +1,4 @@
-# setup-difftree
+# difftree-action-setup
 
 Installs the [`difftree`](https://github.com/smorinlabs/difftree) CLI and/or adds
 self-updating PR diff-tree comments to a repository via
@@ -15,19 +15,19 @@ repo", "add PR diff-tree comments", "set up difftree-action".
 ## Install
 
 **In this repo — nothing to install.** Claude Code auto-discovers
-`.claude/skills/setup-difftree/`; Codex discovers it through the committed
-symlink `.agents/skills/setup-difftree`.
+`.claude/skills/difftree-action-setup/`; Codex discovers it through the committed
+symlink `.agents/skills/difftree-action-setup`.
 
 **Copy into your own setup** (no dependencies):
 
     git clone https://github.com/smorinlabs/difftree-action
-    cp -R difftree-action/.claude/skills/setup-difftree ~/.claude/skills/setup-difftree   # Claude Code
-    cp -R difftree-action/.claude/skills/setup-difftree ~/.agents/skills/setup-difftree   # Codex
+    cp -R difftree-action/.claude/skills/difftree-action-setup ~/.claude/skills/difftree-action-setup   # Claude Code
+    cp -R difftree-action/.claude/skills/difftree-action-setup ~/.agents/skills/difftree-action-setup   # Codex
 
 **Dev mode** (edits in the clone are live next session):
 
-    ln -s "$(pwd)/difftree-action/.claude/skills/setup-difftree" ~/.claude/skills/setup-difftree   # Claude Code
-    ln -s "$(pwd)/difftree-action/.claude/skills/setup-difftree" ~/.agents/skills/setup-difftree   # Codex
+    ln -s "$(pwd)/difftree-action/.claude/skills/difftree-action-setup" ~/.claude/skills/difftree-action-setup   # Claude Code
+    ln -s "$(pwd)/difftree-action/.claude/skills/difftree-action-setup" ~/.agents/skills/difftree-action-setup   # Codex
 
 > Copied out of this repo, the skill can no longer read
 > `examples/pr-diff-tree.yml` by relative path; it falls back to fetching the

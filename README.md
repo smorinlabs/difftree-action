@@ -69,13 +69,13 @@ guaranteed; if the base history is missing the action fails with a clear message
 
 ## Set it up with an agent
 
-This repo ships the [`setup-difftree`](.claude/skills/setup-difftree/SKILL.md)
+This repo ships the [`difftree-action-setup`](.claude/skills/difftree-action-setup/SKILL.md)
 skill — auto-discovered by Claude Code (`.claude/skills/`) and Codex
 (`.agents/skills/`) when working in this repo. Ask your agent to "set up difftree
 PR comments" and it installs the difftree CLI (when needed) and scaffolds
 [`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml) into your repo. To
 install the skill elsewhere, see
-[`docs/skills/setup-difftree.md`](docs/skills/setup-difftree.md).
+[`docs/skills/difftree-action-setup.md`](docs/skills/difftree-action-setup.md).
 
 ## Inputs
 
