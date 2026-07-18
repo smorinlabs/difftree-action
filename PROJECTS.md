@@ -1,6 +1,6 @@
 # Projects
 
-## [~] Project P01: setup-difftree skill + canonical example workflow (v0.3.0)
+## [x] Project P01: setup-difftree skill + canonical example workflow (v0.3.0)
 **Goal**: Ship an in-repo `setup-difftree` skill (loose `.claude/skills/`) that
 installs the difftree CLI and scaffolds difftree-action into a repository,
 backed by a single canonical `examples/pr-diff-tree.yml` that the README and the
@@ -19,4 +19,18 @@ skill both reference (one source of truth).
       "Set it up with an agent" section
 - [x] [P01-TS02] `skill-quality` gate on `setup-difftree` passes
       (content ✓, docs ✓, `skillsmith verify` pass on claude-code + codex)
-- [ ] [P01-T04] Open PR to `smorinlabs/difftree-action`
+- [x] [P01-T04] Open PR to `smorinlabs/difftree-action` — merged as #8, released v0.3.0
+
+## [~] Project P02: rename setup-difftree → difftree-action-setup (v0.3.0 maintenance — chore, no release)
+**Goal**: Rename the skill to a `difftree-action-*` family name so it no longer
+collides with the difftree CLI repo's pointer skill. **Skill names are a global
+namespace** — two skills both named `setup-difftree` clobber at install
+(`~/.claude/skills/setup-difftree`, `~/.agents/skills/setup-difftree`) and shadow
+each other on any shared discovery path. Renamed the CLI repo's pointer to
+`difftree-setup` in parallel.
+
+### Tests & Tasks
+- [x] [P02-T01] `git mv` skill dir + docs page; retarget `.agents` symlink
+- [x] [P02-T02] Update SKILL.md name/H1/cross-ref and README links
+- [ ] [P02-TS01] `skillsmith verify` + skill-quality pass under the new name
+- [ ] [P02-T03] Open PR to `smorinlabs/difftree-action`

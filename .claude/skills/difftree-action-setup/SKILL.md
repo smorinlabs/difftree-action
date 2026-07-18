@@ -1,5 +1,5 @@
 ---
-name: setup-difftree
+name: difftree-action-setup
 description: >-
   Install the difftree CLI and/or add difftree PR diff-tree comments to a
   repository. Use when the user says "install difftree", "set up difftree",
@@ -14,7 +14,7 @@ description: >-
 allowed-tools: Bash, Read, Write, Edit
 ---
 
-# setup-difftree
+# difftree-action-setup
 
 Install the difftree CLI and/or add self-updating PR diff-tree comments to a
 repository via `smorinlabs/difftree-action`.
@@ -70,5 +70,5 @@ the default branch directly. Report the PR URL.
 - `examples/pr-diff-tree.yml` — the canonical workflow this skill scaffolds; the
   single source of truth (do not embed a second copy here).
 - `README.md`, `action.yml` — full input/output reference for difftree-action.
-- difftree CLI: <https://github.com/smorinlabs/difftree> — its `setup-difftree`
+- difftree CLI: <https://github.com/smorinlabs/difftree> — its `difftree-setup`
   pointer skill routes here.
