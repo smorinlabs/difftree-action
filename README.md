@@ -31,21 +31,28 @@ glance. It's a thin wrapper over the
 
 ```yaml
 name: PR Diff Tree
-on: pull_request
-# Recommended: one run per PR so overlapping runs can't race to post the comment.
-concurrency:
-  group: difftree-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
 permissions:
   contents: read
   pull-requests: write        # required to post the comment
 jobs:
-  difftree:
+  diff-tree:
+    # `edited` re-renders only when the PR's base branch changed
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    # Job-level, not workflow-level: a skipped no-op `edited` run must never
+    # join this group, or it cancels a real render that is already running.
+    # One run per PR so overlapping runs can't race to post the comment.
+    concurrency:
+      group: difftree-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0      # REQUIRED — difftree --pr needs full base history
+          persist-credentials: false
       - uses: smorinlabs/difftree-action@v0
         with:
           level: 3            # optional
@@ -53,7 +60,8 @@ jobs:
 
 > **Copy-paste ready:** the canonical version of this workflow is committed as
 > [`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml). Save it to
-> `.github/workflows/pr-diff-tree.yml` in your repo.
+> `.github/workflows/pr-diff-tree.yml` in your repo. `@v0` floats by default;
+> SHA-pin the action (see the comment in that file) if your repo's policy requires it.
 
 The action keeps a single sticky comment (hidden marker `<!-- difftree-action -->`).
 If two runs ever race past the `concurrency` guard and create duplicates, the next
