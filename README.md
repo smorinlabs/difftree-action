@@ -33,21 +33,26 @@ glance. It's a thin wrapper over the
 name: PR Diff Tree
 on:
   pull_request:
-    types: [opened, reopened, synchronize, edited] # edited re-renders only when the PR's base branch changed
-# Recommended: one run per PR so overlapping runs can't race to post the comment.
-concurrency:
-  group: difftree-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+    types: [opened, reopened, synchronize, edited]
 permissions:
   contents: read
   pull-requests: write        # required to post the comment
 jobs:
-  difftree:
+  diff-tree:
+    # `edited` re-renders only when the PR's base branch changed
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    # Job-level, not workflow-level: a skipped no-op `edited` run must never
+    # join this group, or it cancels a real render that is already running.
+    # One run per PR so overlapping runs can't race to post the comment.
+    concurrency:
+      group: difftree-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0      # REQUIRED — difftree --pr needs full base history
+          persist-credentials: false
       - uses: smorinlabs/difftree-action@v0
         with:
           level: 3            # optional

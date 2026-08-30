@@ -56,7 +56,7 @@ jobs:
 
       # @v0 is a floating major tag: non-breaking updates land automatically,
       # with no fleet-wide re-sync PR needed. SHA-pin instead
-      # (@8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f # v0.4.0) if your repo's
+      # (e.g. @8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f # v0.4.0) if your repo's
       # policy requires reproducible refs — this is the one sanctioned
       # deviation from byte-identity with this template; the fleet drift
       # check ignores it.
