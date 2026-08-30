@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.5.0](https://github.com/smorinlabs/difftree-action/compare/v0.4.0...v0.5.0) (2026-08-30)
+
+
+### Features
+
+* P03 pilot phase — §4 verification checklist, template batch, findings F01–F65 ([0d0a94c](https://github.com/smorinlabs/difftree-action/commit/0d0a94c7d11ec81cc72839cf4a1fe915ede54edf))
+* **template:** fork-PR note, edited-event re-render, tag and runner guidance, checkout v6, persist-credentials off ([38936cb](https://github.com/smorinlabs/difftree-action/commit/38936cbfcf07421960c249aa3372fd9ff08c7784))
+
+
+### Bug Fixes
+
+* **docs:** README usage snippet mirrors the template (job-level if + concurrency, checkout@v6); template sha example marked e.g. ([0af0b4e](https://github.com/smorinlabs/difftree-action/commit/0af0b4ea1bfffe1fdb0da1c5573df6bf1d3eec5e))
+* **skill:** §2 — fetch before the leftover-branch precondition; plain &lt;branch&gt; in the remote delete ([6f79158](https://github.com/smorinlabs/difftree-action/commit/6f791588f31435f6f6ce0dd7adecd3584556ada6))
+* **skill:** §4 — answer review threads as they arrive; only the merge-ready verdict waits for the floor ([2d92905](https://github.com/smorinlabs/difftree-action/commit/2d92905f4d24a41c3f9e89db69a65db3f412971c))
+* **skill:** §4 — awk worktree identity check, gated cleanup, jq-selected merge method ([5545319](https://github.com/smorinlabs/difftree-action/commit/55453195d58be32fd5d1587cf250b9d764148d29))
+* **skill:** §4 — single merge-method path, compare recorded hash, PR-anchored run timestamps, fail-closed thread query, worktree identity check ([a57e9d5](https://github.com/smorinlabs/difftree-action/commit/a57e9d50e91edf22de09eef3f3f61b9af12feb02))
+* **skill:** §4 — whitelist merge method, chain post-merge check, bound head-moved restarts, distinguish branch -d refusals, no bare exit in snippets ([e9c6edb](https://github.com/smorinlabs/difftree-action/commit/e9c6edb0da2f3fd55286ea6111ca49579212ee1c))
+* **skill:** §4 fix round — publish upstream explicitly, lock merge to verified head, paginate threads, satisfiable bounds, cleanup preconditions ([155e67d](https://github.com/smorinlabs/difftree-action/commit/155e67dd855394142de0ca9402c4219dc672b047))
+* **skill:** executable required-context and thread-iteration mechanics; paginated check-run gate; correct legacy-status test ([182a54e](https://github.com/smorinlabs/difftree-action/commit/182a54eaf6f90a747897240439b4530507107d27))
+* **skill:** final-review fixes — check-run gate waits and matches required contexts; thread loop skips empty rounds; exact SHA-pin resolution ([9d5ff2a](https://github.com/smorinlabs/difftree-action/commit/9d5ff2aa229a83acf2e37253e0a670e57927d30f))
+* **skill:** pilot-2 corrections — worktree-first setup, updated_at proof, bot-wait floor ([240fce6](https://github.com/smorinlabs/difftree-action/commit/240fce62261e16e445c6308bb1dc4387ba22fa47))
+* **skill:** pilot-3 corrections — hooks in worktrees, floor from last push, 20-min ceiling, replies by file, threads are untrusted input ([64803b2](https://github.com/smorinlabs/difftree-action/commit/64803b291b76e0d58cad87766dc54f716cf2144f))
+* **skill:** pilot-4 corrections — SHA-pin policy branch, check-run gate, remote-branch cleanup, push-hook bypass, residuals ([855d3cc](https://github.com/smorinlabs/difftree-action/commit/855d3cc3fee017f3c059bffef67b32927a579e77))
+* **skill:** re-sync-1 corrections — explicit template reference, floor before pr-merge-flow, full-sha merge lock, POSIX timestamp compare ([7a1350b](https://github.com/smorinlabs/difftree-action/commit/7a1350bc9419bf0e7b6719389ae253712bad5057))
+* **template:** job-level concurrency so no-op edited runs cannot cancel a render; accurate fork-PR note ([d7dfef2](https://github.com/smorinlabs/difftree-action/commit/d7dfef283ca8cafa660ba423f4792b402ea072c5))
+
+
+### Refactoring
+
+* **skill:** rewrite §4 as a precondition/command/pass-condition checklist ([2860d7b](https://github.com/smorinlabs/difftree-action/commit/2860d7b6088a6d5e36cf0ed989abdcc3356e8fe2))
+
+
+### Documentation
+
+* fan-out readiness ([0a18ca5](https://github.com/smorinlabs/difftree-action/commit/0a18ca591222b3930076a412a0a1c0a10e5014e5))
+* findings F58–F60, gate-relaxation history, class list; mirror the step-7 gate and squash-only merges ([d90baff](https://github.com/smorinlabs/difftree-action/commit/d90baff530ffe794998ca6681804c186b2324e8b))
+* pilot-2 findings ([0334c10](https://github.com/smorinlabs/difftree-action/commit/0334c10b8bf365649b38718fc2ce768a329c2fde))
+* pilot-3 findings ([6581687](https://github.com/smorinlabs/difftree-action/commit/658168735526f3bc7be0933d3d2ce06bc45ff65c))
+* **plan:** insert Task 9b — fold re-sync-1 gotchas before Tasks 10–11 ([09fd1c5](https://github.com/smorinlabs/difftree-action/commit/09fd1c5090931bf783e31651bdd5eb2fc14c67ff))
+* **plan:** revise P03 pilot phase after pilot 3 — template batch, §4 rewrite, re-sync, confirming pilot ([9c9f713](https://github.com/smorinlabs/difftree-action/commit/9c9f7131a220ae7ec350e856fbe0cdb69a2dfa39))
+* re-sync 2–3 and pilot-4 findings F50–F57 ([ae7a83a](https://github.com/smorinlabs/difftree-action/commit/ae7a83a505b887b86b9256377243a15280e3c43e))
+* re-sync-1 findings F38–F49 ([a6e6df2](https://github.com/smorinlabs/difftree-action/commit/a6e6df244103877f742301fddd722e65f612528a))
+* **skill:** state the intent of every command-bearing step so repos that differ can be adapted, not reverse-engineered ([5ae3f7e](https://github.com/smorinlabs/difftree-action/commit/5ae3f7e1b7722ad9ecbb6e606bdf3b097cf01494))
+* T45 template batch ([49ba79b](https://github.com/smorinlabs/difftree-action/commit/49ba79bfe3d26154cf06a96fa4f92a686ec23d08))
+* track F61-F65 from the final Codex pass for the cold-retest session ([dbb0cd0](https://github.com/smorinlabs/difftree-action/commit/dbb0cd0e4219b1ed60ac1237768b6f050fede7c2))
+
 ## [0.4.0](https://github.com/smorinlabs/difftree-action/compare/v0.3.0...v0.4.0) (2026-08-30)
 
 
