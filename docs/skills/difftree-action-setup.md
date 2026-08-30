@@ -28,7 +28,8 @@ command the hooks cover, including the pushes, rather than install tooling
 into the worktree or edit the workflow, then re-verify the committed bytes
 still match the template. It then verifies on that PR with a checklist whose
 every step states a precondition, a command, a pass condition, and what to do
-on fail: wait for the `PR Diff Tree` run pinned to the install commit's SHA
+on fail — and each verification step states its intent, so operators can adapt
+its commands to a repo's differences rather than reverse-engineer them: wait for the `PR Diff Tree` run pinned to the install commit's SHA
 (an unpinned wait is satisfied by an older green run), confirm exactly one
 `<!-- difftree-action -->` comment and record its `id` and `updated_at`, push
 an empty commit, wait for the run pinned to the new SHA, and require the same
