@@ -68,7 +68,8 @@ zero skill edits needed.
       PR #11 merged `40e01fa`; action worked; 5 skill edits (F17–F21) → not clean
 - [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
-- [ ] [P03-TS01] Three consecutive pilots meet all five no-gotchas criteria
+- [ ] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
+      Pilot 4 not clean (G17, G18). Next: a fresh session retests the corrected skill cold on a new repo (2–3 runs) before fan-out — see handoff.
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
 - [ ] [P03-T08] Fan-out: `agent-fork`
@@ -105,13 +106,15 @@ zero skill edits needed.
 - [ ] [P03-T39] Fan-out: `terraform-gcp-design`
 - [ ] [P03-T40] Fan-out: `terraform-gcp-poc`
 - [ ] [P03-T41] Fan-out: `terraform-gcp-template`
-- [ ] [P03-T42] Fan-out: `ts-launch-blueprint`
+- [x] [P03-T42] Fan-out: `ts-launch-blueprint`
+      installed (SHA-pinned per D-022(9)) — pilot 4, PR #27
 - [ ] [P03-T43] Fan-out: `warpqueuekit`
 - [x] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
       moves (closes F03 and the release half of F06)
 - [x] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
       after a private-repo test), then re-sync already-installed repos
       Result: batched edit closes F09, F10, F11/F25, F12/F24/F33, F13, F34, F35.
+- [x] [P03-T46] Re-sync worktreeflow/mockcast/envgen to the new template (PRs #23, #12, #19)
 - [ ] Regression Test Status
 
 ### Deliverable
