@@ -9,12 +9,19 @@ checkout) and scaffolds the repo's canonical
 [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into
 `.github/workflows/` there (replacing any existing difftree-action workflow in
 place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
-`pull-requests: write`, and `concurrency` settings intact. It then verifies on
-that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
+`pull-requests: write`, and `concurrency` settings intact. Because a worktree
+shares the main checkout's `.git/hooks`, a repo-installed hook manager
+(lefthook, husky, pre-commit) can fire there and fail on tooling that only
+exists in the live checkout; the skill's guidance is to use the repo's own
+bypass rather than install tooling into the worktree or edit the workflow,
+then re-verify the committed bytes still match the template. It then verifies
+on that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
 comment posted, and a second push updates the same comment — proved by the
 comment's `updated_at` moving forward, not just by its id staying the same —
-before merging. Reviewer-bot threads are given at least ~10 minutes before an
-empty query is treated as "no threads coming."
+before merging. Reviewer-bot threads (Copilot, CodeRabbit, Greptile, Codex,
+…) are given at least ~10 minutes after the PR opened *or* after the most
+recent push, whichever is later, before an empty query is treated as "no
+threads coming" — the loop is bounded at 3 rounds and 20 minutes total.
 
 **Triggers on:** "install difftree", "set up difftree", "add difftree to my
 repo", "add PR diff-tree comments", "set up difftree-action".
@@ -49,8 +56,10 @@ symlink `.agents/skills/difftree-action-setup`.
 > → Confirms you want the CI wiring, creates a worktree from the repo's
 > default branch, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
-> `.github/workflows/pr-diff-tree.yml`, branches, commits, opens a PR, waits
-> for the run, checks the comment posted and self-updates (same id, later
-> `updated_at`), clears any reviewer-bot threads — waiting at least ~10
-> minutes before treating an empty query as final — (via `pr-merge-flow`
-> where installed, else inline), then merges.
+> `.github/workflows/pr-diff-tree.yml`, branches, commits (bypassing any
+> worktree-inherited hook that can't resolve the live checkout's tooling),
+> opens a PR, waits for the run, checks the comment posted and self-updates
+> (same id, later `updated_at`), clears any reviewer-bot threads — waiting at
+> least ~10 minutes after PR open or the last push, whichever is later,
+> before treating an empty query as final — (via `pr-merge-flow` where
+> installed, else inline), then merges.
