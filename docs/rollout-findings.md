@@ -417,3 +417,17 @@ one more (F30, from self-review). Consecutive-clean counter: 0 of 3.
   `pull-requests: write` permission model, and fork-PR behaviour and
   alternatives. No owner assigned yet.
 - **Class:** repo-local
+
+## Template batch (T45)
+
+Batched `examples/pr-diff-tree.yml` edit (P03-T45) closing every open
+template finding in one PR, so the fleet only re-syncs once.
+
+- Fork-PR note under `on:` closes **F11/F25**.
+- `edited` event + base-change `if:` closes **F34**.
+- Floating-tag rationale and SHA-pin syntax on the `@v0` comment closes
+  **F12/F24/F33**.
+- `runs-on: ubuntu-latest` carve-out note closes **F35**.
+- `actions/checkout@v6` bump closes **F09**.
+- `persist-credentials: false` on the checkout step closes **F13**.
+- Header reworded to a consumer-facing sentence closes **F10**.

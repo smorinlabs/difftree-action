@@ -31,7 +31,9 @@ glance. It's a thin wrapper over the
 
 ```yaml
 name: PR Diff Tree
-on: pull_request
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited] # edited re-renders only when the PR's base branch changed
 # Recommended: one run per PR so overlapping runs can't race to post the comment.
 concurrency:
   group: difftree-${{ github.event.pull_request.number }}
@@ -53,7 +55,8 @@ jobs:
 
 > **Copy-paste ready:** the canonical version of this workflow is committed as
 > [`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml). Save it to
-> `.github/workflows/pr-diff-tree.yml` in your repo.
+> `.github/workflows/pr-diff-tree.yml` in your repo. `@v0` floats by default;
+> SHA-pin the action (see the comment in that file) if your repo's policy requires it.
 
 The action keeps a single sticky comment (hidden marker `<!-- difftree-action -->`).
 If two runs ever race past the `concurrency` guard and create duplicates, the next
