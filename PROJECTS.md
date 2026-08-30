@@ -64,7 +64,8 @@ zero skill edits needed.
 - [x] [P03-T03] Create `docs/rollout-findings.md` seeded with the three banked findings
 - [x] [P03-T04] Pilot 1: `worktreeflow` (plain CI — cold test of the skill)
       PR #22 merged; action worked; 4 skill edits (F05, F07, F08, F14) → not clean
-- [ ] [P03-T05] Pilot 2: `mockcast` (release-please + commitlint gates)
+- [x] [P03-T05] Pilot 2: `mockcast` (release-please + commitlint gates)
+      PR #11 merged `40e01fa`; action worked; 5 skill edits (F17–F21) → not clean
 - [ ] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
 - [ ] [P03-TS01] Three consecutive pilots meet all five no-gotchas criteria
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
