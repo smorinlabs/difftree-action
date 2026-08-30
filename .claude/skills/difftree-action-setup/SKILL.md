@@ -170,9 +170,8 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
    - **On fail:** a blocked commit is a hook (§2 bypass) or the missing blank
      line; `head.sha` still ≠ `<sha2>` → the push went elsewhere: `git status -sb`.
 4. **Wait for the run on the new commit.**
-   - **Precondition:** step 3 passed. **Command / Pass / On fail:** as step 1
-     with `head_sha=<sha2>` and `created_at` ≥ `<T_push>` — unpinned, the green
-     first run satisfies it at once.
+   - **Precondition:** step 3 passed. **Command / Pass / On fail:** as step 1 with `head_sha=<sha2>` and
+     `created_at` ≥ `<T_push>` — unpinned, the green first run satisfies it at once.
 5. **Prove the comment self-updated.**
    - **Precondition / Command:** step 4 passed; run the step 2 query, at most
      3 times, 20 s apart.
@@ -195,7 +194,7 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
        pullRequest(number:<pr>) { reviewThreads(first:100, after:$endCursor) { pageInfo { hasNextPage endCursor }
          nodes { id isResolved path comments(first:1) { nodes { databaseId author { login } body } } } } } } }' \
        --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved|not)' 2>"${TMPDIR:-/tmp}/threads.err")" \
-       || { echo "thread query failed: $(cat "${TMPDIR:-/tmp}/threads.err")"; exit 1; }
+       || { echo "thread query failed: $(cat "${TMPDIR:-/tmp}/threads.err")"; false; }
      # 2. reply (REST) to the first comment's databaseId, body from a file: a real reason's apostrophes break -f body='…'
      gh api -X POST repos/<owner>/<repo>/pulls/<pr>/comments/<databaseId>/replies -F body=@"${TMPDIR:-/tmp}/reply.md"
      # 3. resolve (GraphQL) by the thread id (PRRT_…)
@@ -211,21 +210,22 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
      query, never "none".
    - **On fail:** threads still unresolved at the ceiling → report them and stop.
 7. **Merge — you perform it, after whatever approval your own norms require.**
-   - **Precondition:** step 6 passed and, immediately before merging, step 6
-     call 1 exits 0 with empty `$out` again (the floor result was a snapshot) and
-     `gh api repos/<owner>/<repo>/pulls/<pr> --jq .head.sha` equals `<sha2>` —
-     else the head moved after verification: restart from step 4.
-   - **Command:** exactly one path; never `--admin`:
+   - **Precondition:** step 6 passed and, immediately before merging, step 6 call 1 exits 0 with empty `$out` again
+     (the floor result was a snapshot) and `gh api repos/<owner>/<repo>/pulls/<pr> --jq .head.sha` equals `<sha2>` —
+     else the head moved after verification: restart from step 4, at most twice; on a third move stop and report
+     "head keeps moving — someone else is pushing; hand to a human".
+   - **Command:** exactly one path, one `&&` chain — a failure stops it before the next command; never `--admin`:
      ```sh
      m="<instructed-method>"   # an explicit user instruction or the target repo's CLAUDE.md/AGENTS.md wins; empty if neither
-     [ -n "$m" ] || m="$(gh api repos/<owner>/<repo> --jq 'if .allow_merge_commit then "merge" elif .allow_rebase_merge then "rebase" elif .allow_squash_merge then "squash" else "none" end')" || exit 1   # squash = sole method
-     [ "$m" != "none" ] || { echo "no merge method enabled"; exit 1; }
-     gh pr merge <pr> --repo <owner>/<repo> "--$m" --match-head-commit <sha2>
-     gh api repos/<owner>/<repo>/pulls/<pr> --jq '.merged, .merge_commit_sha'
+     { [ -n "$m" ] || m="$(gh api repos/<owner>/<repo> --jq 'if .allow_merge_commit then "merge" elif .allow_rebase_merge then "rebase" elif .allow_squash_merge then "squash" else "none" end')"; } \
+       && case "$m" in merge|rebase|squash) ;; none) echo "no merge method enabled"; false;; *) echo "unsupported merge method: $m"; false;; esac \
+       && gh pr merge <pr> --repo <owner>/<repo> "--$m" --match-head-commit <sha2> \
+       && gh api repos/<owner>/<repo>/pulls/<pr> --jq '.merged, .merge_commit_sha'   # runs only after a successful merge
      ```
-   - **Pass:** `true` followed by the merge sha; record it as `<merge-sha>`.
-   - **On fail:** report the refusal verbatim plus `gh api repos/<owner>/<repo>/pulls/<pr> --jq .mergeable_state`
-     and `gh api repos/<owner>/<repo>/rules/branches/<default>`, then stop — do not infer the cause; a human decides.
+   - **Pass:** `true` on its own line, then the merge sha — printed only because `gh pr merge` exited 0; record the sha as `<merge-sha>`.
+   - **On fail:** `no merge method enabled` or `unsupported merge method: …` → a pre-merge abort, nothing merged: fix
+     `<instructed-method>` or the repo's merge settings — never `--admin`. A `gh pr merge` refusal (no `true` line): report it verbatim
+     plus `gh api repos/<owner>/<repo>/pulls/<pr> --jq .mergeable_state` and `gh api repos/<owner>/<repo>/rules/branches/<default>`, then stop — do not infer the cause; a human decides.
 8. **Clean up, in this order.**
    - **Precondition:** step 7 passed. The `if` below re-checks, immediately before pulling, that `~/c/<repo>-difftree`
      is still the worktree on `<branch>` and that `~/c/<repo>` is on `<default>` and clean; a failed check or pull
@@ -237,13 +237,14 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
        && [ "$(git -C ~/c/<repo> symbolic-ref --short HEAD)" = "<default>" ] && [ -z "$(git -C ~/c/<repo> status --porcelain)" ] \
        && git -C ~/c/<repo> pull --ff-only origin <default> && git -C ~/c/<repo> merge-base --is-ancestor <merge-sha> HEAD; then
        git -C ~/c/<repo> worktree remove ../<repo>-difftree && git -C ~/c/<repo> worktree prune \
-         && { git -C ~/c/<repo> branch -d <branch> || echo "branch -d refused: rebase/squash merge; <branch> left in place"; }
-     else echo "cleanup preconditions failed — nothing removed"; exit 1; fi
+         && if git -C ~/c/<repo> merge-base --is-ancestor <branch> HEAD; then git -C ~/c/<repo> branch -d <branch>; \
+            else echo "branch tip not an ancestor of <default> (rebase/squash merge) — branch left in place; never -D"; fi
+     else echo "cleanup preconditions failed — nothing removed"; false; fi
      ```
-   - **Pass:** `Deleted branch …` is printed, or the `branch -d refused` line (expected after a rebase/squash
+   - **Pass:** `Deleted branch …` is printed, or the `branch tip not an ancestor` line (expected after a rebase/squash
      merge: the rewritten commits are not its ancestors — leave the branch, report it).
-   - **On fail:** `cleanup preconditions failed — nothing removed` → a check failed or the pull did not bring `<merge-sha>`
-     in: stop, report. Any other error is from `worktree remove`/`prune`: stop, report. Never `-D`; never `worktree remove --force`.
+   - **On fail:** `cleanup preconditions failed — nothing removed` → a check failed or the pull did not bring `<merge-sha>` in: stop,
+     report. Any other non-zero exit is `worktree remove`, `prune` or `branch -d` itself (not relabelled): stop, report. Never `-D`; never `worktree remove --force`.
 9. **Report.**
    - **Precondition / Command:** step 8 passed (or say which step stopped you).
    - **Pass:** the PR URL, both run URLs, the comment URL with both `updated_at` values, a thread table
