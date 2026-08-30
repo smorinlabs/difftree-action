@@ -43,13 +43,17 @@ template's own comment quoted, and every other template-level ask is tracked
 upstream rather than applied — this floor is checked by the skill itself even
 when `pr-merge-flow` is handling the thread replies, since its own bot-wait
 bound is shorter and cannot be treated as this step's pass condition. Before
-merging it also confirms no other check on the verified commit is failing
-(required checks are mandatory; any other failure is reported for an explicit
-human call).
+merging it also confirms every check-run on the verified commit has completed
+(polled — a pending run has no conclusion and would otherwise slip past a
+failure filter), that none concluded outside success/neutral/skipped, that
+each branch-protection required context is present and green, and that legacy
+commit statuses are not failing; any other failure is reported for an explicit
+human call.
 The agent running the skill then merges — after one final paginated
 unresolved-threads query and a check that the PR head is still the verified
 commit — with `gh pr merge --merge --match-head-commit <sha>` (or `--rebase`
-where merge commits are disabled; never `--admin`; a refusal is reported with
+where merge commits are disabled, or `--squash` where it is the sole enabled
+method; never `--admin`; a refusal is reported with
 `mergeable_state` and the branch rules, not diagnosed), and cleans up in
 order: `git pull --ff-only` in the main checkout (only when it is on the
 default branch and clean), `git worktree remove`, `git worktree prune`,

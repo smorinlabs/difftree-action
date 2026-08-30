@@ -3,9 +3,13 @@
 Append-only log of gotchas found while piloting the `difftree-action-setup`
 skill across `smorinlabs` repos (PROJECTS.md P03). One entry per finding.
 Each entry: where it surfaced, what happened, what the fix was, and whether
-the fix is **skill**, **action**, **docs**, or **repo-local** (no skill change).
+the fix is **skill**, **action**, **template**, **docs**, **repo-local** (no skill
+change), or **org settings**.
 
-Fan-out gate: three consecutive pilot repos with zero **skill** entries.
+Fan-out gate: originally three consecutive pilot repos with zero **skill** entries;
+relaxed 2026-08-30, after the §4 rewrite, to one clean pilot on a private repo, with
+fan-out then proceeding under per-repo §4 verification. Pilot 4 (`ts-launch-blueprint`)
+did not pass the relaxed gate (G17, G18); a fresh session retests the corrected skill cold.
 
 ## Pre-pilot (banked 2026-08-29, before pilot 1)
 
@@ -747,6 +751,14 @@ pilots, on Task 9's `worktreeflow` re-sync (1 thread), and again here on pilot 4
 with `-F body=@file` and resolved) — but drew **zero** threads on Task 10's `mockcast` and `envgen` re-syncs. The
 `pr-merge-flow` hand-off itself (G6/G7's ordering corrections) has still never been exercised: every thread across
 every run so far has been answered inline via the skill's own (a)/(b) loop.
+
+## Final whole-branch review (2026-08-30)
+
+Ledger triage from the whole-branch and Codex adversarial reviews. One line each; all **docs** class.
+
+- **F58** — `examples/pr-diff-tree.yml`'s SHA-pin comment carries a literal example sha (`8fbc74d7… # v0.4.0`) that goes stale every release; now prefixed "e.g.". Maintenance item: refresh it at each release, or it misleads a reader who copies it.
+- **F59** — Task 7 Codex residual: GitHub `concurrency` ordering is not guaranteed — an older event can still cancel a newer one in the same group. Accepted; no template fix (the job-level `if:` removes the no-op `edited` case, which was the observed bug).
+- **F60** — `.merged` can read `false` immediately after `gh pr merge` when the merge is queued under auto-merge; the skill never passes `--auto`, so its step 8 read is synchronous. Accepted.
 
 ## Fan-out readiness
 
