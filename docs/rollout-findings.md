@@ -760,6 +760,48 @@ Ledger triage from the whole-branch and Codex adversarial reviews. One line each
 - **F59** — Task 7 Codex residual: GitHub `concurrency` ordering is not guaranteed — an older event can still cancel a newer one in the same group. Accepted; no template fix (the job-level `if:` removes the no-op `edited` case, which was the observed bug).
 - **F60** — `.merged` can read `false` immediately after `gh pr merge` when the merge is queued under auto-merge; the skill never passes `--auto`, so its step 8 read is synchronous. Accepted.
 
+### F61 — required-context query failure reads identically to "no protection"
+
+**Status:** tracked — not fixed on this branch (controller ruling 2026-08-30: no further fix wave; the fresh-session cold retest owns these).
+- **Where:** SKILL.md §4 step 7 (~line 288).
+- **What:** `req="$(gh api ".../branches/<default>/protection" --jq '.required_status_checks.contexts[]' 2>/dev/null)" || req=""` treats any failure of the protection query — rate limit, auth, network — the same as the one case it's meant to mean: an unprotected branch's 404. A transient failure would silently read as "no required contexts" rather than stopping the run.
+- **Fix:** capture the HTTP status (or use `gh api --include` / check `$?` and stderr) and treat only 404 as "none required"; any other failure stops the step. Bound: step 7's completed-check and no-failure gates still catch a broken commit regardless, so this only weakens the defense-in-depth required-context check.
+- **Class:** skill
+
+### F62 — passing-check-names query is unguarded; its failure can report as success
+
+**Status:** tracked — not fixed on this branch (controller ruling 2026-08-30: no further fix wave; the fresh-session cold retest owns these).
+- **Where:** SKILL.md §4 step 7 (~line 289).
+- **What:** the `ok="$(gh api .../check-runs ... --jq '...')"` line has no failure guard. If it fails while `$req` is empty (e.g., an unprotected branch), the `while` loop that consumes `$req` never runs, `$miss` stays empty, and the step reports pass even though the check-run query itself failed.
+- **Fix:** `ok="$(…)" || { echo "check-run query failed"; false; }` before the loop that consumes `$ok`.
+- **Class:** skill
+
+### F63 — fixed-path marker files can collide across concurrent runs, or fail to be created
+
+**Status:** tracked — not fixed on this branch (controller ruling 2026-08-30: no further fix wave; the fresh-session cold retest owns these).
+- **Where:** SKILL.md §4 step 6 (~line 252) and step 7 (~line 290).
+- **What:** `${TMPDIR:-/tmp}/thread-fails` and `${TMPDIR:-/tmp}/ctx-missing` are fixed paths. Two concurrent runs sharing the same `TMPDIR` would clobber each other's marker file, and if the file's own creation fails, the marker mechanism silently loses a recorded failure. The skill already forbids concurrent runs, so this is bounded, not live.
+- **Fix:** per-run unique names via `mktemp`, plus `set -C` or an existence check before writing.
+- **Class:** skill
+
+### F64 — "runs in a subshell" comment is POSIX-`sh`-specific, not true for zsh
+
+**Status:** tracked — not fixed on this branch (controller ruling 2026-08-30: no further fix wave; the fresh-session cold retest owns these).
+- **Where:** SKILL.md §4 step 6 (~line 252).
+- **What:** the comment "a piped while runs in a subshell" holds for POSIX `sh` but not for `zsh`, where the last stage of a pipeline runs in the current shell. The marker-file mechanism the comment justifies is correct under both shells; only the stated reason is shell-specific.
+- **Fix:** reword to "may run in a subshell (sh); the marker file is correct in both."
+- **Class:** docs
+
+### F65 — `sleep 20` after the final thread pays an unnecessary wait
+
+**Status:** tracked — not fixed on this branch (controller ruling 2026-08-30: no further fix wave; the fresh-session cold retest owns these).
+- **Where:** SKILL.md §4 step 6 (~line 259).
+- **What:** the `sleep 20` inside the thread-reply loop also fires after the last thread, when there is nothing left to space out. Cost is bounded (≤20 s) and the loop still functions correctly.
+- **Fix:** move the sleep to the top of the loop guarded by a first-iteration flag, or accept the ≤20 s cost.
+- **Class:** skill (nit)
+
+Codex's app_id objection — that the required-context match (§4 step 7c) ignores `required_status_checks.checks[].app_id` and so could conflate two different apps' checks under the same context name — was ruled a deliberate non-goal for this fleet (cross-app name collisions are not a real case here); revisit only if a repo installs two apps that both report the same context name.
+
 ## Fan-out readiness
 
 **Gate result: NOT MET.** `[P03-TS01]`'s relaxed form — one clean pilot after the §4 rewrite, on a private repo —
