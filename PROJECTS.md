@@ -66,7 +66,8 @@ zero skill edits needed.
       PR #22 merged; action worked; 4 skill edits (F05, F07, F08, F14) → not clean
 - [x] [P03-T05] Pilot 2: `mockcast` (release-please + commitlint gates)
       PR #11 merged `40e01fa`; action worked; 5 skill edits (F17–F21) → not clean
-- [ ] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
+- [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
+      PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
 - [ ] [P03-TS01] Three consecutive pilots meet all five no-gotchas criteria
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
