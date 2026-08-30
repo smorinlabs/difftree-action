@@ -34,6 +34,9 @@ Fan-out gate: three consecutive pilot repos with zero **skill** entries.
 - **Fix:** Default bumped to `0.3.1` (P03-T02). Reaches `@v0` consumers only
   after the next difftree-action release moves the `v0` tag.
 - **Class:** action + docs
+- **Closed:** v0.4.0 released (PR #12 merged `8fbc74d7`); `v0` now at
+  `8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f`, `action.yml` default confirmed
+  `"0.3.1"` at `@v0`.
 
 ### F04 — `difftree-action` already dogfoods itself
 - **Where:** `smorinlabs/difftree-action`, `.github/workflows/difftree.yml` (`uses: ./`)
@@ -72,6 +75,9 @@ Consecutive-clean counter: 0 of 3.
   difftree 0.3.0 — closes when the pending release-please PR merges and moves
   `v0` (P03-T44).
 - **Class:** skill (fallback URL) + action release
+- **Closed:** v0.4.0 released (PR #12 merged `8fbc74d7`); `v0` moved to
+  `8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f`, `examples/pr-diff-tree.yml` at
+  `@v0` confirmed byte-identical to worktree.
 
 ### F07 — Second push does not need a file edit
 - **What:** `git commit --allow-empty` fires `pull_request: synchronize`, the

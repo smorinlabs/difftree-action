@@ -105,7 +105,7 @@ zero skill edits needed.
 - [ ] [P03-T41] Fan-out: `terraform-gcp-template`
 - [ ] [P03-T42] Fan-out: `ts-launch-blueprint`
 - [ ] [P03-T43] Fan-out: `warpqueuekit`
-- [ ] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
+- [x] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
       moves (closes F03 and the release half of F06)
 - [ ] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
       after a private-repo test), then re-sync already-installed repos
