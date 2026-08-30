@@ -109,8 +109,9 @@ zero skill edits needed.
 - [ ] [P03-T43] Fan-out: `warpqueuekit`
 - [x] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
       moves (closes F03 and the release half of F06)
-- [ ] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
+- [x] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
       after a private-repo test), then re-sync already-installed repos
+      Result: batched edit closes F09, F10, F11/F25, F12/F24/F33, F13, F34, F35.
 - [ ] Regression Test Status
 
 ### Deliverable
