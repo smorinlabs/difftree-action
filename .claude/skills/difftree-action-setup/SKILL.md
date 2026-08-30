@@ -217,9 +217,9 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
      else the head moved after verification: restart from step 4.
    - **Command:** exactly one path; never `--admin`:
      ```sh
-     set -- $(gh api repos/<owner>/<repo> --jq '[.allow_merge_commit,.allow_rebase_merge,.allow_squash_merge] | join(" ")')
      m="<instructed-method>"   # an explicit user instruction or the target repo's CLAUDE.md/AGENTS.md wins; empty if neither
-     if [ -n "$m" ]; then :; elif [ "$1" = true ]; then m=merge; elif [ "$2" = true ]; then m=rebase; else m=squash; fi   # squash = sole method
+     [ -n "$m" ] || m="$(gh api repos/<owner>/<repo> --jq 'if .allow_merge_commit then "merge" elif .allow_rebase_merge then "rebase" elif .allow_squash_merge then "squash" else "none" end')" || exit 1   # squash = sole method
+     [ "$m" != "none" ] || { echo "no merge method enabled"; exit 1; }
      gh pr merge <pr> --repo <owner>/<repo> "--$m" --match-head-commit <sha2>
      gh api repos/<owner>/<repo>/pulls/<pr> --jq '.merged, .merge_commit_sha'
      ```
@@ -227,23 +227,23 @@ in `/commits/<sha>/check-runs` and `gh pr checks`.
    - **On fail:** report the refusal verbatim plus `gh api repos/<owner>/<repo>/pulls/<pr> --jq .mergeable_state`
      and `gh api repos/<owner>/<repo>/rules/branches/<default>`, then stop — do not infer the cause; a human decides.
 8. **Clean up, in this order.**
-   - **Precondition:** step 7 passed. The block below re-checks, immediately before pulling, that
-     `~/c/<repo>-difftree` is still the worktree on `<branch>` and that `~/c/<repo>` is on `<default>`
-     and clean; if any check fails nothing runs — stop and report; never switch branches or touch
-     the user's checkout.
+   - **Precondition:** step 7 passed. The `if` below re-checks, immediately before pulling, that `~/c/<repo>-difftree`
+     is still the worktree on `<branch>` and that `~/c/<repo>` is on `<default>` and clean; a failed check or pull
+     takes the `else` branch and nothing is removed — stop and report; never switch branches or touch the user's checkout.
    - **Command:**
      ```sh
-     git -C ~/c/<repo> worktree list --porcelain | grep -A1 -Fx "worktree $HOME/c/<repo>-difftree" | grep -qFx "branch refs/heads/<branch>" \
+     if git -C ~/c/<repo> worktree list --porcelain | awk -v w="$HOME/c/<repo>-difftree" -v b="refs/heads/<branch>" \
+          'BEGIN{RS=""} $1=="worktree" && $2==w && $5=="branch" && $6==b {ok=1} END{exit !ok}' \
        && [ "$(git -C ~/c/<repo> symbolic-ref --short HEAD)" = "<default>" ] && [ -z "$(git -C ~/c/<repo> status --porcelain)" ] \
-       && git -C ~/c/<repo> pull --ff-only origin <default> && git -C ~/c/<repo> merge-base --is-ancestor <merge-sha> HEAD && echo landed
-     git -C ~/c/<repo> worktree remove ../<repo>-difftree   # 2. only after "landed"
-     git -C ~/c/<repo> worktree prune                       # 3. harmless after a clean remove
-     git -C ~/c/<repo> branch -d <branch>                   # 4. last
+       && git -C ~/c/<repo> pull --ff-only origin <default> && git -C ~/c/<repo> merge-base --is-ancestor <merge-sha> HEAD; then
+       git -C ~/c/<repo> worktree remove ../<repo>-difftree && git -C ~/c/<repo> worktree prune \
+         && { git -C ~/c/<repo> branch -d <branch> || echo "branch -d refused: rebase/squash merge; <branch> left in place"; }
+     else echo "cleanup preconditions failed — nothing removed"; exit 1; fi
      ```
-   - **Pass:** `landed` is printed, then `Deleted branch …`.
-   - **On fail:** no `landed` → a check failed or the pull did not bring `<merge-sha>` in: stop,
-     report. `branch -d` refused after a rebase/squash merge is expected (the rewritten commits are
-     not its ancestors): leave it, report. Never `-D`; never `worktree remove --force`.
+   - **Pass:** `Deleted branch …` is printed, or the `branch -d refused` line (expected after a rebase/squash
+     merge: the rewritten commits are not its ancestors — leave the branch, report it).
+   - **On fail:** `cleanup preconditions failed — nothing removed` → a check failed or the pull did not bring `<merge-sha>`
+     in: stop, report. Any other error is from `worktree remove`/`prune`: stop, report. Never `-D`; never `worktree remove --force`.
 9. **Report.**
    - **Precondition / Command:** step 8 passed (or say which step stopped you).
    - **Pass:** the PR URL, both run URLs, the comment URL with both `updated_at` values, a thread table
