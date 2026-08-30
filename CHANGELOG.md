@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.0](https://github.com/smorinlabs/difftree-action/compare/v0.3.0...v0.4.0) (2026-08-30)
+
+
+### Features
+
+* fleet rollout prep — skill verification section, difftree 0.3.1 default, P03 ([d8b08cb](https://github.com/smorinlabs/difftree-action/commit/d8b08cbe8be5c7fee607713abb2d3ce2eb67bf99))
+
+
+### Bug Fixes
+
+* default difftree-version to 0.3.1 ([47f4c72](https://github.com/smorinlabs/difftree-action/commit/47f4c7222dd82a2453145fbbfe454a09f5b67882))
+* **skill:** pilot-1 corrections — template resolver, review-thread handling, cleanup order ([68ae112](https://github.com/smorinlabs/difftree-action/commit/68ae1127896c96796459368905e88d7b499de4f2))
+* **skill:** resolve template from any placement; clear review threads before merge ([886a5d3](https://github.com/smorinlabs/difftree-action/commit/886a5d3bd31336e1c12f824b3f2431fceb48b130))
+
+
+### Documentation
+
+* add fleet rollout findings log ([071a856](https://github.com/smorinlabs/difftree-action/commit/071a856c157e32cffcb500994736c9dcbd5a7c45))
+* pilot-1 findings F04–F16 ([eb16ac2](https://github.com/smorinlabs/difftree-action/commit/eb16ac2a48789e7f3cbacbf6e33197b228e0ce00))
+* **skill:** add verification section and in-place replace to difftree-action-setup ([6e3db99](https://github.com/smorinlabs/difftree-action/commit/6e3db99278eb8596c83524cbb6a611c2da849d63))
+
 ## [0.3.0](https://github.com/smorinlabs/difftree-action/compare/v0.2.0...v0.3.0) (2026-07-17)
 
 
