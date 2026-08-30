@@ -45,7 +45,7 @@ Use the first method that fits the environment, then verify with
 
 ## 2. Wire difftree-action into a repo (if requested)
 
-1. Identify the **target repo** — the user's repo, not this one. If `~/c/<repo>` does not exist, clone it first over HTTPS: `git clone https://github.com/<owner>/<repo>.git ~/c/<repo>`. Do not commit in the user's live checkout. Before creating a worktree, `git -C <repo> ls-remote --heads origin ci/difftree-pr-diff-tree` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): delete it if it's an ancestor of `origin/<default-branch>` (`git -C <repo> merge-base --is-ancestor <its-sha> origin/<default-branch>`), else someone has work in flight — stop and ask. Then create the worktree from the up-to-date default branch and work there — `git -C <repo> fetch origin && git -C <repo> worktree add ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>`.
+1. Identify the **target repo** — the user's repo, not this one. If `~/c/<repo>` does not exist, clone it first over HTTPS: `git clone https://github.com/<owner>/<repo>.git ~/c/<repo>`. Do not commit in the user's live checkout. `git -C <repo> fetch origin` once, at the top of this step — everything below reuses that fetch, none of it fetches again. Then `git -C <repo> ls-remote --heads origin ci/difftree-pr-diff-tree` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): delete it if it's an ancestor of the just-fetched `origin/<default-branch>` (`git -C <repo> merge-base --is-ancestor <its-sha> origin/<default-branch>` — run only after the fetch above, else a stale local object graph makes this exit 128 "Not a valid commit name" instead of a 0/1 verdict, tripping the stop-and-ask branch for the wrong reason), else someone has work in flight — stop and ask. Then create the worktree from that default branch and work there — `git -C <repo> worktree add ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>`.
    If `.github/workflows/` already has a workflow using `smorinlabs/difftree-action` (any file name), replace it rather than adding a second one:
    if its name is not `pr-diff-tree.yml`, `git mv <old> .github/workflows/pr-diff-tree.yml` first, then write the template over that path, and
    say so in the PR body. Confirm the replacement fired before committing — `git status --porcelain` shows one entry for `pr-diff-tree.yml`, no
@@ -266,13 +266,14 @@ syntax error). `PR Diff Tree` is the *workflow* name in the runs API; the same c
        git -C ~/c/<repo> worktree remove ../<repo>-difftree && git -C ~/c/<repo> worktree prune \
          && if git -C ~/c/<repo> merge-base --is-ancestor <branch> HEAD; then git -C ~/c/<repo> branch -d <branch> \
               && { [ "$(gh api repos/<owner>/<repo> --jq .delete_branch_on_merge)" = "true" ] \
-                   || gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/<branch-url-encoded>"; }; \
+                   || gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/<branch>"; }; \
             else echo "branch tip not an ancestor of <default> (rebase/squash merge) — branch left in place; never -D"; fi
      else echo "cleanup preconditions failed — nothing removed"; false; fi
      ```
    - **Pass:** `Deleted branch …` is printed — and, on a `delete_branch_on_merge=false` repo,
-     `git ls-remote origin refs/heads/<branch>` is empty afterward — or the `branch tip not an ancestor` line
-     (expected after a rebase/squash merge: the rewritten commits are not its ancestors — leave the branch, report it).
+     `git ls-remote origin refs/heads/<branch>` is empty afterward (the refs endpoint accepts `<branch>`'s `/`
+     either literally or `%2F`-encoded) — or the `branch tip not an ancestor` line (expected after a
+     rebase/squash merge: the rewritten commits are not its ancestors — leave the branch, report it).
    - **On fail:** `cleanup preconditions failed — nothing removed` → a check failed or the pull did not bring `<merge-sha>` in: stop,
      report. Any other non-zero exit is `worktree remove`, `prune`, `branch -d`, or the remote delete itself (not relabelled): stop,
      report. Never `-D`; never `worktree remove --force`.
