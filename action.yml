@@ -39,7 +39,7 @@ inputs:
   difftree-version:
     description: difftree crates.io version to install.
     required: false
-    default: "0.3.0"
+    default: "0.3.1"
   github-token:
     description: Token used to post the PR comment.
     required: false
@@ -80,7 +80,7 @@ runs:
         DIFFTREE_VERSION: ${{ inputs.difftree-version }}
       run: |
         set -euo pipefail
-        VER="${DIFFTREE_VERSION:-0.3.0}"
+        VER="${DIFFTREE_VERSION:-0.3.1}"
         cargo install "difftree@${VER}" --locked --quiet
         difftree --version
 

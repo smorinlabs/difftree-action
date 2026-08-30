@@ -47,6 +47,10 @@ Use the first method that fits the environment, then verify with
 ## 2. Wire difftree-action into a repo (if requested)
 
 1. Identify the **target repo** — the user's repo, not this one — and `cd` there.
+   If `.github/workflows/` already has a workflow that uses
+   `smorinlabs/difftree-action` (any file name), replace that file in place —
+   renaming it to `pr-diff-tree.yml` — rather than adding a second one, and
+   say so in the PR body.
 2. Write the canonical workflow: read `examples/pr-diff-tree.yml` from this
    (difftree-action) repo — relative to this skill it is
    `../../examples/pr-diff-tree.yml`; if unreachable, fall back to
@@ -63,7 +67,33 @@ Use the first method that fits the environment, then verify with
 
 In the target repo, branch, commit the workflow with a conventional message
 (e.g. `ci: add difftree PR diff-tree comments`), and open a PR — never push to
-the default branch directly. Report the PR URL.
+the default branch directly. Then verify on that PR (section 4) before
+reporting it done.
+
+## 4. Verify on the PR, then merge
+
+The workflow added in the PR fires on that same PR, so validate it there —
+a clean checkout is not evidence the action works. Use REST (`gh api`), poll
+no more than once every 20 s, and bound every wait (a run takes ~1–2 min).
+
+1. **Wait for the run.** Poll
+   `gh api "repos/<owner>/<repo>/actions/runs?event=pull_request&branch=<branch>"`
+   until the `PR Diff Tree` run has `conclusion: success`. A `failure` is a
+   setup bug — read the job log (`gh run view <id> --log-failed`) before
+   editing the workflow.
+2. **Confirm the comment posted.** The action marks its comment with
+   `<!-- difftree-action -->`:
+   `gh api repos/<owner>/<repo>/issues/<pr>/comments --jq '.[] | select(.body | startswith("<!-- difftree-action -->")) | .id'`
+   must return exactly one id. Zero means the token was read-only (fork PR)
+   or `pull-requests: write` was dropped; two or more means the concurrency
+   group was dropped.
+3. **Confirm it self-updates.** Push a second commit to the PR branch (editing
+   one comment line in the workflow file is enough), wait for the new run, and
+   re-run the query from step 2: the **same id** must come back, still alone.
+4. **Merge** with the repo's merge policy (never squash unless the repo
+   requires it), then `git pull --ff-only` in the main checkout and remove any
+   worktree you created.
+5. **Report** the PR URL, the run URL, and the comment URL.
 
 ## See also
 

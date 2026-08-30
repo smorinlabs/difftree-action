@@ -5,8 +5,11 @@ self-updating PR diff-tree comments to a repository via
 `smorinlabs/difftree-action`. It installs the CLI (prebuilt binary, `cargo
 install difftree`, or from source), then scaffolds the repo's canonical
 [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into a target
-repository's `.github/workflows/` and opens a PR — keeping the load-bearing
-`fetch-depth: 0`, `pull-requests: write`, and `concurrency` settings intact.
+repository's `.github/workflows/` (replacing any existing difftree-action
+workflow in place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
+`pull-requests: write`, and `concurrency` settings intact. It then verifies on
+that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->` comment
+posted, and a second push updates the same comment — before merging.
 
 **Triggers on:** "install difftree", "set up difftree", "add difftree to my
 repo", "add PR diff-tree comments", "set up difftree-action".
@@ -39,4 +42,5 @@ symlink `.agents/skills/difftree-action-setup`.
 > Set up difftree PR comments on this repo.
 > → Confirms you want the CI wiring, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
-> `.github/workflows/pr-diff-tree.yml`, branches, commits, and opens a PR.
+> `.github/workflows/pr-diff-tree.yml`, branches, commits, opens a PR, waits
+> for the run, checks the comment posted and self-updates, then merges.
