@@ -3,13 +3,18 @@
 Installs the [`difftree`](https://github.com/smorinlabs/difftree) CLI and/or adds
 self-updating PR diff-tree comments to a repository via
 `smorinlabs/difftree-action`. It installs the CLI (prebuilt binary, `cargo
-install difftree`, or from source), then scaffolds the repo's canonical
-[`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into a target
-repository's `.github/workflows/` (replacing any existing difftree-action
-workflow in place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
+install difftree`, or from source), then creates a worktree off the target
+repo's up-to-date default branch (it never commits in the user's live
+checkout) and scaffolds the repo's canonical
+[`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into
+`.github/workflows/` there (replacing any existing difftree-action workflow in
+place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
 `pull-requests: write`, and `concurrency` settings intact. It then verifies on
-that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->` comment
-posted, and a second push updates the same comment — before merging.
+that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
+comment posted, and a second push updates the same comment — proved by the
+comment's `updated_at` moving forward, not just by its id staying the same —
+before merging. Reviewer-bot threads are given at least ~10 minutes before an
+empty query is treated as "no threads coming."
 
 **Triggers on:** "install difftree", "set up difftree", "add difftree to my
 repo", "add PR diff-tree comments", "set up difftree-action".
@@ -41,9 +46,11 @@ symlink `.agents/skills/difftree-action-setup`.
 ## Example session
 
 > Set up difftree PR comments on this repo.
-> → Confirms you want the CI wiring, writes
+> → Confirms you want the CI wiring, creates a worktree from the repo's
+> default branch, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
 > `.github/workflows/pr-diff-tree.yml`, branches, commits, opens a PR, waits
-> for the run, checks the comment posted and self-updates, clears any
-> reviewer-bot threads (via `pr-merge-flow` where installed, else inline),
-> then merges.
+> for the run, checks the comment posted and self-updates (same id, later
+> `updated_at`), clears any reviewer-bot threads — waiting at least ~10
+> minutes before treating an empty query as final — (via `pr-merge-flow`
+> where installed, else inline), then merges.

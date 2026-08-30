@@ -46,7 +46,11 @@ Use the first method that fits the environment, then verify with
 
 ## 2. Wire difftree-action into a repo (if requested)
 
-1. Identify the **target repo** — the user's repo, not this one — and `cd` there.
+1. Identify the **target repo** — the user's repo, not this one. Do not commit
+   in the user's live checkout: create a worktree from the up-to-date default
+   branch and work there —
+   `git -C <repo> fetch origin && git -C <repo> worktree add
+   ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>`.
    If `.github/workflows/` already has a workflow that uses
    `smorinlabs/difftree-action` (any file name), replace that file in place —
    renaming it to `pr-diff-tree.yml` — rather than adding a second one, and
@@ -85,10 +89,10 @@ Use the first method that fits the environment, then verify with
 
 ## 3. Commit / open a PR
 
-In the target repo, branch, commit the workflow with a conventional message
-(e.g. `ci: add difftree PR diff-tree comments`), and open a PR — never push to
-the default branch directly. Then verify on that PR (section 4) before
-reporting it done.
+In the worktree from section 2 step 1, commit the workflow on its branch with
+a conventional message (e.g. `ci: add difftree PR diff-tree comments`), and
+open a PR — never push to the default branch directly. Then verify on that PR
+(section 4) before reporting it done.
 
 ## 4. Verify on the PR, then merge
 
@@ -98,21 +102,33 @@ no more than once every 20 s, and bound every wait (a run takes ~1–2 min).
 
 1. **Wait for the run.** Poll
    `gh api "repos/<owner>/<repo>/actions/runs?event=pull_request&branch=<branch>"`
-   until the `PR Diff Tree` run has `conclusion: success`. A `failure` is a
-   setup bug — read the job log (`gh run view <id> --log-failed`) before
-   editing the workflow.
+   until the `PR Diff Tree` run has `conclusion: success`. (`PR Diff Tree` is
+   the *workflow* name used by the runs API; the same check appears as the
+   *job* name `diff-tree` in `/commits/<sha>/check-runs` and `gh pr checks`.)
+   A `failure` is a setup bug — read the job log (`gh run view <id>
+   --log-failed`) before editing the workflow.
 2. **Confirm the comment posted.** The action marks its comment with
    `<!-- difftree-action -->`:
-   `gh api repos/<owner>/<repo>/issues/<pr>/comments --jq '.[] | select(.body | startswith("<!-- difftree-action -->")) | .id'`
-   must return exactly one id. Zero means the token was read-only (fork PR)
-   or `pull-requests: write` was dropped; two or more means the concurrency
-   group was dropped.
+   `gh api repos/<owner>/<repo>/issues/<pr>/comments --jq '.[] | select(.body | startswith("<!-- difftree-action -->")) | "\(.id) \(.updated_at)"'`
+   must return exactly one id — record its `id` and `updated_at`. Zero means
+   the token was read-only (fork PR) or `pull-requests: write` was dropped;
+   two or more means the concurrency group was dropped. On a fork PR the run
+   can still show green with no comment at all — a green run alone is not
+   proof a comment posted.
 3. **Confirm it self-updates.** Push a second commit to the PR branch —
    `git commit --allow-empty -m "ci: trigger difftree re-run"` is enough: an
-   empty commit still fires `pull_request: synchronize`, keeps the workflow
-   file byte-identical to the template, and passes commitlint — wait for the
-   new run, and re-run the query from step 2: the **same id** must come back,
-   still alone.
+   empty commit still fires `pull_request: synchronize` and keeps the workflow
+   byte-identical to the template. If your repo requires a commit trailer (for
+   example `Claude-Session:`), write the message with
+   `git commit --allow-empty -F <file>` and leave a blank line before the
+   trailer, or commitlint's `footer-leading-blank` rule fails the commit. Wait
+   for the new run — pin the query to the new commit, otherwise the
+   already-green first run satisfies the poll immediately:
+   `gh api "repos/<owner>/<repo>/actions/runs?event=pull_request&branch=<branch>&head_sha=<new-sha>"`
+   — then re-run the query from step 2: the **same id** must come back, still
+   alone, with a **later `updated_at`** than the one you recorded. An
+   unchanged `updated_at` means the new run has not posted yet — keep
+   waiting.
 4. **Clear the review threads.** Repos with reviewer bots (Copilot,
    CodeRabbit, Greptile, …) open threads on the new workflow within ~10
    minutes of the PR opening, and a repo with *required conversation
@@ -134,14 +150,19 @@ no more than once every 20 s, and bound every wait (a run takes ~1–2 min).
      # 3. then resolve (GraphQL), by the thread id (PRRT_…)
      gh api graphql -f query='mutation { resolveReviewThread(input:{threadId:"<PRRT_id>"}) { thread { isResolved } } }'
      ```
-     Re-query after each round — threads arrive late. If the merge is still
-     refused with zero unresolved threads, the repo requires approvals: stop
-     and hand the PR to a human.
+     Re-query after each round — threads arrive late, and an empty result is
+     **not** a terminal state. Do not declare the PR merge-ready on an empty
+     query until at least ~10 minutes after the PR opened (Greptile in
+     particular has landed at +7 min); a reviewer that posts a review with
+     zero inline comments is not evidence that the other reviewers are done.
+     If the merge is still refused with zero unresolved threads after the
+     full 10 minutes, the repo requires approvals: stop and hand the PR to a
+     human.
 5. **Merge** with the repo's merge policy (never squash unless the repo
    requires it). Then, in the main checkout, **in this order**:
-   `git pull --ff-only` → `git worktree remove <path>` (if you made one) →
-   `git branch -d <branch>`. A `branch -d` refusal means the pull did not
-   land — investigate; never `-D`.
+   `git pull --ff-only` → `git worktree remove <path>` → `git branch -d
+   <branch>`. A `branch -d` refusal means the pull did not land —
+   investigate; never `-D`.
 6. **Report** the PR URL, the run URL, and the comment URL.
 
 ## See also
