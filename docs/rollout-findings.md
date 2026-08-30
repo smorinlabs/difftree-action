@@ -151,4 +151,114 @@ Consecutive-clean counter: 0 of 3.
 
 ## Pilot 2 — `mockcast`
 
+**Result:** action worked end to end — [PR #11](https://github.com/smorinlabs/mockcast/pull/11),
+[run 33293942238](https://github.com/smorinlabs/mockcast/actions/runs/33293942238) (70 s),
+comment `5466841088` posted and self-updated on the second push
+(`updated_at` 05:07:15Z → 05:08:04Z), commitlint passed on both commits, 2
+review threads (CodeRabbit, Greptile) replied to and resolved, merged
+`40e01fa`. **Verdict: not clean** — 5 skill edits needed (F17–F21).
+Consecutive-clean counter: 0 of 3.
+
+### F17 — Empty-commit command cannot carry a required trailer
+- **Where:** SKILL.md §4 step 3: `git commit --allow-empty -m "ci: trigger
+  difftree re-run"`
+- **What:** The header alone passes commitlint, but every commit in this
+  fleet must end with a `Claude-Session: <url>` trailer, and appending it to a
+  single `-m` string produces a one-paragraph message that fails commitlint's
+  `footer-leading-blank` rule.
+- **Fix:** SKILL.md §4 step 3 now says: if your repo requires a commit
+  trailer, write the message with `git commit --allow-empty -F <file>` and
+  leave a blank line before the trailer.
+- **Class:** skill
+
+### F18 — Step 3 gives no way to wait for the *new* run specifically
+- **Where:** SKILL.md §4 step 1's poll query, reused unpinned by step 3.
+- **What:** After the second push, the unpinned runs-API query is satisfied
+  the instant the push lands, because the first run is already
+  `completed/success`. A literal follower could re-query the comment before
+  the second run posted anything and read the unchanged `updated_at` as a
+  false pass.
+- **Fix:** SKILL.md §4 step 3 now pins the query with `&head_sha=<new-sha>`
+  before re-running the step-2 query.
+- **Class:** skill
+
+### F19 — "Same id" is not sufficient evidence the comment self-updated
+- **Where:** SKILL.md §4 steps 2–3.
+- **What:** The comment id is stable by construction; it comes back unchanged
+  whether or not the action rewrote the comment. The only observable proof of
+  an update is `updated_at` moving, which the skill never told the agent to
+  capture.
+- **Fix:** SKILL.md §4 step 2 now records `id` **and** `updated_at`; step 3
+  requires the re-check to show the **same id** with a **later `updated_at`**.
+- **Class:** skill
+
+### F20 — The thread loop can terminate before the bots have arrived
+- **Where:** SKILL.md §4 step 4.
+- **What:** The loop stated only a maximum (3 rounds / 10 minutes), no
+  minimum. An early empty unresolved-threads query legitimately reads as "no
+  threads → done," missing bots that post later (CodeRabbit at +4:20,
+  Greptile at +6:57 in this pilot).
+- **Fix:** SKILL.md §4 step 4 now states an empty result is not a terminal
+  state and gates merge-ready on an empty query until at least ~10 minutes
+  after the PR opened.
+- **Class:** skill
+
+### F21 — Section 2 says `cd` into the target repo; section 4 assumes a worktree
+- **Where:** SKILL.md §2 step 1 vs. §4 step 5.
+- **What:** Section 2 said to `cd` into the user's checkout and work there;
+  section 4's cleanup already presumed a worktree existed. Committing in the
+  user's live checkout is exactly what the fleet's worktree discipline
+  forbids.
+- **Fix:** SKILL.md §2 step 1 now creates a worktree from the up-to-date
+  default branch (`git -C <repo> fetch origin && git -C <repo> worktree add
+  ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>`)
+  and works there; §3 and §4 step 5 reference that worktree, and step 5's
+  cleanup is no longer conditional on "if you made one."
+- **Class:** skill
+
+### F22 — Check-run names do not match workflow names
+- **Where:** SKILL.md §4 step 1.
+- **What:** `PR Diff Tree` is correct for the runs API (what the skill's
+  command queries), but the same check appears as the *job* name `diff-tree`
+  in `/commits/<sha>/check-runs` and `gh pr checks`; `mockcast`'s `CI`
+  workflow appears there as `check`. Anyone cross-checking with a different
+  endpoint looks for the wrong string.
+- **Fix:** SKILL.md §4 step 1 now adds a clarifying clause distinguishing the
+  workflow name from the job name.
+- **Class:** repo-local
+
+### F23 — Single-comment endpoint shape (environment note)
+- **Where:** re-reading `mockcast` comment `5466841088` by id.
+- **What:** `repos/<owner>/<repo>/issues/<pr>/comments/<id>` returns
+  `404 Not Found`; the correct path is
+  `repos/<owner>/<repo>/issues/comments/<id>`. Not a defect in anything the
+  skill instructs — the skill's re-check re-runs the list query, not a by-id
+  fetch — so this is logged as a note, not a skill edit.
+- **Fix:** none required; would only become a skill edit if a future revision
+  rewrote the `updated_at` re-check as a by-id fetch.
+- **Class:** docs
+
+### F24 — Template: `@v0` is a mutable tag (CodeRabbit, CWE-494) — recurs
+- **Source:** CodeRabbit on PR #11, thread `PRRT_kwDOS0C2fM6de4Ho`. Same ask
+  as **F12** (pilot 1, declined there as "floating `@v0` is the documented
+  design"). Second pilot in a row to draw this exact comment.
+- **Disposition:** not applied to `mockcast` (byte-identity is load-bearing);
+  tracked upstream in difftree-action. Recurs; add a one-line justification
+  for the floating tag to the template in the T45 batch.
+- **Class:** template
+
+### F25 — Template + skill: fork PRs silently get no comment (Greptile, P1)
+- **Source:** Greptile on PR #11, thread `PRRT_kwDOS0C2fM6de42t`. `pull_request`
+  gives fork PRs a read-only `GITHUB_TOKEN` regardless of `pull-requests:
+  write`; the action degrades the resulting 403 to a warning, so the job goes
+  green with no comment.
+- **Disposition:** template change not applied to `mockcast` (byte-identity;
+  no fork PRs today); tracked upstream in difftree-action for the T45 batch.
+  The skill half is applied now.
+- **Fix:** SKILL.md §4 step 2 adds one sentence: on a fork PR the run can
+  still show green with no comment at all.
+- **Class:** template + skill
+
+## Pilot 3 — `envgen`
+
 _(pending)_
