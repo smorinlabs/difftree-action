@@ -35,12 +35,15 @@ each other on any shared discovery path. Renamed the CLI repo's pointer to
 - [x] [P02-TS01] `skillsmith verify` + skill-quality pass under the new name
 - [x] [P02-T03] Open PR to `smorinlabs/difftree-action` — merged as #10
 
-## [~] Project P03: Fleet rollout of difftree-action to all smorinlabs repos (v0.3.1)
+## [~] Project P03: Fleet rollout of difftree-action to all smorinlabs repos (v0.4.0 → v0.5.0)
 **Goal/Requirement**: Every non-archived `smorinlabs` repo (40 as of 2026-08-29)
 runs the canonical `pr-diff-tree.yml` workflow, installed by the
 `difftree-action-setup` skill. The skill is the thing under test: pilot it on
 three repos with different CI shapes, fold every gotcha back into the skill,
-and fan out only after three consecutive repos need **zero skill edits**.
+and fan out only after three consecutive repos need **zero skill edits**
+(originally; relaxed 2026-08-30 to one clean pilot after the §4 rewrite, on a
+private repo, with fan-out under per-repo §4 verification — pilot 4 did not
+pass it (G17, G18); a fresh session retests the corrected skill cold).
 - Findings log: `docs/rollout-findings.md` (append-only, one entry per gotcha).
 - Each pilot cycle: pilot → log findings → fix skill in a worktree PR → merge →
   `git pull --ff-only` in the main checkout → `session-handoff` → next repo.
@@ -69,7 +72,7 @@ zero skill edits needed.
 - [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
 - [ ] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
-      Pilot 4 not clean (G17, G18). Next: a fresh session retests the corrected skill cold on a new repo (2–3 runs) before fan-out — see handoff.
+      Pilot 4 not clean (G17, G18). Next: a fresh session retests the corrected skill cold on a new repo (2–3 runs) before fan-out — handoff to follow after merge.
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
 - [ ] [P03-T08] Fan-out: `agent-fork`
