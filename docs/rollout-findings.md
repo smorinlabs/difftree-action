@@ -431,3 +431,24 @@ template finding in one PR, so the fleet only re-syncs once.
 - `actions/checkout@v6` bump closes **F09**.
 - `persist-credentials: false` on the checkout step closes **F13**.
 - Header reworded to a consumer-facing sentence closes **F10**.
+- Codex adversarial review of this batch confirmed the F13 risk does not
+  materialize: `actions/checkout`'s authenticated `fetch-depth: 0` fetch
+  brings `origin/<base>` into the local repo before credentials are
+  stripped, so `persist-credentials: false` is safe regardless of the
+  private-repo test outcome. **F13 is closed by review, not by the
+  private-repo pilot.**
+
+### F37 — `action.yml`: fork-PR warning overclaims where the tree is available
+- **Where:** `action.yml:206` (the `core.warning(...)` call on a 403) and the
+  job-summary step (`action.yml:214-228`).
+- **What:** On a 403 the action's warning text says the tree is "available in
+  the job log and the `tree` output," but the job summary step never writes
+  the rendered tree (only base ref, files-changed, and comment URL), the
+  template's `difftree-action` step has no `id` so nothing downstream can
+  reference the `tree` output, and the tree is rendered to a file rather than
+  printed to the log. On a fork PR, the tree is currently available nowhere a
+  consumer can see it.
+- **Fix:** Not applied here (`action.yml` is out of scope for T45). Upstream
+  fix: on a 403, append the rendered tree to `$GITHUB_STEP_SUMMARY`, and stop
+  the warning text from claiming "available in the job log."
+- **Class:** action

@@ -15,14 +15,8 @@ on:
     types: [opened, reopened, synchronize, edited]
 
 # Pull requests from forks get a read-only GITHUB_TOKEN: the action catches
-# the resulting 403, emits a workflow warning, and the run stays green with
-# no comment. The tree is still in the job summary and the `tree` output.
-# pull_request_target is deliberately not used.
-
-# One run per PR so two overlapping runs can't race to post the comment.
-concurrency:
-  group: difftree-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+# the resulting 403, emits a workflow warning annotation, and the run stays
+# green with no comment posted. pull_request_target is deliberately not used.
 
 permissions:
   contents: read
@@ -34,6 +28,14 @@ jobs:
     # retarget as `edited`; other edits (title, body, labels) also fire
     # `edited` but don't change what's diffed, so this skips those.
     if: github.event.action != 'edited' || github.event.changes.base != null
+    # Job-level (not workflow-level): a skipped no-op `edited` run must never
+    # enter this group, or it can cancel a real render that's already running
+    # (the `if:` above only skips the job after the run already joined the
+    # group). One run per PR so two overlapping renders can't race to post
+    # the comment.
+    concurrency:
+      group: difftree-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     # ubuntu-latest is a deliberate fleet-wide choice: this job runs ~80s
     # and sits off the critical path. Repos with a runner policy should
     # record this job as a carve-out rather than overriding it here.
