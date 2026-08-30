@@ -452,3 +452,145 @@ template finding in one PR, so the fleet only re-syncs once.
   fix: on a 403, append the rendered tree to `$GITHUB_STEP_SUMMARY`, and stop
   the warning text from claiming "available in the job log."
 - **Class:** action
+
+## Re-sync 1 — `worktreeflow` (Task 9)
+
+Ran the rewritten §4 checklist (Task 8) against `smorinlabs/worktreeflow`, which already had
+`pr-diff-tree.yml` (exercising §2 step 1's replace-in-place branch). PR #23; runs `33300645980`
+(install commit) and `33300731885` (empty-commit re-run); comment `5467536052`; merged `12619d7`.
+
+**Verdict: not clean — 10 skill gotchas (G1–G10; controller added G12).** Followed the skill
+literally with no improvisation; nothing outside these items was skipped or reordered.
+
+Bonus evidence: a `skipped` `PR Diff Tree` run was created 5 s into a live `success` render and
+did **not** cancel it — job-level `concurrency` holding under a real second event, corroborating
+the T45 template batch's `edited`-event re-render change (F34/F35).
+
+### F38 — §2 step 1's replace-in-place clause is a no-op on an already-named file, no command otherwise
+- **Where:** SKILL.md §2 step 1.
+- **What:** `worktreeflow`'s existing workflow was already named `pr-diff-tree.yml`, so "renaming
+  it to `pr-diff-tree.yml`" read as an instruction to a literal follower with nothing to do. For a
+  differently-named file the clause gave no command at all: a naive copy over the new path leaves
+  the old file in place as an addition plus an orphan — exactly what it exists to prevent — and
+  there was no stated evidence test for "the replacement fired".
+- **Fix:** SKILL.md §2 step 1 now gives the command (`git mv <old> .github/workflows/pr-diff-tree.yml`
+  when the name differs, then write the template over that path) and a fired-evidence check:
+  `git status --porcelain` shows one entry and no leftover file; post-PR, the PR's file status is
+  `modified`/`renamed`, never `added`.
+- **Class:** skill
+
+### F39 — "byte-identical to the template" named no ref; the two resolver branches can differ
+- **Where:** SKILL.md §2 step 2.
+- **What:** The in-repo resolver returned a template on an unpublished branch 19 commits ahead of
+  `origin/main`; the `curl` fallback would have fetched `main`'s materially different copy. "The
+  template" is two different files depending on where the skill loaded from, but the
+  byte-identity invariant was stated as absolute. This was not theoretical: Copilot diffed the
+  installed file against `difftree-action@main`, found the mismatch, and filed it as drift — the
+  PR's only review thread. The PR body's "copied verbatim from `examples/pr-diff-tree.yml`" was
+  true but unfalsifiable because it named no ref.
+- **Fix:** SKILL.md §2 step 2 now states the invariant against `$TEMPLATE` as resolved, explains
+  that an unpublished local branch can differ from `main`'s copy, and requires declaring the
+  template's provenance (commit and publication state, or `main` for the `curl` path) and the
+  direction of any difference in the PR body — answered with provenance, never by editing the file.
+- **Class:** skill
+
+### F40 — the `skipped`-run note undercounted, and missed that a skipped run can land mid-render
+- **Where:** SKILL.md §4 step 1.
+- **What:** Three `skipped` runs appeared, not one, and the first landed 5 s after the success run
+  started and 77 s before it completed — poll 1 returned `completed skipped` on the top line while
+  the real run was still `in_progress`. Separately, `/commits/<sha>/check-runs` returns two rows
+  both named `diff-tree`, one `skipped` and one `success`; matching on name alone is ambiguous.
+- **Fix:** SKILL.md §4 step 1's Pass condition now says to expect several `skipped` lines, expect
+  one before the success run completes, never treat the first `completed` line as terminal, and to
+  match `check-runs` rows on conclusion, not name.
+- **Class:** skill
+
+### F41 — the "not a thread" exemption named only Codex; CodeRabbit and Greptile behaved the same
+- **Where:** SKILL.md §4 step 6.
+- **What:** Only Copilot opened a review thread; CodeRabbit and Greptile each posted a summary
+  issue comment and zero threads; Codex did not appear. The skill's parenthetical exempted Codex
+  by name, leaving no rule for the other two, and its premise that reviewer bots "open threads" was
+  false for three of the four bots named on this PR.
+- **Fix:** SKILL.md §4 step 6 now says all four bots may open threads or may instead post only a
+  summary issue comment (Codex always does; CodeRabbit/Greptile do when they find nothing), and
+  that a summary issue comment needs no reply — only `reviewThreads` gate the merge.
+- **Class:** skill
+
+### F42 — the review-thread floor is unconditional, so a clean PR pays ~20 empty GraphQL queries
+- **Where:** SKILL.md §4 step 6.
+- **What:** The last bot artifact landed at `T0` + 5:40 and the only thread resolved at `T0` +
+  2:07, but the floor forced polling to `T0` + 10:10 — 20 further paginated calls with nothing
+  left to find. Not a defect: the skill states the floor is a heuristic and step 7 re-checks, and
+  the cost is the proof the floor is doing its job — Greptile arrived at `T0` + 5:40, after a naive
+  "threads are empty, we're done" reading at `T0` + 3:30 would have merged.
+- **Fix:** None — the floor is justified as designed; recorded as a measured cost, not a defect.
+- **Class:** skill (no change)
+
+### F43 — the `pr-merge-flow` hand-off did not say whose wait bound wins, and they disagreed here
+- **Where:** SKILL.md §4 step 6.
+- **What:** `pr-merge-flow`'s own bot-wait bound (~5 min from the push) expired at `T0` + 4:41;
+  Greptile posted 40 s after that bound. Taking `pr-merge-flow`'s "ready" as authoritative would
+  have declared the PR ready before the last reviewer arrived — a condition `pr-merge-flow` cannot
+  know about or satisfy on its own.
+- **Fix:** SKILL.md §4 step 6 now states that `pr-merge-flow`'s bot-wait bound is shorter than this
+  step's floor, so its "ready" is not this step's Pass: run call 1 yourself at or after the floor
+  and require exit 0 with an empty `$out` after it returns.
+- **Class:** skill
+
+### F44 — the byte-identity/never-edit constraint sat after the `pr-merge-flow` hand-off, unreachable from it
+- **Where:** SKILL.md §4 step 6.
+- **What:** `pr-merge-flow`'s triage rubric routes a small in-scope bug above the value floor to a
+  fix-and-push. Copilot's finding (the file not matching `difftree-action@main`) was valid by that
+  rubric's own criteria, so a reader who hands off to `pr-merge-flow` and lets it apply its own
+  rubric gets a file edit — breaking the invariant the skill exists to protect. This was avoided
+  only because the task brief restated the constraint independently.
+- **Fix:** SKILL.md §4 step 6 now states the byte-identity/never-edit rule, and that it must be
+  stated to `pr-merge-flow` at hand-off, *above* the hand-off sentence rather than after it.
+- **Class:** skill
+
+### F45 — "no `with:` block" is now ambiguous because the canonical template itself contains one
+- **Where:** SKILL.md §2 step 4.
+- **What:** The current template has a `with:` block on the `actions/checkout` step
+  (`fetch-depth: 0`, `persist-credentials: false`); a literal `grep -c '^ *with:'` check on a
+  correct verbatim install returns 1, not 0. The sentence meant "no `with:` on the
+  `smorinlabs/difftree-action` step" but did not say so, and the template changed under it.
+- **Fix:** SKILL.md §2 step 4 now says "no `with:` block on the `smorinlabs/difftree-action`
+  step" and notes the `actions/checkout` step's `with:` is part of the template and stays.
+- **Class:** skill
+
+### F46 — "compared as strings" gave no comparison idiom, and the obvious one is not portable to zsh
+- **Where:** SKILL.md §4 preamble.
+- **What:** The natural POSIX form `[ "$a" \> "$b" ]` fails under zsh — the default shell on
+  macOS — with `condition expected: >`; the comparison in this run was still decided correctly by
+  eye, but a loop written to the skill's letter silently takes the false branch every iteration.
+- **Fix:** SKILL.md §4 preamble now gives a comparison that works under both `sh` and `zsh`
+  (sorting the two ISO-8601 strings lexically and checking which sorts last), and states that
+  `[ "$a" \> "$b" ]` is a zsh syntax error.
+- **Class:** skill
+
+### F47 — the example commit/PR subject said "add", which is wrong for the replace-in-place path
+- **Where:** SKILL.md §3.
+- **What:** §2 step 1 has an explicit replace-in-place branch, but §3 offered only the "add"
+  subject (`ci: add difftree PR diff-tree comments`), which misdescribes that branch's change.
+- **Fix:** SKILL.md §3 now gives both subjects: "add" for a first install, "sync … to canonical
+  template" when §2 step 1's replace-in-place branch fired.
+- **Class:** skill
+
+### F48 — environment notes: `ugrep` shim and foreground `sleep`
+- **Where:** this session's shell (zsh, `grep` shimmed to `ugrep`).
+- **What:** `grep -q 'smorinlabs/difftree-action@'` behaved identically under the `ugrep` shim, so
+  the resolver guard is unaffected — informational only. Separately, the harness tool description
+  states foreground `sleep` is blocked, but every bounded poll loop this session ran `sleep 20` in
+  the foreground and completed normally (only the first step 1 loop was backgrounded, before this
+  was tested, and it also worked).
+- **Fix:** None — no skill or docs behavior depends on either observation.
+- **Class:** docs/env
+
+### F49 — `--match-head-commit` requires the full 40-character OID; a short sha fails
+- **Where:** SKILL.md §4 steps 3 and 7.
+- **What:** `gh pr merge … --match-head-commit <sha2>` requires the complete Git object ID; an
+  abbreviated sha fails with "Could not coerce value … to GitObjectID". `<sha2>` is recorded in
+  §4 step 3 via `git rev-parse HEAD` and `.head.sha`, both of which already return it in full.
+- **Fix:** SKILL.md §4 step 3's Pass condition and §4 step 7's Command now both state `<sha2>` is
+  the full 40-character OID and must never be abbreviated.
+- **Class:** skill
