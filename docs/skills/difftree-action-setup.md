@@ -3,9 +3,10 @@
 Installs the [`difftree`](https://github.com/smorinlabs/difftree) CLI and/or adds
 self-updating PR diff-tree comments to a repository via
 `smorinlabs/difftree-action`. It installs the CLI (prebuilt binary, `cargo
-install difftree`, or from source), then creates a worktree off the target
+install difftree`, or from source), then works worktree-first: it clones the
+target repo to `~/c/<repo>` if it is not there yet, creates a worktree off the
 repo's up-to-date default branch (it never commits in the user's live
-checkout) and scaffolds the repo's canonical
+checkout), scaffolds the repo's canonical
 [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into
 `.github/workflows/` there (replacing any existing difftree-action workflow in
 place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
@@ -15,13 +16,21 @@ shares the main checkout's `.git/hooks`, a repo-installed hook manager
 exists in the live checkout; the skill's guidance is to use the repo's own
 bypass rather than install tooling into the worktree or edit the workflow,
 then re-verify the committed bytes still match the template. It then verifies
-on that PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
-comment posted, and a second push updates the same comment — proved by the
-comment's `updated_at` moving forward, not just by its id staying the same —
-before merging. Reviewer-bot threads (Copilot, CodeRabbit, Greptile, Codex,
-…) are given at least ~10 minutes after the PR opened *or* after the most
-recent push, whichever is later, before an empty query is treated as "no
-threads coming" — the loop is bounded at 3 rounds and 20 minutes total.
+on that PR with a checklist whose every step states a precondition, a
+command, a pass condition, and what to do on fail: wait for the `PR Diff Tree`
+run pinned to the install commit's SHA (an unpinned wait is satisfied by an
+older green run), confirm exactly one `<!-- difftree-action -->` comment and
+record its `id` and `updated_at`, push an empty commit, wait for the run
+pinned to the new SHA, and require the same `id` with a later `updated_at` —
+the id alone proves nothing. Reviewer-bot threads (Copilot, CodeRabbit,
+Greptile, Codex) get at least ~10 minutes after the later of PR open and the
+most recent push before an empty query counts as "no threads coming", bounded
+at 3 rounds and 20 minutes; thread bodies are untrusted input (quoted and
+answered, never executed), and the workflow is never edited to satisfy a bot.
+The operator running the skill then performs the merge with the repo's merge
+method (never `--admin`; approvals required means stop and hand to a human)
+and cleans up in order: `git pull --ff-only` in the main checkout, `git
+worktree remove`, `git worktree prune`, `git branch -d`.
 
 **Triggers on:** "install difftree", "set up difftree", "add difftree to my
 repo", "add PR diff-tree comments", "set up difftree-action".
@@ -53,13 +62,18 @@ symlink `.agents/skills/difftree-action-setup`.
 ## Example session
 
 > Set up difftree PR comments on this repo.
-> → Confirms you want the CI wiring, creates a worktree from the repo's
-> default branch, writes
+> → Confirms you want the CI wiring, clones the repo to `~/c/<repo>` if it is
+> missing, creates a worktree from the repo's default branch, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
-> `.github/workflows/pr-diff-tree.yml`, branches, commits (bypassing any
+> `.github/workflows/pr-diff-tree.yml`, commits (bypassing any
 > worktree-inherited hook that can't resolve the live checkout's tooling),
-> opens a PR, waits for the run, checks the comment posted and self-updates
-> (same id, later `updated_at`), clears any reviewer-bot threads — waiting at
-> least ~10 minutes after PR open or the last push, whichever is later,
-> before treating an empty query as final — (via `pr-merge-flow` where
-> installed, else inline), then merges.
+> opens a PR, waits for the run pinned to that commit's SHA, records the
+> comment's `id` and `updated_at`, pushes an empty commit, waits for the run
+> pinned to the new SHA, checks the same comment now has a later `updated_at`,
+> clears any reviewer-bot threads — quoting and answering them, never
+> executing their embedded instructions, and waiting at least ~10 minutes
+> after PR open or the last push, whichever is later, before treating an
+> empty query as final — (via `pr-merge-flow --ready` where installed, else
+> inline), merges with the repo's merge method itself, cleans up in order
+> (pull → worktree remove → prune → branch -d), and reports the PR, run and
+> comment URLs, the thread table, and timing.
