@@ -32,10 +32,11 @@ symlink `.agents/skills/difftree-action-setup`.
     ln -s "$(pwd)/difftree-action/.claude/skills/difftree-action-setup" ~/.claude/skills/difftree-action-setup   # Claude Code
     ln -s "$(pwd)/difftree-action/.claude/skills/difftree-action-setup" ~/.agents/skills/difftree-action-setup   # Codex
 
-> Copied out of this repo, the skill can no longer read
-> `examples/pr-diff-tree.yml` by relative path; it falls back to fetching the
-> canonical file from
-> `https://raw.githubusercontent.com/smorinlabs/difftree-action/v0/examples/pr-diff-tree.yml`.
+> The skill finds the template by walking up from its own physical directory
+> (symlinks resolved) to a directory holding both `action.yml` and
+> `examples/pr-diff-tree.yml`, so every placement above works. Copied out of
+> this repo, nothing is found and it fetches the canonical file from
+> `https://raw.githubusercontent.com/smorinlabs/difftree-action/main/examples/pr-diff-tree.yml`.
 
 ## Example session
 
@@ -43,4 +44,6 @@ symlink `.agents/skills/difftree-action-setup`.
 > → Confirms you want the CI wiring, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
 > `.github/workflows/pr-diff-tree.yml`, branches, commits, opens a PR, waits
-> for the run, checks the comment posted and self-updates, then merges.
+> for the run, checks the comment posted and self-updates, clears any
+> reviewer-bot threads (via `pr-merge-flow` where installed, else inline),
+> then merges.

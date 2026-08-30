@@ -62,7 +62,8 @@ zero skill edits needed.
       `difftree-action-setup` SKILL.md (+ mirror in `docs/skills/`)
 - [x] [P03-T02] Default `difftree-version` to `0.3.1` (action.yml ×2, README ×2)
 - [x] [P03-T03] Create `docs/rollout-findings.md` seeded with the three banked findings
-- [ ] [P03-T04] Pilot 1: `worktreeflow` (plain CI — cold test of the skill)
+- [x] [P03-T04] Pilot 1: `worktreeflow` (plain CI — cold test of the skill)
+      PR #22 merged; action worked; 4 skill edits (F05, F07, F08, F14) → not clean
 - [ ] [P03-T05] Pilot 2: `mockcast` (release-please + commitlint gates)
 - [ ] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
 - [ ] [P03-TS01] Three consecutive pilots meet all five no-gotchas criteria
@@ -79,7 +80,7 @@ zero skill edits needed.
 - [ ] [P03-T16] Fan-out: `contributors-please-e2e`
 - [ ] [P03-T17] Fan-out: `contributors-please-test`
 - [ ] [P03-T18] Fan-out: `difftree`
-- [ ] [P03-T19] Fan-out: `difftree-action`
+- [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
 - [ ] [P03-T20] Fan-out: `doxa-research`
 - [ ] [P03-T21] Fan-out: `ge-smorin-app`
 - [ ] [P03-T22] Fan-out: `harness-kit`
@@ -104,6 +105,10 @@ zero skill edits needed.
 - [ ] [P03-T41] Fan-out: `terraform-gcp-template`
 - [ ] [P03-T42] Fan-out: `ts-launch-blueprint`
 - [ ] [P03-T43] Fan-out: `warpqueuekit`
+- [ ] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
+      moves (closes F03 and the release half of F06)
+- [ ] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
+      after a private-repo test), then re-sync already-installed repos
 - [ ] Regression Test Status
 
 ### Deliverable
