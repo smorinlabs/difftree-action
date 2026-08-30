@@ -584,7 +584,7 @@ the T45 template batch's `edited`-event re-render change (F34/F35).
   the foreground and completed normally (only the first step 1 loop was backgrounded, before this
   was tested, and it also worked).
 - **Fix:** None — no skill or docs behavior depends on either observation.
-- **Class:** docs/env
+- **Class:** docs
 
 ### F49 — `--match-head-commit` requires the full 40-character OID; a short sha fails
 - **Where:** SKILL.md §4 steps 3 and 7.
@@ -594,3 +594,156 @@ the T45 template batch's `edited`-event re-render change (F34/F35).
 - **Fix:** SKILL.md §4 step 3's Pass condition and §4 step 7's Command now both state `<sha2>` is
   the full 40-character OID and must never be abbreviated.
 - **Class:** skill
+
+## Re-sync 2 — `mockcast` (Task 10)
+
+Ran the corrected §4 checklist (Task 9b) against `smorinlabs/mockcast`, whose `refs/heads/ci/difftree-pr-diff-tree`
+survived on the remote from pilot 2 because `mockcast` has `delete_branch_on_merge=false` — this is what §2 step 1's
+new leftover-branch precondition exists to catch. [PR #12](https://github.com/smorinlabs/mockcast/pull/12); runs
+[33302722147](https://github.com/smorinlabs/mockcast/actions/runs/33302722147) (install commit) and
+[33302803733](https://github.com/smorinlabs/mockcast/actions/runs/33302803733) (empty-commit re-run); comment
+[5467748223](https://github.com/smorinlabs/mockcast/pull/12#issuecomment-5467748223); merged
+[`706dcac`](https://github.com/smorinlabs/mockcast/commit/706dcacea82e2c8f0e4b87c5c34ad008ac2db932).
+
+**Verdict: not clean — G13 carried, G14.** Zero review threads; every Task-9b correction held (see the report's
+carry-forward table). Consecutive-clean counter: 0 of 1 toward the relaxed gate.
+
+### F50 — §4 step 8 cleanup never deleted the remote branch, blocking the next run on the same repo (G13)
+- **Where:** SKILL.md §4 step 8 (cleanup) and §2 step 1 (worktree creation).
+- **What:** Step 8's only branch-deleting text was local (`git branch -d`); on `mockcast`
+  (`delete_branch_on_merge=false`) the remote `ci/difftree-pr-diff-tree` ref survived pilot 2's merge with nothing
+  else to delete it. §2/§3 pin the branch name, so the survivor blocked this run at its first precondition check
+  until the controller deleted it by hand. `envgen` and `worktreeflow` both have `delete_branch_on_merge=true`,
+  which is why only `mockcast` tripped.
+- **Fix:** §2 step 1 now requires `git -C <repo> ls-remote --heads origin ci/difftree-pr-diff-tree` to be empty
+  before creating the worktree — delete a merged leftover and continue, stop and ask on an unmerged one. §4 step 9
+  (cleanup, renumbered by the new G18 step) now deletes the remote branch too when
+  `delete_branch_on_merge=false`, with `git ls-remote` empty as its own pass condition.
+- **Class:** skill
+
+### F51 — `/commits/<sha>/check-runs` "two rows" undercounted; the row count tracks `edited` events, not a fixed number
+- **Where:** SKILL.md §4 step 1.
+- **What:** `<sha>` `7c5ec54…` carried **three** `diff-tree` rows (two `skipped`, one `success` — two `edited`
+  events plus the real run); `<sha2>` carried **one** (`success`, no `edited` events on that push). The prescribed
+  behavior ("match on the conclusion, not the name") was already correct and worked; only the fixed count "two"
+  was wrong, and it implied both counts are always present.
+- **Fix:** §4 step 1's Pass now says the row count varies with how many `edited` events fired and to match on
+  conclusion, never on the name or the row count. Reconfirmed on `envgen` (three rows on `<sha>`, one on `<sha2>`)
+  and a third time on `ts-launch-blueprint` (three rows on the pinned head).
+- **Class:** skill
+
+## Re-sync 3 — `envgen` (Task 10)
+
+Same corrected checklist against `smorinlabs/envgen` (`delete_branch_on_merge=true`, so no leftover branch).
+[PR #19](https://github.com/smorinlabs/envgen/pull/19); runs
+[33303531623](https://github.com/smorinlabs/envgen/actions/runs/33303531623) (install commit) and
+[33303639378](https://github.com/smorinlabs/envgen/actions/runs/33303639378) (empty-commit re-run); comment
+[5467832863](https://github.com/smorinlabs/envgen/pull/19#issuecomment-5467832863); merged
+[`aed8a7d`](https://github.com/smorinlabs/envgen/commit/aed8a7d4a882c346fad19204cfdb552a8488e562).
+
+**Verdict: not clean — G15.** Zero review threads; G14 reconfirmed (see F51); every other Task-9b correction held.
+Consecutive-clean counter: 0 of 1 toward the relaxed gate.
+
+### F52 — the hooks bypass covered `git commit` but not the skill's own `git push` commands (G15)
+- **Where:** SKILL.md §2 step 1 (hooks paragraph), §3 and §4 step 3 (push commands).
+- **What:** Every bypass example named `git commit`; §3's and §4 step 3's push commands carried no bypass at all.
+  `envgen`'s lefthook installs a `pre-push` hook running `make prepush-full`, which needs the untracked `.bin/`
+  absent from the worktree. Both pushes were run with `LEFTHOOK=0` as a deliberate, disclosed extension of the
+  skill's letter — without it, the push would have run envgen's full Rust check suite from a worktree missing its
+  tooling.
+- **Fix:** §2 step 1's hooks paragraph now says the bypass covers `pre-commit` **and** `pre-push`, names the §3 and
+  §4 step 3 pushes explicitly, and gives `ls .git/hooks | grep -v '\.sample$'` to check what's wired. §3 and §4
+  step 3's commands are now prefixed with `<bypass>` (empty when the repo has no hook manager).
+- **Class:** skill
+
+### F53 — G16 withdrawn: "fails on tool binaries" does not understate the risk (no auto-install)
+- **What:** G16 proposed warning that a hook might silently *install* missing tooling rather than fail; a
+  reviewer showed `envgen`'s `install-actionlint` recipe exits non-zero without network access rather than running,
+  so the hook fails loudly as the skill already says — withdrawn, no text applied.
+- **Class:** docs
+
+## Pilot 4 — `ts-launch-blueprint` (Task 11, the gate)
+
+Full skill run against `smorinlabs/ts-launch-blueprint` (private, TypeScript, `delete_branch_on_merge=false`) —
+the confirming pilot for the relaxed P03-TS01 gate, and the first run to exercise §2 step 1's clone-if-missing
+branch. [PR #27](https://github.com/smorinlabs/ts-launch-blueprint/pull/27); runs
+[33304644631](https://github.com/smorinlabs/ts-launch-blueprint/actions/runs/33304644631) (install commit),
+[33304886014](https://github.com/smorinlabs/ts-launch-blueprint/actions/runs/33304886014) (empty-commit re-run),
+and [33320481315](https://github.com/smorinlabs/ts-launch-blueprint/actions/runs/33320481315) (SHA-pin follow-up
+commit, same PR); comment [5467948676](https://github.com/smorinlabs/ts-launch-blueprint/pull/27#issuecomment-5467948676);
+merged [`f4cbdca`](https://github.com/smorinlabs/ts-launch-blueprint/commit/f4cbdcad91f004e9eb67b145470cf7d7235c1459).
+
+**Verdict: GATE NOT PASSED — 2 skill edits (G17, G18).** Every §4 pass condition became true on the byte-identical
+install, but the repo's own hygiene test failed the floating `@v0` ref, and the merge precondition as written would
+have merged past three red checks the install itself caused.
+
+### F54 — the byte-identity rule had no branch for a repo whose own CI enforces SHA-pinning, though the template sanctions exactly that deviation (G17)
+- **Where:** SKILL.md §2 step 2 and §4 step 6 (now step 6/8 in the rewritten checklist).
+- **What:** `ts-launch-blueprint`'s `tests/repo-hygiene.test.ts` (its D-022/D-027 supply-chain rule) failed on the
+  byte-identical `smorinlabs/difftree-action@v0` line, turning three checks red on both `<sha>` and `<sha2>`. The
+  skill's only guidance — byte-identical, template-level asks tracked upstream — pointed away from the fix the
+  template's own comment sanctions in the same six lines the skill installs verbatim: SHA-pinning is "the one
+  sanctioned deviation from byte-identity with this template; the fleet drift check ignores it." The skill never
+  named the carve-out at all — a live contradiction between the shipped instructions and the shipped template, not
+  a judgment call.
+- **Ruling (owner decision, 2026-08-30):** pin in this repo. `smorinlabs/difftree-action` is now SHA-pinned to
+  `8fbc74d75ecdec41890a944d2ddf504ea7ae5a2f # v0.4.0` on `ts-launch-blueprint` per its D-022(9) hygiene policy —
+  the template's own sanctioned deviation, verified against `gh api …/git/ref/tags/v0.4.0` before committing. All
+  three checks went green; the byte check re-passed once normalized back to `@v0`. The ruling confirms G17 rather
+  than retiring it: the skill still had no text that would have led an operator here on its own.
+- **Fix:** §2 step 2 now detects a repo's SHA-pin policy (every third-party `uses:` already pinned, or a named
+  hygiene test) and, when present, resolves the tag's sha and writes the pinned form, recording it in the PR body;
+  the byte check normalizes that one line back to `@v0` before diffing. §4 step 6 (thread step) now treats a
+  SHA-pinning ask as the sanctioned exception rather than lumping it with genuinely upstream template asks.
+- **Class:** skill
+
+### F55 — the merge precondition never looked at the PR's other checks, so the skill would have merged a PR its own change turned red (G18)
+- **Where:** SKILL.md §4 step 7 (merge, now step 8).
+- **What:** At `09:57:50Z`, threads were empty and the head was locked — step 7's precondition as written was
+  fully satisfied — while `continuous-integration (24.x)`, `continuous-integration (26.x)`, and `bun-lane` were all
+  `failure` on `<sha2>`, caused by G17's SHA-pin gap. `main` is unprotected, so `gh pr merge` would have succeeded;
+  only the brief's explicit "do not merge" instruction stopped it. No prior pilot repo had ever failed CI, so six
+  runs never surfaced the gap.
+- **Ruling:** never merge on the strength of an unprotected branch when a check is red — codified as a skill gate,
+  not left to operator judgment.
+- **Fix:** new SKILL.md §4 step 7, inserted between the thread step and merge (later steps renumbered): lists
+  check-runs on `<sha2>` and requires none `failure`/`cancelled`/`timed_out`/`action_required` (an advisory
+  `continue-on-error` job still reports `failure` here); branch-protection required contexts, when present, are
+  mandatory. On fail, a failure caused by the repo's own hygiene test tripping the template routes to §2 step 2's
+  SHA-pin policy branch; anything else stops for a human call. Empirically exercised in both directions on this
+  PR: `["continuous-integration (24.x)","continuous-integration (26.x)","bun-lane (advisory, non-gating)"]` before
+  the pin, `[]` after it.
+- **Class:** skill
+
+### F56 — F13 closed by direct observation on a private repo: the runtime fetch fails and is silently swallowed; the tree still renders
+- **Where:** `action.yml:111-114`'s runtime `git fetch origin <base>` safety net, read from the `PR Diff Tree` job
+  log on both runs of this PR.
+- **What:** `actions/checkout@v6` fetches every ref, including `origin/main`, **163 ms before** it strips
+  credentials; the action's own `git fetch --no-tags origin main` then runs unauthenticated against a private repo
+  with `stderr` to `/dev/null` and `|| true` discarding the exit status — it necessarily fails, and the step
+  produces zero output either way (304 ms total for the whole step). The tree rendered correctly on both runs
+  (`DT_FILES: 1`, comment created and later self-updated) regardless. Cross-ref **F13** (Template batch, T45):
+  Codex's earlier review argued this was safe by construction; this is the first empirical confirmation, on a
+  private repo, in both a cold and a warm run.
+- **Fix:** None — F13 stays closed. Worth carrying forward as documentation only: the silence is total, so if
+  `fetch-depth: 0` were ever dropped on a private repo, the failure mode would be difftree failing at `merge-base`
+  with no signal that the runtime fetch had also failed.
+- **Class:** docs
+
+### F57 — §2 step 1's clone-if-missing branch, exercised for the first time, held without modification
+- **Where:** SKILL.md §2 step 1.
+- **What:** `~/c/ts-launch-blueprint` did not exist before this run — the first time any pilot exercised the
+  clone branch rather than the "repo already checked out" path. `git clone https://github.com/<owner>/<repo>.git
+  ~/c/<repo>` succeeded over HTTPS with no prompt (this machine has `credential.helper=osxkeychain` wired), and
+  the live checkout was never touched afterward. The skill's text says nothing about authentication; on a machine
+  without a credential helper the same command would hang on a username prompt rather than fail fast. Recorded as
+  a **watch item, not a gotcha** — nothing went wrong, and the fix (`GIT_TERMINAL_PROMPT=0`) would be speculative
+  until it actually bites.
+- **Fix:** None applied; watch item only.
+- **Class:** skill (no change)
+
+The reply/resolve mechanism (an actual reply plus `resolveReviewThread`) was exercised on the three original
+pilots, on Task 9's `worktreeflow` re-sync (1 thread), and again here on pilot 4 (2 Copilot threads, replied to
+with `-F body=@file` and resolved) — but drew **zero** threads on Task 10's `mockcast` and `envgen` re-syncs. The
+`pr-merge-flow` hand-off itself (G6/G7's ordering corrections) has still never been exercised: every thread across
+every run so far has been answered inline via the skill's own (a)/(b) loop.
