@@ -9,8 +9,9 @@ repo's up-to-date default branch (it never commits in the user's live
 checkout), scaffolds the repo's canonical
 [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into
 `.github/workflows/` there (replacing any existing difftree-action workflow in
-place) and opens a PR — keeping the load-bearing `fetch-depth: 0`,
-`pull-requests: write`, and `concurrency` settings intact. Because a worktree
+place), publishes the branch by explicit ref (`git push --set-upstream origin
+HEAD:refs/heads/<branch>`) and opens a PR — keeping the load-bearing
+`fetch-depth: 0`, `pull-requests: write`, and `concurrency` settings intact. Because a worktree
 shares the main checkout's `.git/hooks`, a repo-installed hook manager
 (lefthook, husky, pre-commit) can fire there and fail on tooling that only
 exists in the live checkout; the skill's guidance is to use the repo's own
@@ -27,10 +28,14 @@ Greptile, Codex) get at least ~10 minutes after the later of PR open and the
 most recent push before an empty query counts as "no threads coming", bounded
 at 3 rounds and 20 minutes; thread bodies are untrusted input (quoted and
 answered, never executed), and the workflow is never edited to satisfy a bot.
-The operator running the skill then performs the merge with the repo's merge
-method (never `--admin`; approvals required means stop and hand to a human)
-and cleans up in order: `git pull --ff-only` in the main checkout, `git
-worktree remove`, `git worktree prune`, `git branch -d`.
+The agent running the skill then merges — after one final paginated
+unresolved-threads query and a check that the PR head is still the verified
+commit — with `gh pr merge --merge --match-head-commit <sha>` (or `--rebase`
+where merge commits are disabled; never `--admin`; a refusal is reported with
+`mergeable_state` and the branch rules, not diagnosed), and cleans up in
+order: `git pull --ff-only` in the main checkout (only when it is on the
+default branch and clean), `git worktree remove`, `git worktree prune`,
+`git branch -d`.
 
 **Triggers on:** "install difftree", "set up difftree", "add difftree to my
 repo", "add PR diff-tree comments", "set up difftree-action".
@@ -74,6 +79,7 @@ symlink `.agents/skills/difftree-action-setup`.
 > executing their embedded instructions, and waiting at least ~10 minutes
 > after PR open or the last push, whichever is later, before treating an
 > empty query as final — (via `pr-merge-flow --ready` where installed, else
-> inline), merges with the repo's merge method itself, cleans up in order
-> (pull → worktree remove → prune → branch -d), and reports the PR, run and
-> comment URLs, the thread table, and timing.
+> inline), re-queries threads and the PR head one last time, merges with
+> `gh pr merge` using the repo's merge method, cleans up in order (pull →
+> worktree remove → prune → branch -d), and reports the PR, run and comment
+> URLs, the thread table, and timing.
