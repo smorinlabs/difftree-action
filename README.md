@@ -22,7 +22,7 @@ glance. It's a thin wrapper over the
 ```
 
 > **Status — Phase 0 (composite).** This release builds difftree from
-> [crates.io](https://crates.io/crates/difftree) (`cargo install difftree@0.3.0`)
+> [crates.io](https://crates.io/crates/difftree) (`cargo install difftree@0.3.1`)
 > at action time. A faster Phase 1 (a Node action that downloads a prebuilt
 > binary) is planned once difftree ships binary releases. See
 > [`PLAN.md`](./PLAN.md).
@@ -87,7 +87,7 @@ install the skill elsewhere, see
 | `level` | _(unset)_ | Max tree depth (`difftree --level N`). |
 | `dirs-only` | `false` | Show directories only (`difftree --dirs-only`). |
 | `extra-args` | `''` | Extra args appended verbatim to the difftree call. |
-| `difftree-version` | `0.3.0` | difftree crates.io version to install. |
+| `difftree-version` | `0.3.1` | difftree crates.io version to install. |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. |
 
 ## Outputs
