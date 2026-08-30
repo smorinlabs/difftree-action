@@ -261,3 +261,16 @@ repo, sequential, controller merges; per-repo §4 checklist as acceptance),
 the 33 remaining repos grouped by class, and the open items (envgen ADR
 promise, F16 org settings sweep). Commit
 `docs: P03 pilot-phase gate result and fan-out readiness`.
+
+## Task 9b — Fold Task 9 gotchas into the skill (inserted 2026-08-30)
+
+Input: Task 9's report gotcha list (G1–G11) plus controller gotcha G12
+(`--match-head-commit` needs the full 40-char OID). Apply each proposed
+replacement text to `SKILL.md` (and the docs page where user-visible); add
+`### F38`–`F49` entries to `docs/rollout-findings.md` under a new
+`## Re-sync 1 — worktreeflow (Task 9)` section with the result line
+(PR #23, runs 33300645980 / 33300731885, comment 5467536052, merge `12619d7`)
+and the verdict (not clean — 10 skill gotchas); gates (`skillsmith verify`
+×2, `actionlint`); ≤ 270 lines; commits `fix(skill): re-sync-1 corrections —
+…`, `docs: re-sync-1 findings F38–F49`. Tasks 10–11 then run the corrected
+text; Task 12 folds only their residuals.
