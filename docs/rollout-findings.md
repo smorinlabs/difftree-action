@@ -747,3 +747,57 @@ pilots, on Task 9's `worktreeflow` re-sync (1 thread), and again here on pilot 4
 with `-F body=@file` and resolved) — but drew **zero** threads on Task 10's `mockcast` and `envgen` re-syncs. The
 `pr-merge-flow` hand-off itself (G6/G7's ordering corrections) has still never been exercised: every thread across
 every run so far has been answered inline via the skill's own (a)/(b) loop.
+
+## Fan-out readiness
+
+**Gate result: NOT MET.** `[P03-TS01]`'s relaxed form — one clean pilot after the §4 rewrite, on a private repo —
+required zero skill edits from pilot 4; it needed two (G17, G18). Both are now folded into `SKILL.md` on this
+branch, but neither has been proven against a cold run: every gotcha found so far was found *by* the run that
+triggered the fix, never confirmed absent on a subsequent one. Recommendation: a fresh session re-runs the
+corrected skill against a new repo (2–3 runs) before any fan-out begins — see the handoff note under
+`[P03-TS01]` in `PROJECTS.md`.
+
+**Open pre-fan-out items** (none blocking a retest, all worth tracking before or during fan-out):
+- **F37** — `action.yml`'s fork-PR warning overclaims where the tree is available (job summary never gets it);
+  fix is upstream in `action.yml`, out of scope for this branch.
+- **F16** — org-wide `merge_commit_message: PR_TITLE` double-counts release-please commits; deferred as a
+  separate settings sweep, harmless for `ci:`-prefixed fan-out PRs.
+- **envgen ADR promise (F36)** — envgen owes a follow-up ADR for the PR-comment CI dependency, promised in a PR
+  #18 reply; no owner assigned yet.
+- **F43** — the `pr-merge-flow` hand-off's bound-precedence fix has been carried through every re-sync and pilot
+  4, but never actually exercised (pilot 4's two threads were answered inline, not via hand-off); still reasoned
+  correct, not observed under load.
+
+**Task 8 parked residuals, now folded** (from `task-8-report.md`'s fix rounds):
+- **(a)** a "head moved" restart from §4 step 4 now reassigns `<sha2>` to the new `head.sha` and refreshes
+  `<T_push>` — exactly what pilot 4's SHA-pin follow-up did in practice, now cited in §4 step 8's precondition.
+- **(b)** the thread-loop's reply/resolve calls now run only inside call 1's success branch
+  (`if out="$(…)"; then …; else …; false; fi`), not after an `||`.
+- **(c)** §2 step 2's resolver failure arm now ends in `false`, matching every other failure arm in the file
+  (was the file's one remaining bare `exit 1`).
+- **(d)** §4 step 8's (merge) Pass condition now requires both `.merged == true` **and** a non-null
+  `merge_commit_sha`, not just the first printed line.
+
+**Recommended fan-out mechanics:** one skill run per repo, sequential (never two poll loops concurrently, per the
+global constraint) — the corrected §4 checklist (now 10 steps) is each repo's acceptance test; the controller
+merges only under §4 step 7's "no other check failing" rule, never on an unprotected branch's silence. Remote-branch
+deletion (G13) now fires automatically for `delete_branch_on_merge=false` repos, so repeated runs against the same
+repo no longer need manual cleanup. The SHA-pin policy detection (G17) fires automatically for any repo carrying
+its own SHA-pin hygiene test — `ts-launch-blueprint`'s sibling TypeScript repos and any repo sharing its D-022(9)
+template are the most likely next hits.
+
+**The remaining repos**, from `PROJECTS.md`'s fan-out rows (`[P03-T08]`–`[P03-T43]`, 36 total) minus `difftree-action`
+(`[P03-T19]`, kept as-is — it dogfoods itself with `uses: ./`, never installs the template) and
+`ts-launch-blueprint` (`[P03-T42]`, now installed via pilot 4): **34 repos**, grouped by
+`gh api orgs/smorinlabs/repos --jq '.[] | select(.archived==false) | "\(.name)\t\(.private)"'`:
+
+- **Private (8)** — `ge-smorin-app`, `shelf`, `skillsmith`, `smorin-segment-timer`, `terraform-gcp-design`,
+  `terraform-gcp-poc`, `terraform-gcp-template`, `warpqueuekit`.
+- **Harness/infra (2)** — `harness-kit`, `smorinlabs-harness` (in addition to `difftree-action` itself, which is
+  not a fan-out target — see above).
+- **Test/scratch (4)** — `blueprint-dryrun`, `blueprint-press-dryrun`, `contributors-please-e2e`,
+  `contributors-please-test`.
+- **Ordinary (20)** — `agent-fork`, `agent2linear`, `claude-openrouter-launcher`, `cli-standards`,
+  `contributors-please`, `contributors-please-action`, `difftree`, `doxa-research`, `homebrew-tap`, `identikit`,
+  `identikit-py`, `identikit-pylib`, `identikit-rs`, `identikit-rslib`, `identikit-tslib`, `py-launch-blueprint`,
+  `register-gated-verification`, `rest-standards`, `substrata`, `template-press`.
