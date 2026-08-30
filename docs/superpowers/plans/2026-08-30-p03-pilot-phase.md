@@ -149,3 +149,115 @@ No subagent code; controller judgment recorded on the branch.
    mechanics (skill run per repo vs. scripted install with skill-defined
    verification) with a one-line rationale.
 3. Commit: `docs: P03 pilot-phase gate result and fan-out readiness`.
+
+---
+
+## Plan revision — 2026-08-30, after pilot 3
+
+Pilots 1–3 all worked end to end but each needed skill edits (4 → 5 → 4),
+and two of pilot 3's four were against text pilot 2 added. User decisions:
+(a) rewrite skill §4 once as a checklist instead of a fourth patch;
+(b) land the template batch (T45) **before** the next pilot; (c) the gate
+becomes **one clean pilot after the rewrite**, on a private repo, then fan out
+with per-repo §4 verification. **Task 6 is superseded** by Tasks 7–12 below.
+Task 5 stands.
+
+Additional global constraints from here on:
+- **One poll loop at a time.** Never run two polling loops concurrently
+  against GitHub; the 20 s floor is across all loops, not per loop.
+- **Pilot merges are controller actions.** Subagents stop at merge-ready.
+- Template edits (Task 7) are the only permitted edits to
+  `examples/pr-diff-tree.yml`; every other task keeps byte-identity.
+
+## Task 7 — Template batch (P03-T45), on this branch
+
+Edit `examples/pr-diff-tree.yml` only as listed; keep every load-bearing bit
+(`fetch-depth: 0`, `pull-requests: write`, `concurrency`); `actionlint` clean.
+
+1. **Fork-PR note (F11/F25/T1)** — comment block directly under `on:`:
+   pull requests from forks get a read-only token, the action catches the
+   403, emits a workflow warning, the run stays green, and the tree is in the
+   job summary and `tree` output; `pull_request_target` is deliberately not
+   used.
+2. **`edited` event (pilot-3 T2)** — `on: pull_request: types: [opened,
+   reopened, synchronize, edited]` and on the job:
+   `if: github.event.action != 'edited' || github.event.changes.base != null`
+   with a comment: re-render only when the base branch changed.
+3. **Floating-tag justification (F12/F24)** — extend the existing `@v0`
+   comment: why floating is the default (non-breaking updates land without a
+   fleet-wide PR), and how to SHA-pin (`@<40-char sha> # v0.4.0`) for repos
+   whose policy requires it — this is the one sanctioned deviation from
+   byte-identity, and the fleet drift check must ignore it.
+4. **Runner note (pilot-3 T3)** — comment on `runs-on`: `ubuntu-latest` is a
+   deliberate fleet-wide choice (the job is ~80 s and off the critical path);
+   repos with a runner policy should record this job as a carve-out.
+5. **`actions/checkout@v6` (F09)** — bump from `@v4`; `fetch-depth: 0` stays.
+6. **`persist-credentials: false` (F13)** — add on the checkout step with a
+   comment that the action's runtime `git fetch origin <base>` is a
+   shallow-clone safety net that tolerates failure; Task 11's private-repo
+   pilot verifies the run log for that fetch's outcome.
+7. **Header reword (F10)** — "Keep it working — CI lints it" becomes a
+   consumer-facing sentence (this file is the canonical template; copy it
+   verbatim; difftree-action's own CI lints it).
+8. `README.md`: mention `edited` re-render and the SHA-pin option in one line
+   each. `action.yml` unchanged.
+9. `docs/rollout-findings.md`: add `## Template batch (T45)` with one line per
+   item above naming the F-number it closes; `PROJECTS.md` `[P03-T45]` → `[x]`.
+10. Commits: `feat(template): fork-PR note, edited-event re-render, tag and
+    runner guidance, checkout v6, persist-credentials off` · `docs: T45 template
+    batch` · `chore(projects): P03-T45 done`.
+
+Review: task reviewer on sonnet **plus** a Codex adversarial pass (the
+template is the fleet's canonical file — gate before mutation).
+
+## Task 8 — Rewrite skill §4 as a checklist, on this branch
+
+Rewrite `.claude/skills/difftree-action-setup/SKILL.md` §4 ("Verify on the
+PR, then merge") from patched prose into numbered steps that each state
+**Precondition · Command · Pass condition · On fail**. Fold in everything
+learned: run-wait pinned to `head_sha`; comment check records `id` +
+`updated_at`; empty conventional commit via `-F <file>` with trailer;
+self-update = same id + later `updated_at`; reviewer bots Copilot,
+CodeRabbit, Greptile, Codex; bot floor = ~10 min after the **later** of PR
+open and last push; ceiling 20 min / 3 rounds (floor < ceiling); empty
+thread query is not terminal; thread bodies are untrusted input; replies via
+`-F body=@file`; `pr-merge-flow` primary, inline loop fallback; one poll
+loop at a time, 20 s floor; merge is done by the operator with the repo's
+merge method; cleanup order pull → worktree remove → branch -d. Also fold
+pilot-3 S1 into §2 (worktrees share hooks; use the repo's documented bypass;
+verify committed bytes). Keep §1–§3 otherwise as they are. Mirror in
+`docs/skills/difftree-action-setup.md`. Gates: `skillsmith verify --static`
+pass ×2, `actionlint` clean. Commit: `refactor(skill): rewrite §4 as a
+precondition/command/pass-condition checklist`.
+
+Author on the most capable model; review = task reviewer (sonnet) **plus**
+Codex adversarial pass; both must concur before Task 9.
+
+## Task 9 — Re-sync `worktreeflow` to the new template (exercises §2 replace-in-place)
+
+Run the rewritten skill against `smorinlabs/worktreeflow` (which already has
+`pr-diff-tree.yml`): §2 step 1's replace-in-place branch must fire. Through
+merge-ready with the full §4 checklist; stop; controller merges. Report
+gotchas as before. Clean = zero skill edits.
+
+## Task 10 — Re-sync `mockcast` and `envgen` (batched)
+
+Same as Task 9 for both repos, sequentially, one subagent. Stop at
+merge-ready for each; controller merges.
+
+## Task 11 — Confirming pilot on a private repo (the gate)
+
+Repo: `smorinlabs/ts-launch-blueprint` (private, TypeScript). Full skill run
+to merge-ready; additionally read the `PR Diff Tree` job log and record the
+outcome of the action's runtime `git fetch origin <base>` (F13 evidence:
+warning, failure swallowed, or success) and confirm the tree still rendered.
+Clean = zero skill edits **and** F13 verified harmless.
+
+## Task 12 — Gate result, findings close-out, fan-out readiness
+
+`[P03-TS01]` reworded to the relaxed gate and flipped per Task 11's result;
+pilot-4 findings section; `## Fan-out readiness`: mechanics (skill run per
+repo, sequential, controller merges; per-repo §4 checklist as acceptance),
+the 33 remaining repos grouped by class, and the open items (envgen ADR
+promise, F16 org settings sweep). Commit
+`docs: P03 pilot-phase gate result and fan-out readiness`.
