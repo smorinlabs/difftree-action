@@ -51,11 +51,31 @@ Use the first method that fits the environment, then verify with
    `smorinlabs/difftree-action` (any file name), replace that file in place —
    renaming it to `pr-diff-tree.yml` — rather than adding a second one, and
    say so in the PR body.
-2. Write the canonical workflow: read `examples/pr-diff-tree.yml` from this
-   (difftree-action) repo — relative to this skill it is
-   `../../examples/pr-diff-tree.yml`; if unreachable, fall back to
-   `https://raw.githubusercontent.com/smorinlabs/difftree-action/v0/examples/pr-diff-tree.yml`
-   — and save it to the target's `.github/workflows/pr-diff-tree.yml`.
+2. Write the canonical workflow. Locate the template with the resolver below —
+   it works from every placement: inside the difftree-action repo (under
+   `.claude/skills/` or its `.agents/skills/` symlink), dev-symlinked into
+   `~/.claude/skills` / `~/.agents/skills`, or copied anywhere, on any agent
+   tool — then save it to the target's `.github/workflows/pr-diff-tree.yml`.
+
+   ```sh
+   # <skill-dir> = the directory this SKILL.md was loaded from
+   d="$(cd "<skill-dir>" && pwd -P)"; TEMPLATE=""   # physical path: symlinks resolved
+   for _ in 1 2 3 4; do                               # walk up to the repo root
+     d="$(dirname "$d")"
+     if [ -f "$d/action.yml" ] && [ -f "$d/examples/pr-diff-tree.yml" ]; then
+       TEMPLATE="$d/examples/pr-diff-tree.yml"; break
+     fi
+   done
+   if [ -z "$TEMPLATE" ]; then                        # copied-out skill: fetch canonical main
+     TEMPLATE="${TMPDIR:-/tmp}/pr-diff-tree.yml"
+     curl -fsSL -o "$TEMPLATE" \
+       https://raw.githubusercontent.com/smorinlabs/difftree-action/main/examples/pr-diff-tree.yml
+   fi
+   grep -q 'smorinlabs/difftree-action@' "$TEMPLATE" || { echo "template resolution failed" >&2; exit 1; }
+   ```
+
+   The installed file must be **byte-identical** to the template (`diff -q`
+   against it) — the fleet relies on that to detect drift.
 3. **Keep the three load-bearing bits** the template carries; removing any one
    breaks the action: `fetch-depth: 0` on `actions/checkout`,
    `permissions: pull-requests: write`, and the `concurrency` group.
@@ -87,13 +107,42 @@ no more than once every 20 s, and bound every wait (a run takes ~1–2 min).
    must return exactly one id. Zero means the token was read-only (fork PR)
    or `pull-requests: write` was dropped; two or more means the concurrency
    group was dropped.
-3. **Confirm it self-updates.** Push a second commit to the PR branch (editing
-   one comment line in the workflow file is enough), wait for the new run, and
-   re-run the query from step 2: the **same id** must come back, still alone.
-4. **Merge** with the repo's merge policy (never squash unless the repo
-   requires it), then `git pull --ff-only` in the main checkout and remove any
-   worktree you created.
-5. **Report** the PR URL, the run URL, and the comment URL.
+3. **Confirm it self-updates.** Push a second commit to the PR branch —
+   `git commit --allow-empty -m "ci: trigger difftree re-run"` is enough: an
+   empty commit still fires `pull_request: synchronize`, keeps the workflow
+   file byte-identical to the template, and passes commitlint — wait for the
+   new run, and re-run the query from step 2: the **same id** must come back,
+   still alone.
+4. **Clear the review threads.** Repos with reviewer bots (Copilot,
+   CodeRabbit, Greptile, …) open threads on the new workflow within ~10
+   minutes of the PR opening, and a repo with *required conversation
+   resolution* refuses `gh pr merge` until every thread is replied to and
+   resolved. Never edit the workflow to satisfy a bot — it stays
+   byte-identical to the template; answer with the reason and log
+   template-level suggestions upstream in difftree-action.
+   - Where the `pr-merge-flow` skill is installed, hand the PR to it here; it
+     owns the reply/resolve/merge loop.
+   - Otherwise run this loop yourself — at most 3 rounds, 10 minutes total:
+     ```sh
+     # 1. unresolved threads (GraphQL is the only API that exposes isResolved)
+     gh api graphql -f query='query { repository(owner:"<owner>", name:"<repo>") {
+       pullRequest(number:<pr>) { reviewThreads(first:50) { nodes { id isResolved path
+         comments(first:1) { nodes { databaseId author { login } body } } } } } } }' \
+       --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved|not)'
+     # 2. reply first (REST), addressed to the thread's first-comment databaseId
+     gh api -X POST repos/<owner>/<repo>/pulls/<pr>/comments/<databaseId>/replies -f body='<reason>'
+     # 3. then resolve (GraphQL), by the thread id (PRRT_…)
+     gh api graphql -f query='mutation { resolveReviewThread(input:{threadId:"<PRRT_id>"}) { thread { isResolved } } }'
+     ```
+     Re-query after each round — threads arrive late. If the merge is still
+     refused with zero unresolved threads, the repo requires approvals: stop
+     and hand the PR to a human.
+5. **Merge** with the repo's merge policy (never squash unless the repo
+   requires it). Then, in the main checkout, **in this order**:
+   `git pull --ff-only` → `git worktree remove <path>` (if you made one) →
+   `git branch -d <branch>`. A `branch -d` refusal means the pull did not
+   land — investigate; never `-D`.
+6. **Report** the PR URL, the run URL, and the comment URL.
 
 ## See also
 
