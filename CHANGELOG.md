@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.5.1](https://github.com/smorinlabs/difftree-action/compare/v0.5.0...v0.5.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **skill:** address PR [#18](https://github.com/smorinlabs/difftree-action/issues/18) review — anchor origin check to github.com, bind $PROV, retry deletes remote too ([c4d0e76](https://github.com/smorinlabs/difftree-action/commit/c4d0e76b8878b19f53c08e6b0fbe7a7820e4aad9))
+* **skill:** address PR [#19](https://github.com/smorinlabs/difftree-action/issues/19) review — full command form in retry prose, qualified PR reference ([f17530b](https://github.com/smorinlabs/difftree-action/commit/f17530b75d5f14ce3ad22b1c15f339261c5dd919))
+* **skill:** cold-retest-1 corrections — origin check, canned bot answers, branch -d retry ([38c561d](https://github.com/smorinlabs/difftree-action/commit/38c561dadba45bd4049da1fc7c8fcc618d2765ca))
+* **skill:** cold-retest-1 corrections — origin check, canned bot answers, branch -d retry ([68e1a76](https://github.com/smorinlabs/difftree-action/commit/68e1a7636840a640f60fdc4bb6d4875432d02fed))
+* **skill:** drift proof falls back to git show when $PROV is unpublished ([7cc3a05](https://github.com/smorinlabs/difftree-action/commit/7cc3a0598d0f3b202345d5610973771d14e876e4))
+* **skill:** F66 retry refreshes the tracking ref through the transport that worked ([4663a49](https://github.com/smorinlabs/difftree-action/commit/4663a495122906ce44692735371389ad463e8970))
+* **skill:** F71 — branch -d retry unsets the stale upstream instead of fetching; log cold retest 2 ([3f6448b](https://github.com/smorinlabs/difftree-action/commit/3f6448bc50a25b5fc08ccc32ff81e2908f76c4f5))
+* **skill:** F71 — branch -d retry unsets the stale upstream instead of fetching; log cold retest 2 ([a5e0b6f](https://github.com/smorinlabs/difftree-action/commit/a5e0b6fdb723dc8db14732fc43bae36050fe50bc))
+* **skill:** require a clean working-tree template on the in-repo resolver path ([059c55f](https://github.com/smorinlabs/difftree-action/commit/059c55fe373eec3b8fb0f3a5e8309cf015edb958))
+* **skill:** scope the no-fetch claim in the branch -d retry to all remote states ([dc5aaf6](https://github.com/smorinlabs/difftree-action/commit/dc5aaf6f3fb16af43137ecd4a647252abe747ddd))
+
+
+### Documentation
+
+* **handoff:** fan-out count is 31 — exclude difftree-action (T19) as well as shelf ([ac5bdf5](https://github.com/smorinlabs/difftree-action/commit/ac5bdf541729676c0e25adba30821228efbfb9d4))
+* **handoff:** P03 cold-retest handoff for a fresh session ([1d90044](https://github.com/smorinlabs/difftree-action/commit/1d90044a88a804337d44cf83946abd8a3e128870))
+* **handoff:** P03 cold-retest handoff for a fresh session ([0798951](https://github.com/smorinlabs/difftree-action/commit/079895100573f7657a3953a9f56bde9ad8b55fb1))
+* **handoff:** P03 run-3 (shelf) + fan-out handoff for a fresh session ([caa5dd4](https://github.com/smorinlabs/difftree-action/commit/caa5dd4492762bcf0e96fc5111ac64ce1d7a2615))
+* **handoff:** P03 run-3 (shelf) + fan-out handoff for a fresh session ([c4204e7](https://github.com/smorinlabs/difftree-action/commit/c4204e757b3763e709b7cfe36d1e51977ec0cb5d))
+
 ## [0.5.0](https://github.com/smorinlabs/difftree-action/compare/v0.4.0...v0.5.0) (2026-08-30)
 
 
