@@ -855,3 +855,73 @@ template are the most likely next hits.
   `contributors-please`, `contributors-please-action`, `difftree`, `doxa-research`, `homebrew-tap`, `identikit`,
   `identikit-py`, `identikit-pylib`, `identikit-rs`, `identikit-rslib`, `identikit-tslib`, `py-launch-blueprint`,
   `register-gated-verification`, `rest-standards`, `substrata`, `template-press`.
+
+## Cold retest 1 — `agent2linear` (2026-08-31)
+
+Fresh session, no prior context; skill text = `main` @ `1d90044` (SKILL.md unchanged since v0.5.0 `cf065be`).
+Repo shape: public TypeScript, protected `main` with two required contexts (`check (22.x)`, `check (24.x)`),
+`delete_branch_on_merge=true`, no hook manager, floating action tags (no SHA-pin policy); bots Copilot, CodeRabbit,
+Greptile, Codex, plus a `[code]smith` app check-run (skipped).
+
+PR https://github.com/smorinlabs/agent2linear/pull/25 · `<sha>` `38f8e04` · `<sha2>` `207b750` · merge `d6c64fb`
+· `<T_open>` 05:18:14Z · `<T_push>` 05:19:57Z · floor 05:29:57Z · call 1 empty at 05:29:59Z · steps 1–9 pass
+(run 1 `33360064536`, run 2 `33360164176`, comment `5474081312` `05:19:37Z → 05:20:09Z`; two threads refuted and
+resolved; owner-approved merge; branch auto-deleted).
+
+**Verdict: clean** (owner-ratified 2026-08-31) — every step ran as written and no skill edit was needed to complete
+the run; every surprise (a `skipped` `edited` run before the success run, `head.sha` lagging the push by <20 s,
+bracketed/space-bearing check names in step 7c, `pr-merge-flow`'s bot-wait ending before the floor) was already
+predicted by the text. Consecutive-clean count: **1**. The findings below are hardenings and canned-answer gaps;
+none blocked. `[P03-TS01]` stays open only because its row requires a private repo (`shelf` is the candidate).
+
+### F66 — §4 step 9 `git branch -d` refuses after an explicit-URL update of the default branch
+- **Where:** SKILL.md §4 step 9 (pre-assigned by the 2026-08-30 handoff; observed at the previous session's
+  close-out on `difftree-action` itself, not in this run).
+- **What:** `git pull <url> <default>` moves the local branch but not `refs/remotes/origin/<default>`;
+  `branch -d` then judges "not fully merged" against a stale upstream and refuses.
+- **Fix:** step 9's On-fail gains one retry — `git fetch origin` then `branch -d` once more, never `-D`
+  (this PR; **proposed, not reproduced** — it needs an SSH-refused session to trigger).
+- **Class:** skill.
+
+### F67 — §2 step 1 never checks that an existing `~/c/<repo>` clone's origin is `<owner>/<repo>`
+- **Where:** SKILL.md §2 step 1 ("If `~/c/<repo>` does not exist, clone it").
+- **What:** `~/c/agent2linear` has `origin = https://github.com/smorin/agent2linear.git`; every push and fetch
+  worked only because GitHub redirects the transferred repo to `smorinlabs/agent2linear` (`git push` printed
+  `To https://github.com/smorin/agent2linear.git`). A same-named clone of a *different* repo would be pushed to
+  silently.
+- **Fix:** step 1 now requires `git -C <repo> ls-remote --get-url origin` to match `[:/]<owner>/<repo>(\.git)?$`
+  and stops on a redirect or mismatch (this PR). Repo-local: this clone's remote is the owner's to fix with
+  `git -C ~/c/agent2linear remote set-url origin https://github.com/smorinlabs/agent2linear.git`.
+- **Class:** skill; repo-local.
+
+### F68 — New recurring bot ask: Copilot says `pull-requests: write` without `issues: write` will 403
+- **Where:** SKILL.md §4 step 6's list of template-level asks; template comment on `pull-requests: write`.
+- **What:** Copilot thread `#discussion_r3891908903`: the action calls `github.rest.issues.createComment/
+  updateComment`, so it "likely hits 403". False — GitHub's `pull-requests` scope covers issue-comment endpoints on
+  PRs; run `33360164176` ran with `PullRequests: write` only and updated the comment in place. Answered from the
+  run's token block plus the comment's `updated_at`; resolved.
+- **Fix:** skill-only canned answer in step 6 (this PR). The template-comment variant was declined by the owner
+  (2026-08-31) to avoid fleet drift; revisit at the next template sync wave.
+- **Class:** skill (template deferred).
+
+### F69 — CodeRabbit files a false byte-identity claim; a `diff` + SHA-256 reply makes it withdraw
+- **Where:** SKILL.md §4 step 6 (drift claims).
+- **What:** CodeRabbit thread `#discussion_r3891910489`: "extra blank lines at 12/16/20/24/56 not in canonical
+  `0af0b4e`". The file is byte-identical (`diff` empty; both SHA-256 `9d8436f0…`); the blank lines are in the
+  canonical file. Replied with the `diff` result, the raw URL at the provenance sha and both hashes; CodeRabbit
+  answered "This finding is incorrect and should be withdrawn" and resolved.
+- **Fix:** step 6 now names that proof as the canned answer for any drift claim (this PR).
+- **Class:** skill.
+
+### F70 — Handoff first-action uses `timeout`, which macOS does not ship
+- **Where:** `docs/handoffs/2026-08-30-p03-cold-retest.md` preflight advice; not the skill.
+- **What:** `timeout 15 ssh -T git@github.com` → `zsh: command not found: timeout`; the SSH check printed nothing.
+  `ssh -o BatchMode=yes -o ConnectTimeout=10 -T git@github.com` is the portable form.
+- **Fix:** none in the skill; note for future handoffs.
+- **Class:** docs.
+
+**Observations (not findings):** `pr-merge-flow`'s 5-min bot-wait ended at 05:26:19Z, before the 05:29:57Z floor,
+exactly as step 6 warns — the floor-time call 1 was run separately. Codex reviewed only the install commit ("PR
+opened"), not the empty re-trigger push; Greptile posted its summary ~6.5 min after the push. The zsh globbing
+hazard (`?ref=` unquoted) bit a verification command the executor wrote, not a skill command — the skill's own
+URLs are quoted, and the new step 6 command is too.
