@@ -362,8 +362,9 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      to HEAD") right after the `merge-base` test passed means `-d` is judging against the branch's *upstream* tracking ref,
      which is stale whenever a push or pull went through an explicit URL instead of `origin`. The `merge-base` test has
      already proved the branch is in `<default>`, so drop the upstream and rerun once the whole tail from `branch -d` on —
-     `git -C ~/c/<repo> branch --unset-upstream <branch>` first, then `branch -d`, the `delete_branch_on_merge` test and
-     the remote delete included, or a `false` repo keeps the remote branch. No fetch is needed and none fixes it (the
+     `git -C ~/c/<repo> branch --unset-upstream <branch>` first, then rerun the command chain from
+     `git -C ~/c/<repo> branch -d <branch>` on, the `delete_branch_on_merge` test and the remote delete included, or a
+     `false` repo keeps the remote branch. No fetch is needed and none fixes it (the
      stale ref may be `origin/<branch>` itself, already deleted remotely). Never `-D`; never `worktree remove --force`.
 10. **Report.**
    - **Intent:** hand the user evidence for every pass condition above, so "done" can be audited without re-running

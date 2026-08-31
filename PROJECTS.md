@@ -91,7 +91,7 @@ zero skill edits needed.
 - [ ] [P03-T20] Fan-out: `doxa-research`
 - [ ] [P03-T21] Fan-out: `ge-smorin-app`
 - [x] [P03-T22] Fan-out: `harness-kit`
-      Installed as cold retest 2 (2026-08-31): PR #12, merge `0a5d29a`; clean run, zero threads, no new findings.
+      Installed as cold retest 2 (2026-08-31): smorinlabs/harness-kit#12, merge `0a5d29a`; clean run, zero threads, no new findings.
 - [ ] [P03-T23] Fan-out: `homebrew-tap`
 - [ ] [P03-T24] Fan-out: `identikit`
 - [ ] [P03-T25] Fan-out: `identikit-py`
