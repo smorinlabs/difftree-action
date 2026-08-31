@@ -997,3 +997,14 @@ the loading path, not the skill text. `[P03-TS01]`'s private-repo clause is sati
   `worktree list --porcelain` that uses no positional fields (this PR). The harness behavior itself is outside
   this repo's control; the skill simply no longer contains any `$<digit>` for it to eat.
 - **Class:** skill (hardening) + harness.
+
+### F73 — machine-specific `~/c/<repo>` paths baked into the skill text
+- **Where:** SKILL.md §2 step 1 (clone location, leftover-branch checks, worktree add) and §4 step 9
+  (precondition prose, command block, F71 retry); the docs mirror's intro.
+- **What:** the skill assumed the executing machine keeps clones at `~/c/<repo>` — the authoring machine's
+  convention, not a property of any target repo. Owner flagged it while reviewing the F72 fold: skill
+  instructions must stay generic across machines and users.
+- **Fix:** define `<clone>` (absolute path of the user's local clone of the target repo, wherever it lives) and
+  `<wt>` (the sibling worktree's absolute path, recorded at `worktree add` time); every path reference in §2
+  step 1 and §4 step 9 now uses them, and the clone-if-missing instruction no longer names a directory (this PR).
+- **Class:** skill.

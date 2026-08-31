@@ -3,8 +3,9 @@
 Installs the [`difftree`](https://github.com/smorinlabs/difftree) CLI and/or adds
 self-updating PR diff-tree comments to a repository via
 `smorinlabs/difftree-action`. It installs the CLI (prebuilt binary, `cargo
-install difftree`, or from source), then works worktree-first: it clones the
-target repo to `~/c/<repo>` if it is not there yet, checks that no leftover
+install difftree`, or from source), then works worktree-first: it locates the
+user's local clone of the target repo (cloning it over HTTPS if absent — into
+whatever directory the user keeps repositories), checks that no leftover
 `ci/difftree-pr-diff-tree` branch survives on the remote from a previous run
 (deleting it first if merged, else stopping), creates a worktree off the
 repo's up-to-date default branch (it never commits in the user's live
@@ -92,8 +93,8 @@ symlink `.agents/skills/difftree-action-setup`.
 ## Example session
 
 > Set up difftree PR comments on this repo.
-> → Confirms you want the CI wiring, clones the repo to `~/c/<repo>` if it is
-> missing, creates a worktree from the repo's default branch, writes
+> → Confirms you want the CI wiring, locates your local clone of the repo
+> (cloning it if missing), creates a worktree from the repo's default branch, writes
 > [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
 > `.github/workflows/pr-diff-tree.yml`, commits (bypassing any
 > worktree-inherited hook that can't resolve the live checkout's tooling),
