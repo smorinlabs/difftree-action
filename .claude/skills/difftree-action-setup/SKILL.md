@@ -92,14 +92,17 @@ Use the first method that fits the environment, then verify with
      TEMPLATE="${TMPDIR:-/tmp}/pr-diff-tree.yml"
      curl -fsSL -o "$TEMPLATE" \
        "https://raw.githubusercontent.com/smorinlabs/difftree-action/$PROV/examples/pr-diff-tree.yml"
-   else PROV="$(git -C "$d" log -1 --format=%H -- examples/pr-diff-tree.yml)"; fi   # <provenance-sha>, in-repo
+   else                                               # in-repo: the working-tree bytes must be the committed bytes
+     git -C "$d" diff --quiet HEAD -- examples/pr-diff-tree.yml || { echo "examples/pr-diff-tree.yml has uncommitted changes — commit or stash first" >&2; false; }
+     PROV="$(git -C "$d" log -1 --format=%H -- examples/pr-diff-tree.yml)"   # <provenance-sha>, in-repo
+   fi
    grep -q 'smorinlabs/difftree-action@' "$TEMPLATE" || { echo "template resolution failed" >&2; false; }
    ```
 
    The installed file must be **byte-identical** to `$TEMPLATE` as resolved above — the fleet relies on that to detect drift. On an unpublished
    local branch, `$TEMPLATE` and `main`'s copy can differ materially; a reviewer bot diffs your file against `difftree-action@main` and may file
    the difference as drift. `$TEMPLATE` as resolved is still the reference — answer with its provenance, never by editing the file: in-repo,
-   `git -C "$d" log -1 --format=%H -- examples/pr-diff-tree.yml` and whether that commit is published (`git -C "$d" branch -r --contains <sha>`;
+   `$PROV` and whether that commit is published (`git -C "$d" branch -r --contains "$PROV"`;
    empty means not); `curl` path: `$PROV`, the `main` commit the download was pinned to. Declare this in the PR body with the direction of any difference — ahead of `main`, not
    behind. **One sanctioned deviation** — Intent: honour a repo policy that forbids floating action tags while keeping
    the reference exact and the drift check satisfied. The evidence that the policy applies (every `uses:` already pinned,
