@@ -915,7 +915,9 @@ none blocked. `[P03-TS01]` stays open only because its row requires a private re
   `0af0b4e`". The file is byte-identical (`diff` empty; both SHA-256 `9d8436f0…`); the blank lines are in the
   canonical file. Replied with the `diff` result, the raw URL at the provenance sha and both hashes; CodeRabbit
   answered "This finding is incorrect and should be withdrawn" and resolved.
-- **Fix:** step 6 now names that proof as the canned answer for any drift claim (this PR).
+- **Fix:** step 6 now names that proof as the canned answer for any drift claim (this PR); the raw URL is pinned
+  to `$PROV`, and when `$PROV` is committed but unpublished the comparison uses
+  `git show "$PROV:examples/pr-diff-tree.yml"` instead (Greptile, PR #18).
 - **Class:** skill.
 
 ### F70 — Handoff first-action uses `timeout`, which macOS does not ship
