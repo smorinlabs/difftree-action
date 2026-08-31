@@ -72,11 +72,12 @@ zero skill edits needed.
 - [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
 - [ ] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
-      Pilot 4 not clean (G17, G18). Next: a fresh session retests the corrected skill cold on a new repo (2–3 runs) before fan-out — handoff to follow after merge.
+      Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Row stays open only on the private-repo clause: next `harness-kit` (unprotected, `delete_branch_on_merge=false`), then `shelf` (private).
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
 - [ ] [P03-T08] Fan-out: `agent-fork`
-- [ ] [P03-T09] Fan-out: `agent2linear`
+- [x] [P03-T09] Fan-out: `agent2linear`
+      Installed as cold retest 1 (2026-08-31): PR #25, merge `d6c64fb`; clean run, findings F66–F70.
 - [ ] [P03-T10] Fan-out: `blueprint-dryrun`
 - [ ] [P03-T11] Fan-out: `blueprint-press-dryrun`
 - [ ] [P03-T12] Fan-out: `claude-openrouter-launcher`
