@@ -48,7 +48,7 @@ Use the first method that fits the environment, then verify with
 1. **Intent:** start from a fresh worktree on the up-to-date default branch so nothing from the user's live checkout, and
    no leftover from a previous run, can enter the PR. The clone location and the default-branch name differ per repo;
    the branch name `ci/difftree-pr-diff-tree` and the isolation do not.
-   Identify the **target repo** — the user's repo, not this one. If `~/c/<repo>` does not exist, clone it first over HTTPS: `git clone https://github.com/<owner>/<repo>.git ~/c/<repo>`. An existing clone must point at the target: `git -C <repo> ls-remote --get-url origin` must match `github\.com[:/]<owner>/<repo>(\.git)?$` — a clone that reaches the repo only through a GitHub transfer redirect (old owner in the URL), a same-named clone of another repo, or a non-GitHub host stops the run: report the URL and let the user `git remote set-url origin …`. Do not commit in the user's live checkout. `git -C <repo> fetch origin` once, at the top of this step — everything below reuses that fetch, none of it fetches again. Then `git -C <repo> ls-remote --heads origin ci/difftree-pr-diff-tree` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): if `git -C <repo> merge-base --is-ancestor <its-sha> origin/<default-branch>` exits 0 (an ancestor of the just-fetched default branch) delete it with `gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/ci/difftree-pr-diff-tree"`; exit 1 (not an ancestor) → someone has work in flight — stop and ask; exit 128 ("Not a valid commit name" — the object is missing locally, e.g. a shallow checkout) is neither verdict: `git -C <repo> fetch origin ci/difftree-pr-diff-tree` and retry once; still 128 → stop and report. A leftover **local** branch of that name makes `worktree add -b` fail: `git -C <repo> branch -d ci/difftree-pr-diff-tree` first, only if it too is an ancestor of `origin/<default-branch>` (same `merge-base` test on the branch name), else stop and ask. Then create the worktree from that default branch and work there — `git -C <repo> worktree add ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>`.
+   Identify the **target repo** — the user's repo, not this one — and locate the user's existing local clone of it; `<clone>` is that clone's absolute path, in whatever directory the user keeps repositories. If there is no clone, create one there over HTTPS: `git clone https://github.com/<owner>/<repo>.git <clone>`. An existing clone must point at the target: `git -C <clone> ls-remote --get-url origin` must match `github\.com[:/]<owner>/<repo>(\.git)?$` — a clone that reaches the repo only through a GitHub transfer redirect (old owner in the URL), a same-named clone of another repo, or a non-GitHub host stops the run: report the URL and let the user `git remote set-url origin …`. Do not commit in the user's live checkout. `git -C <clone> fetch origin` once, at the top of this step — everything below reuses that fetch, none of it fetches again. Then `git -C <clone> ls-remote --heads origin ci/difftree-pr-diff-tree` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): if `git -C <clone> merge-base --is-ancestor <its-sha> origin/<default-branch>` exits 0 (an ancestor of the just-fetched default branch) delete it with `gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/ci/difftree-pr-diff-tree"`; exit 1 (not an ancestor) → someone has work in flight — stop and ask; exit 128 ("Not a valid commit name" — the object is missing locally, e.g. a shallow checkout) is neither verdict: `git -C <clone> fetch origin ci/difftree-pr-diff-tree` and retry once; still 128 → stop and report. A leftover **local** branch of that name makes `worktree add -b` fail: `git -C <clone> branch -d ci/difftree-pr-diff-tree` first, only if it too is an ancestor of `origin/<default-branch>` (same `merge-base` test on the branch name), else stop and ask. Then create the worktree from that default branch and work there — `git -C <clone> worktree add ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>` — recording the worktree's absolute path as `<wt>` (`<clone>`'s parent directory + `/<repo>-difftree`; §4 step 9 checks it against `worktree list --porcelain`, which prints absolute paths).
    If `.github/workflows/` already has a workflow using `smorinlabs/difftree-action` (any file name), replace it rather than adding a second one:
    if its name is not `pr-diff-tree.yml`, `git mv <old> .github/workflows/pr-diff-tree.yml` first, then write the template over that path, and
    say so in the PR body. Confirm the replacement fired before committing — `git status --porcelain` shows one entry for `pr-diff-tree.yml`, no
@@ -335,18 +335,19 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
    - **Intent:** return the user's checkout and the remote to the state the next run expects — merge pulled in, worktree
      and branch gone — touching nothing the preconditions cannot prove safe. Paths follow §2; a rebase/squash repo
      legitimately leaves the branch in place.
-   - **Precondition:** step 8 passed. The `if` below re-checks, immediately before pulling, that `~/c/<repo>-difftree`
-     is still the worktree on `<branch>` and that `~/c/<repo>` is on `<default>` and clean; a failed check or pull
+   - **Precondition:** step 8 passed. `<clone>` and `<wt>` are the absolute paths §2 step 1 recorded. The `if` below
+     re-checks, immediately before pulling, that `<wt>`
+     is still the worktree on `<branch>` and that `<clone>` is on `<default>` and clean; a failed check or pull
      takes the `else` branch and nothing is removed — stop and report; never switch branches or touch the user's
      checkout. The clone from §2 step 1, if any, is left in place — only the worktree and branches are removed here.
    - **Command:**
      ```sh
      # grep, not awk: awk's positional fields are `$<digit>`, which args-bearing skill invocation rewrites in the loaded text (F72)
-     if git -C ~/c/<repo> worktree list --porcelain | grep -Fx -A2 "worktree $HOME/c/<repo>-difftree" | grep -Fxq "branch refs/heads/<branch>" \
-       && [ "$(git -C ~/c/<repo> symbolic-ref --short HEAD)" = "<default>" ] && [ -z "$(git -C ~/c/<repo> status --porcelain)" ] \
-       && git -C ~/c/<repo> pull --ff-only origin <default> && git -C ~/c/<repo> merge-base --is-ancestor <merge-sha> HEAD; then
-       git -C ~/c/<repo> worktree remove ../<repo>-difftree && git -C ~/c/<repo> worktree prune \
-         && if git -C ~/c/<repo> merge-base --is-ancestor <branch> HEAD; then git -C ~/c/<repo> branch -d <branch> \
+     if git -C <clone> worktree list --porcelain | grep -Fx -A2 "worktree <wt>" | grep -Fxq "branch refs/heads/<branch>" \
+       && [ "$(git -C <clone> symbolic-ref --short HEAD)" = "<default>" ] && [ -z "$(git -C <clone> status --porcelain)" ] \
+       && git -C <clone> pull --ff-only origin <default> && git -C <clone> merge-base --is-ancestor <merge-sha> HEAD; then
+       git -C <clone> worktree remove <wt> && git -C <clone> worktree prune \
+         && if git -C <clone> merge-base --is-ancestor <branch> HEAD; then git -C <clone> branch -d <branch> \
               && { [ "$(gh api repos/<owner>/<repo> --jq .delete_branch_on_merge)" = "true" ] \
                    || gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/<branch>"; }; \
             else echo "branch tip not an ancestor of <default> (rebase/squash merge) — branch left in place; never -D"; fi
@@ -362,8 +363,8 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      to HEAD") right after the `merge-base` test passed means `-d` is judging against the branch's *upstream* tracking ref,
      which is stale whenever a push or pull went through an explicit URL instead of `origin`. The `merge-base` test has
      already proved the branch is in `<default>`, so drop the upstream and rerun once the whole tail from `branch -d` on —
-     `git -C ~/c/<repo> branch --unset-upstream <branch>` first, then rerun the command chain from
-     `git -C ~/c/<repo> branch -d <branch>` on, the `delete_branch_on_merge` test and the remote delete included, or a
+     `git -C <clone> branch --unset-upstream <branch>` first, then rerun the command chain from
+     `git -C <clone> branch -d <branch>` on, the `delete_branch_on_merge` test and the remote delete included, or a
      `false` repo keeps the remote branch. No fetch is needed: a fetch can refresh
      `origin/<branch>` only while the remote branch still exists — after the merge it may already be gone — and
      `--unset-upstream` works in every state. Never `-D`; never `worktree remove --force`.
