@@ -71,8 +71,8 @@ zero skill edits needed.
       PR #11 merged `40e01fa`; action worked; 5 skill edits (F17–F21) → not clean
 - [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
-- [ ] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
-      Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Cold retest 2 (`harness-kit`, unprotected, `delete_branch_on_merge=false`, 2026-08-31) clean, zero threads; consecutive-clean 2. Row stays open only on the private-repo clause: `shelf` (private, no workflows) is the candidate run 3.
+- [x] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
+      Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Cold retest 2 (`harness-kit`, unprotected, `delete_branch_on_merge=false`, 2026-08-31) clean, zero threads; consecutive-clean 2. Cold retest 3 (`shelf`, private, no prior workflows, 2026-08-31) clean, zero threads; consecutive-clean 3 — private-repo clause satisfied (F72 is a harness-level loading finding, not a skill-step failure).
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
 - [ ] [P03-T08] Fan-out: `agent-fork`
@@ -102,7 +102,8 @@ zero skill edits needed.
 - [ ] [P03-T30] Fan-out: `py-launch-blueprint`
 - [ ] [P03-T31] Fan-out: `register-gated-verification`
 - [ ] [P03-T32] Fan-out: `rest-standards`
-- [ ] [P03-T33] Fan-out: `shelf`
+- [x] [P03-T33] Fan-out: `shelf`
+      Installed as cold retest 3 (2026-08-31): smorinlabs/shelf#4, merge `a8a13ed`; clean run, zero threads; finding F72 (harness-level, step 9 hardened).
 - [ ] [P03-T34] Fan-out: `skillsmith`
 - [ ] [P03-T35] Fan-out: `smorin-segment-timer`
 - [ ] [P03-T36] Fan-out: `smorinlabs-harness`
