@@ -72,7 +72,7 @@ zero skill edits needed.
 - [x] [P03-T06] Pilot 3: `envgen` (Rust, busiest CI, homebrew-tap workflow)
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
 - [ ] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
-      Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Row stays open only on the private-repo clause: next `harness-kit` (unprotected, `delete_branch_on_merge=false`), then `shelf` (private).
+      Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Cold retest 2 (`harness-kit`, unprotected, `delete_branch_on_merge=false`, 2026-08-31) clean, zero threads; consecutive-clean 2. Row stays open only on the private-repo clause: `shelf` (private, no workflows) is the candidate run 3.
 - [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
       `pr-diff-tree.yml` (already wired; drift finding #1)
 - [ ] [P03-T08] Fan-out: `agent-fork`
@@ -90,7 +90,8 @@ zero skill edits needed.
 - [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
 - [ ] [P03-T20] Fan-out: `doxa-research`
 - [ ] [P03-T21] Fan-out: `ge-smorin-app`
-- [ ] [P03-T22] Fan-out: `harness-kit`
+- [x] [P03-T22] Fan-out: `harness-kit`
+      Installed as cold retest 2 (2026-08-31): PR #12, merge `0a5d29a`; clean run, zero threads, no new findings.
 - [ ] [P03-T23] Fan-out: `homebrew-tap`
 - [ ] [P03-T24] Fan-out: `identikit`
 - [ ] [P03-T25] Fan-out: `identikit-py`

@@ -358,12 +358,13 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      rebase/squash merge: the rewritten commits are not its ancestors — leave the branch, report it).
    - **On fail:** `cleanup preconditions failed — nothing removed` → a check failed or the pull did not bring `<merge-sha>` in: stop,
      report. Any other non-zero exit is `worktree remove`, `prune`, `branch -d`, or the remote delete itself (not relabelled): stop,
-     report — with one retry: a `branch -d` refusal ("not fully merged") right after the `merge-base` test passed means its
-     upstream tracking ref is stale (an explicit-URL `pull`/`fetch` updates the branch but not `refs/remotes/origin/…`):
-     refresh it through the transport that just worked, with an explicit refspec —
-     `git -C ~/c/<repo> fetch <url-the-pull-used> +refs/heads/<default>:refs/remotes/origin/<default>` (`origin` itself
-     only if `origin` is what worked) — then rerun once the whole tail from `branch -d` on — the `delete_branch_on_merge`
-     test and the remote delete included, or a `false` repo keeps the remote branch. Never `-D`; never `worktree remove --force`.
+     report — with one retry: a `branch -d` refusal ("not yet merged to `refs/remotes/origin/…`, even though it is merged
+     to HEAD") right after the `merge-base` test passed means `-d` is judging against the branch's *upstream* tracking ref,
+     which is stale whenever a push or pull went through an explicit URL instead of `origin`. The `merge-base` test has
+     already proved the branch is in `<default>`, so drop the upstream and rerun once the whole tail from `branch -d` on —
+     `git -C ~/c/<repo> branch --unset-upstream <branch>` first, then `branch -d`, the `delete_branch_on_merge` test and
+     the remote delete included, or a `false` repo keeps the remote branch. No fetch is needed and none fixes it (the
+     stale ref may be `origin/<branch>` itself, already deleted remotely). Never `-D`; never `worktree remove --force`.
 10. **Report.**
    - **Intent:** hand the user evidence for every pass condition above, so "done" can be audited without re-running
      anything. The set of items never varies by repo; a repo with no bots still reports an empty thread table.

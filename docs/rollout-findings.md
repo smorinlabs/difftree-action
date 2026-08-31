@@ -932,3 +932,32 @@ exactly as step 6 warns — the floor-time call 1 was run separately. Codex revi
 opened"), not the empty re-trigger push; Greptile posted its summary ~6.5 min after the push. The zsh globbing
 hazard (`?ref=` unquoted) bit a verification command the executor wrote, not a skill command — the skill's own
 URLs are quoted, and the new step 6 command is too.
+
+## Cold retest 2 — `harness-kit` (2026-08-31)
+
+Same session as cold retest 1, skill text = `main` @ `38c561d` (PR #18's corrections live). Repo shape: infra Python
+repo, **unprotected** `main` (step 7c's protection 404 → "none required" path), `delete_branch_on_merge=false`
+(step 9's remote `gh api -X DELETE` branch ran and `ls-remote` was empty afterward), HTTPS origin already naming
+`smorinlabs/harness-kit` (the new F67 check passed), no hook manager, floating action tags.
+
+PR https://github.com/smorinlabs/harness-kit/pull/12 · `<sha>` `46c75c2` · `<sha2>` `44da9d2` · merge `0a5d29a`
+· `<T_open>` 14:21:35Z · `<T_push>` 14:23:32Z · floor 14:33:32Z · call 1 empty at 14:29:36Z and 14:33:33Z · steps 1–9
+pass (run 1 `33402165539`, run 2 `33402350076`, comment `5479735040` `14:22:49Z → 14:23:42Z`; **zero review
+threads** — Copilot reviewed with no comments, CodeRabbit and Greptile summary-only, Codex absent; owner-approved merge).
+
+**Verdict: clean** — consecutive-clean count: **2**. No findings from the run. `[P03-TS01]` still open only on its
+private-repo clause.
+
+### F71 — the F66 retry fetches the wrong ref: `branch -d` judges against the branch's *own* upstream
+- **Where:** SKILL.md §4 step 9 On-fail (the F66 retry merged in PR #18).
+- **What:** reproduced live while closing PR #18's loop on `difftree-action` (SSH agent refused; pull and pushes
+  went through the explicit HTTPS URL). Even after `refs/remotes/origin/main` was refreshed, `git branch -d
+  fix/cold-retest-1` still refused — git's own message: *"not deleting branch 'fix/cold-retest-1' that is not yet
+  merged to 'refs/remotes/origin/fix/cold-retest-1', even though it is merged to HEAD"*. `-d` compares against the
+  branch's upstream (`origin/<branch>`, set by the first `--set-upstream` push and never advanced by the later
+  explicit-URL pushes), not against `<default>`; no fetch of `<default>` can fix that, and the remote branch may
+  already be deleted so no fetch of `<branch>` can either.
+- **Fix:** the retry no longer fetches: `git branch --unset-upstream <branch>` (the `merge-base` test already proved
+  the branch is in `<default>`, so `-d` then judges against HEAD), then rerun the tail from `branch -d` on, remote
+  delete included (this PR). Verified by hand on the reproduction: `Deleted branch fix/cold-retest-1 (was 7cc3a05)`.
+- **Class:** skill.
