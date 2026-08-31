@@ -879,8 +879,10 @@ none blocked. `[P03-TS01]` stays open only because its row requires a private re
   close-out on `difftree-action` itself, not in this run).
 - **What:** `git pull <url> <default>` moves the local branch but not `refs/remotes/origin/<default>`;
   `branch -d` then judges "not fully merged" against a stale upstream and refuses.
-- **Fix:** step 9's On-fail gains one retry — `git fetch origin` then `branch -d` once more, never `-D`
-  (this PR; **proposed, not reproduced** — it needs an SSH-refused session to trigger).
+- **Fix:** step 9's On-fail gains one retry — `git fetch origin`, then the whole tail from `branch -d` on
+  (including the `delete_branch_on_merge` test and remote delete — Greptile caught the first wording dropping that
+  half), never `-D` (this PR; **proposed, not reproduced** — it needs an SSH-refused session to trigger).
+  Greptile's simulation artifacts on PR #18 reproduced the stale-tracking-ref refusal independently.
 - **Class:** skill.
 
 ### F67 — §2 step 1 never checks that an existing `~/c/<repo>` clone's origin is `<owner>/<repo>`
@@ -889,8 +891,9 @@ none blocked. `[P03-TS01]` stays open only because its row requires a private re
   worked only because GitHub redirects the transferred repo to `smorinlabs/agent2linear` (`git push` printed
   `To https://github.com/smorin/agent2linear.git`). A same-named clone of a *different* repo would be pushed to
   silently.
-- **Fix:** step 1 now requires `git -C <repo> ls-remote --get-url origin` to match `[:/]<owner>/<repo>(\.git)?$`
-  and stops on a redirect or mismatch (this PR). Repo-local: this clone's remote is the owner's to fix with
+- **Fix:** step 1 now requires `git -C <repo> ls-remote --get-url origin` to match
+  `github\.com[:/]<owner>/<repo>(\.git)?$` and stops on a redirect, another host, or a mismatch (this PR; the
+  host anchor was a Copilot review catch on PR #18). Repo-local: this clone's remote is the owner's to fix with
   `git -C ~/c/agent2linear remote set-url origin https://github.com/smorinlabs/agent2linear.git`.
 - **Class:** skill; repo-local.
 
