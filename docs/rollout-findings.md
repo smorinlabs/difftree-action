@@ -879,7 +879,9 @@ none blocked. `[P03-TS01]` stays open only because its row requires a private re
   close-out on `difftree-action` itself, not in this run).
 - **What:** `git pull <url> <default>` moves the local branch but not `refs/remotes/origin/<default>`;
   `branch -d` then judges "not fully merged" against a stale upstream and refuses.
-- **Fix:** step 9's On-fail gains one retry — `git fetch origin`, then the whole tail from `branch -d` on
+- **Fix:** step 9's On-fail gains one retry — refresh `refs/remotes/origin/<default>` through the transport that
+  just worked (`git fetch <url-the-pull-used> +refs/heads/<default>:refs/remotes/origin/<default>`; CodeRabbit
+  noted a bare `fetch origin` would reuse the refused transport), then the whole tail from `branch -d` on
   (including the `delete_branch_on_merge` test and remote delete — Greptile caught the first wording dropping that
   half), never `-D` (this PR; **proposed, not reproduced** — it needs an SSH-refused session to trigger).
   Greptile's simulation artifacts on PR #18 reproduced the stale-tracking-ref refusal independently.

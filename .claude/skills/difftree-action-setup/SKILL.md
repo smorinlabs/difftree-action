@@ -360,7 +360,9 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      report. Any other non-zero exit is `worktree remove`, `prune`, `branch -d`, or the remote delete itself (not relabelled): stop,
      report — with one retry: a `branch -d` refusal ("not fully merged") right after the `merge-base` test passed means its
      upstream tracking ref is stale (an explicit-URL `pull`/`fetch` updates the branch but not `refs/remotes/origin/…`):
-     `git -C ~/c/<repo> fetch origin`, then rerun once the whole tail from `branch -d` on — the `delete_branch_on_merge`
+     refresh it through the transport that just worked, with an explicit refspec —
+     `git -C ~/c/<repo> fetch <url-the-pull-used> +refs/heads/<default>:refs/remotes/origin/<default>` (`origin` itself
+     only if `origin` is what worked) — then rerun once the whole tail from `branch -d` on — the `delete_branch_on_merge`
      test and the remote delete included, or a `false` repo keeps the remote branch. Never `-D`; never `worktree remove --force`.
 10. **Report.**
    - **Intent:** hand the user evidence for every pass condition above, so "done" can be audited without re-running
