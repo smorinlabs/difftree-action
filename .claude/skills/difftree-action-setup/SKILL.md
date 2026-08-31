@@ -364,8 +364,9 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      already proved the branch is in `<default>`, so drop the upstream and rerun once the whole tail from `branch -d` on —
      `git -C ~/c/<repo> branch --unset-upstream <branch>` first, then rerun the command chain from
      `git -C ~/c/<repo> branch -d <branch>` on, the `delete_branch_on_merge` test and the remote delete included, or a
-     `false` repo keeps the remote branch. No fetch is needed and none fixes it (the
-     stale ref may be `origin/<branch>` itself, already deleted remotely). Never `-D`; never `worktree remove --force`.
+     `false` repo keeps the remote branch. No fetch is needed: a fetch can refresh
+     `origin/<branch>` only while the remote branch still exists — after the merge it may already be gone — and
+     `--unset-upstream` works in every state. Never `-D`; never `worktree remove --force`.
 10. **Report.**
    - **Intent:** hand the user evidence for every pass condition above, so "done" can be audited without re-running
      anything. The set of items never varies by repo; a repo with no bots still reports an empty thread table.
