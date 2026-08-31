@@ -6,7 +6,7 @@ against `smorinlabs/shelf` (cold retest 3 — private repo, no workflows at all:
 untested shape, and the one that ticks `[P03-TS01]`'s private-repo clause). Fold any
 corrections into the skill after the run, exactly as retests 1–2 did. If `shelf` is clean
 (or its corrections are folded and unsurprising), proceed to the **fan-out** over the
-remaining 32 repos per the mechanics below. If `shelf` goes badly wrong, stop and confer
+remaining 31 repos per the mechanics below. If `shelf` goes badly wrong, stop and confer
 before fanning out.
 
 **Out of scope:** the org-wide `merge_commit_message` sweep (F16); the ADR `envgen` owes
@@ -79,8 +79,8 @@ Pass · On fail; every improvisation is a finding. The retest procedure, condens
    criteria, **`[P03-TS01]`** (its private-repo clause is what `shelf` satisfies).
 6. **Fan-out** (the owner has already chosen it as the next step if `shelf` is clean):
    one skill run per repo, **sequential** (one poll loop at a time), evidence-table stop
-   and owner approval before every merge, §4 checklist as acceptance. Remaining 32 repos
-   are the unticked `[P03-T08]`–`[P03-T43]` rows in `PROJECTS.md` (33 minus `shelf`);
+   and owner approval before every merge, §4 checklist as acceptance. Remaining 31 repos
+   are the unticked `[P03-T08]`–`[P03-T43]` rows in `PROJECTS.md` (33 rows minus `shelf` and minus `[P03-T19]` `difftree-action`);
    `difftree-action` itself (`[P03-T19]`) is never a target — it dogfoods `uses: ./`.
    Suggested order: test/scratch repos first (cheap, low blast radius), then ordinary,
    then private, so early surprises are cheap. Repos with their own SHA-pin hygiene test
