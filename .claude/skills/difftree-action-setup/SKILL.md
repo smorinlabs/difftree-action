@@ -341,8 +341,8 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
      checkout. The clone from §2 step 1, if any, is left in place — only the worktree and branches are removed here.
    - **Command:**
      ```sh
-     if git -C ~/c/<repo> worktree list --porcelain | awk -v w="$HOME/c/<repo>-difftree" -v b="refs/heads/<branch>" \
-          'BEGIN{RS=""} $1=="worktree" && $2==w && $5=="branch" && $6==b {ok=1} END{exit !ok}' \
+     # grep, not awk: awk's positional fields are `$<digit>`, which args-bearing skill invocation rewrites in the loaded text (F72)
+     if git -C ~/c/<repo> worktree list --porcelain | grep -Fx -A2 "worktree $HOME/c/<repo>-difftree" | grep -Fxq "branch refs/heads/<branch>" \
        && [ "$(git -C ~/c/<repo> symbolic-ref --short HEAD)" = "<default>" ] && [ -z "$(git -C ~/c/<repo> status --porcelain)" ] \
        && git -C ~/c/<repo> pull --ff-only origin <default> && git -C ~/c/<repo> merge-base --is-ancestor <merge-sha> HEAD; then
        git -C ~/c/<repo> worktree remove ../<repo>-difftree && git -C ~/c/<repo> worktree prune \

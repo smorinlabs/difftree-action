@@ -961,3 +961,39 @@ private-repo clause.
   the branch is in `<default>`, so `-d` then judges against HEAD), then rerun the tail from `branch -d` on, remote
   delete included (this PR). Verified by hand on the reproduction: `Deleted branch fix/cold-retest-1 (was 7cc3a05)`.
 - **Class:** skill.
+
+## Cold retest 3 — `shelf` (2026-08-31)
+
+Third cold run, fresh session launched from `docs/handoffs/2026-08-31-p03-run3-shelf-fanout.md`; skill text =
+`main` @ `3f6448b` (loaded via `caa5dd4`; no skill changes since). Repo shape: **private**, **no
+`.github/workflows/` at all** (the installed workflow is the repo's first), unprotected `main` (step 7c's 404 →
+"none required"), `delete_branch_on_merge=true`, HTTPS origin already naming `smorinlabs/shelf` (F67 check
+passed), no hook manager.
+
+PR https://github.com/smorinlabs/shelf/pull/4 · `<sha>` `2ef99e6` · `<sha2>` `525b9e0` · merge `a8a13ed`
+· `<T_open>` 17:10:01Z · `<T_push>` 17:13:01Z · floor 17:23:01Z · call 1 empty at 17:23:19Z and again at the
+step 8 precondition · steps 1–9 pass (run 1 `33418089119` ~2m21s, run 2 `33418348711` ~17s, comment
+`5481810089` `17:12:21Z → 17:13:13Z`; **zero review threads** — Copilot posted a COMMENTED review with zero
+inline comments, CodeRabbit summary-only, Greptile and Codex absent on the private repo; two skipped `edited`
+runs on `<sha>`; the `[code]smith` skipped check-run present as expected; owner-approved merge). The
+first-ever-workflow concern did not materialize: Actions ran on the private repo with no settings change, and
+step 9's `delete_branch_on_merge=true` branch needed no F71 retry (all transfers went through `origin` over
+HTTPS).
+
+**Verdict: clean** — consecutive-clean count: **3**. The skill's own steps ran verbatim; the one finding is in
+the loading path, not the skill text. `[P03-TS01]`'s private-repo clause is satisfied — row closed.
+
+### F72 — args-bearing skill invocation substitutes `$N` into the skill body, corrupting step 9's awk in context
+- **Where:** the harness loading path (Claude Code Skill-tool / slash-command argument expansion), hitting
+  SKILL.md §4 step 9's awk script — the only `$<digit>` text in the file.
+- **What:** invoked with args (`Add difftree PR diff-tree comments to smorinlabs/shelf, …`), the loaded skill
+  text read `'BEGIN{RS=""} difftree=="worktree" && PR==w && to=="branch" && smorinlabs/shelf,==b …'` — the awk
+  positional fields `$1 $2 $5 $6` replaced by words from the argument string (the trailing comma in
+  `smorinlabs/shelf,` is the tell). The disk file was intact; named vars (`$out`, `$PROV`, `${TMPDIR}`)
+  survive because only `$<digit>` matches the placeholder syntax. Executing the in-context block would have
+  broken step 9's precondition check on every args-bearing run. Mitigated this run by executing the block from
+  the disk bytes.
+- **Fix:** make the one affected block substitution-proof — replace the awk with a `grep -A2` pipeline over
+  `worktree list --porcelain` that uses no positional fields (this PR). The harness behavior itself is outside
+  this repo's control; the skill simply no longer contains any `$<digit>` for it to eat.
+- **Class:** skill (hardening) + harness.
