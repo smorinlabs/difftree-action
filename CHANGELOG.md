@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.3](https://github.com/smorinlabs/difftree-action/compare/v0.7.2...v0.7.3) (2026-09-01)
+
+
+### Documentation
+
+* differentiate the two relocated wave-log bullets ([5a2e797](https://github.com/smorinlabs/difftree-action/commit/5a2e797393823e47978350e3a47a05f4cdd111e1))
+* neutralize fleet-specific wording in CHANGELOG entries ([a226297](https://github.com/smorinlabs/difftree-action/commit/a2262975716e72ef78ea59de979354ded8d5e2f4))
+* neutralize fleet-specific wording in CHANGELOG entries ([dbacc16](https://github.com/smorinlabs/difftree-action/commit/dbacc1628aef332c8d6d2c01789641d37260c4bb))
+* **projects:** close P05 — v0.7.x released ([6107bc5](https://github.com/smorinlabs/difftree-action/commit/6107bc5f716aa31dce57217e37c95f7aa6969e74))
+* **projects:** close P05 — v0.7.x released, canary verified, v0 gate confirmed ([b383bdf](https://github.com/smorinlabs/difftree-action/commit/b383bdffe9d08cea6664ef686464d757dd1d429f))
+
 ## [0.7.2](https://github.com/smorinlabs/difftree-action/compare/v0.7.1...v0.7.2) (2026-09-01)
 
 
