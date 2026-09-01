@@ -33,20 +33,20 @@ it: prebuilt binary, `cargo install difftree`, or this repo's flox env).
 
 ## Install
 
-**In this repo — nothing to install.** Claude Code auto-discovers
-`.claude/skills/difftree-pr-body/`; Codex discovers it through the committed
-symlink `.agents/skills/difftree-pr-body`.
+**In this repo — nothing to install.** The skill lives in the agent-neutral
+`.agents/skills/difftree-pr-body/` (Codex discovery); Claude Code discovers it
+through the committed symlink `.claude/skills/difftree-pr-body`.
 
 **Copy into your own setup** (no dependencies):
 
     git clone https://github.com/smorinlabs/difftree-action
-    cp -R difftree-action/.claude/skills/difftree-pr-body ~/.claude/skills/difftree-pr-body   # Claude Code
-    cp -R difftree-action/.claude/skills/difftree-pr-body ~/.agents/skills/difftree-pr-body   # Codex
+    cp -R difftree-action/.agents/skills/difftree-pr-body ~/.agents/skills/difftree-pr-body   # Codex
+    cp -R difftree-action/.agents/skills/difftree-pr-body ~/.claude/skills/difftree-pr-body   # Claude Code
 
 **Dev mode** (edits in the clone are live next session):
 
-    ln -s "$(pwd)/difftree-action/.claude/skills/difftree-pr-body" ~/.claude/skills/difftree-pr-body   # Claude Code
-    ln -s "$(pwd)/difftree-action/.claude/skills/difftree-pr-body" ~/.agents/skills/difftree-pr-body   # Codex
+    ln -s "$(pwd)/difftree-action/.agents/skills/difftree-pr-body" ~/.agents/skills/difftree-pr-body   # Codex
+    ln -s "$(pwd)/difftree-action/.agents/skills/difftree-pr-body" ~/.claude/skills/difftree-pr-body   # Claude Code
 
 ## Example session
 

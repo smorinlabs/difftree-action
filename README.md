@@ -93,16 +93,17 @@ guaranteed; if the base history is missing the action fails with a clear message
 
 ## Set it up with an agent
 
-This repo ships the [`difftree-action-setup`](.claude/skills/difftree-action-setup/SKILL.md)
-skill — auto-discovered by Claude Code (`.claude/skills/`) and Codex
-(`.agents/skills/`) when working in this repo. Ask your agent to "set up difftree
+This repo ships the [`difftree-action-setup`](.agents/skills/difftree-action-setup/SKILL.md)
+skill — shipped in the agent-neutral `.agents/skills/` (Codex discovery), with
+committed `.claude/skills/` symlinks for Claude Code — auto-discovered by both
+when working in this repo. Ask your agent to "set up difftree
 PR comments" and it installs the difftree CLI (when needed) and scaffolds
 [`examples/difftree-pr-comment.yml`](./examples/difftree-pr-comment.yml) into your repo. To
 install the skill elsewhere, see
 [`docs/skills/difftree-action-setup.md`](docs/skills/difftree-action-setup.md).
 
 Prefer the tree in the PR **body** instead of a comment? The
-[`difftree-pr-body`](.claude/skills/difftree-pr-body/SKILL.md) skill has your
+[`difftree-pr-body`](.agents/skills/difftree-pr-body/SKILL.md) skill has your
 agent render and splice a marker-delimited "🌳 Diff tree" fold into the PR
 description it authors, and refresh it whenever it re-syncs the description
 after pushes — no Action, no extra comment. See

@@ -22,27 +22,28 @@ test("flox DIFFTREE_VERSION mirrors action.yml's difftree-version default", () =
   assert.equal(floxVer[1], actionVer[1], "bump both together (see manifest comment)");
 });
 
-// Each shipped skill is discoverable on both agent paths and documented:
-// .claude/skills/<name>/SKILL.md, a relative .agents/skills/<name> symlink
-// pointing at it, and a docs/skills/<name>.md page.
+// Each shipped skill is canonical on the agent-neutral path and discoverable
+// from the Claude Code one: .agents/skills/<name>/SKILL.md is the real
+// directory, .claude/skills/<name> is a relative symlink pointing at it, and
+// a docs/skills/<name>.md page exists.
 for (const name of ["difftree-action-setup", "difftree-pr-body"]) {
-  test(`skill ${name}: claude dir, agents symlink, docs page agree`, () => {
-    const skillMd = path.join(root, ".claude", "skills", name, "SKILL.md");
+  test(`skill ${name}: agents dir, claude symlink, docs page agree`, () => {
+    const skillMd = path.join(root, ".agents", "skills", name, "SKILL.md");
     assert.ok(fs.existsSync(skillMd), "SKILL.md exists");
-    const link = path.join(root, ".agents", "skills", name);
+    const link = path.join(root, ".claude", "skills", name);
     assert.equal(
       fs.readlinkSync(link),
-      path.join("..", "..", ".claude", "skills", name),
-      "symlink is relative and targets the .claude skill dir"
+      path.join("..", "..", ".agents", "skills", name),
+      "symlink is relative and targets the .agents skill dir"
     );
     assert.ok(fs.existsSync(path.join(root, "docs", "skills", `${name}.md`)), "docs page exists");
-    const front = read(".claude", "skills", name, "SKILL.md");
+    const front = read(".agents", "skills", name, "SKILL.md");
     assert.match(front, new RegExp(`^name: ${name}$`, "m"), "frontmatter name matches dir");
   });
 }
 
 test("difftree-pr-body markers are consistent across skill and docs", () => {
-  const skill = read(".claude", "skills", "difftree-pr-body", "SKILL.md");
+  const skill = read(".agents", "skills", "difftree-pr-body", "SKILL.md");
   const docs = read("docs", "skills", "difftree-pr-body.md");
   for (const marker of ["<!-- difftree-pr-body:begin -->", "<!-- difftree-pr-body:end -->"]) {
     assert.ok(skill.includes(marker), `SKILL.md carries ${marker}`);
