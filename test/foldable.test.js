@@ -71,10 +71,12 @@ test("all nine colorSection × plainSection states: marker first, order, open at
       const expectFolds = plainSection === "hidden" ? 1 : 2;
       assert.equal(opens, expectFolds, `${label}: fold count`);
       // every <summary> line is followed by a blank line; every </details> preceded by one
-      for (const m of body.matchAll(/<\/summary>\n(.)/g)) assert.equal(m[1], "\n", `${label}: blank after summary`);
-      for (const m of body.matchAll(/(.)\n<\/details>/g)) assert.equal(m[1], "", `${label}: blank before /details`);
+      assert.equal((body.match(/<\/summary>\n\n/g) || []).length, opens, `${label}: blank line after every summary`);
+      assert.equal((body.match(/\n\n<\/details>/g) || []).length, closes, `${label}: blank line before every /details`);
       if (plainSection !== "hidden") {
-        assert.ok(body.indexOf(PLAIN_SUMMARY) < body.indexOf("🌳 3 dirs" === -1 ? "<details open" : "dirs touched"), `${label}: plain fold above colored`);
+        const plainAt = body.indexOf(PLAIN_SUMMARY);
+        const coloredAt = body.indexOf("<summary>🌳");
+        assert.ok(plainAt !== -1 && coloredAt !== -1 && plainAt < coloredAt, `${label}: plain fold above colored`);
         assert.equal(body.includes(`<details${plainSection === "open" ? " open" : ""}>\n<summary>${PLAIN_SUMMARY}`), true, `${label}: plain open attr`);
       }
       const statsSummary = body.match(/<summary>🌳 ([^<]*)<\/summary>/);
@@ -164,16 +166,28 @@ test("large tree with visible plain fold: colored fold has the pointer, not a du
 
 // ------------------------------------------------- TS04: containment
 
-test("hostile fence-closing content cannot escape the plain fold", () => {
-  const tree = synth(10, { nameFor: (i) => (i === 5 ? "evil" : `f_${i}.ts`) }).replace("├── × evil", "```\n</details>\n├── × evil");
+test("hostile backtick content in the tree grows the plain fold's fence delimiter", () => {
+  // A 4-backtick filename: no HTML tags (so the tag guard stays out of the way),
+  // lands in the plain suffix (backtick body lines are never colored) and in the
+  // plain fold, whose safeFence delimiter must exceed the run.
+  const tree = synth(10, { nameFor: (i) => (i === 5 ? "we````ird.ts" : `f_${i}.ts`) });
   const { body } = composeBody(tree, {});
-  const opens = (body.match(/<details/g) || []).length;
-  const closes = (body.match(/<\/details>/g) || []).length;
-  assert.equal(opens, closes);
-  const m = body.match(/(`{4,})\n/);
-  if (body.indexOf(PLAIN_SUMMARY) !== -1 && body.includes("```\n</details>\n")) {
-    assert.ok(m, "fence delimiter longer than content backtick runs");
-  }
+  assert.equal((body.match(/<details/g) || []).length, 2, "both folds present");
+  assert.equal((body.match(/<\/details>/g) || []).length, 2, "balanced");
+  assert.ok(body.includes("we````ird.ts"), "hostile line is inside the fold content");
+  assert.ok(/`{5,}\n/.test(body), "fence delimiter longer than the content's backtick run");
+  assert.ok(body.length <= GITHUB_COMMENT_LIMIT);
+});
+
+test("colored-only mode reserves the real fence delimiter for a backtick-heavy suffix", () => {
+  // Backtick line at body index 119 caps k at 97; the suffix (fenced inside the
+  // colored fold) then contains a 40-backtick run — the reserve must use the
+  // actual safeFence delimiter, not a flat constant.
+  const tree = synth(150, { nameFor: (i) => (i === 120 ? "`".repeat(40) + ".ts" : `f_${i}.ts`) });
+  const { body } = composeBody(tree, { plainSection: "hidden" });
+  assert.equal((body.match(/<details/g) || []).length, 1);
+  assert.ok(/`{41,}\n/.test(body), "fence delimiter exceeds the 40-backtick run");
+  assert.ok(body.length <= GITHUB_COMMENT_LIMIT, `body ${body.length}`);
 });
 
 test("safeFence delimiter always exceeds the longest backtick run", () => {

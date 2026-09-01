@@ -2,7 +2,7 @@
 
 > **Historical document** — the original build prompt, kept for provenance; not
 > updated as features land (see `PRD.md`/`PROJECTS.md` for current state).
-
+>
 > Hand this prompt to the goal/planning flow. It is the entry point; it points at
 > [`GOAL.md`](./GOAL.md) for the working-backwards plan and [`PRD.md`](./PRD.md)
 > for the requirements, with [`PLAN.md`](./PLAN.md) as the implementation plan.

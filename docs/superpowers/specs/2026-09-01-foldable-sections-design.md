@@ -8,7 +8,7 @@ Evidence: probes J/K/L on `smorinlabs/harness-kit` issues #23–#25 (2026-09-01)
 The sticky PR comment carries BOTH renderings in foldable sections (`<details>`/`<summary>`), because the colored
 inline-math rendering does not work on mobile or in email. Default layout (probe L1, owner-approved):
 
-```
+```text
 <!-- difftree-action -->
 ### 🌳 difftree — changes in this PR
 

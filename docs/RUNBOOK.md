@@ -19,8 +19,10 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
      `📱 Plain text version (mobile / email)`, and an **open** fold whose
      summary is the `N dirs touched · N files changed · +N −M` stats line,
      holding the tree as colored rows (one inline-math expression per line).
-     A bare fenced ASCII tree appears only with `color-section: "hidden"`
-     (or the deprecated `color: "false"`).
+     A bare fenced ASCII tree appears with `color-section: "hidden"`
+     (or the deprecated `color: "false"`), and also as the automatic safety
+     fallback when colored rendering declines (backticks or raw HTML tag text
+     in the tree — a warning names the reason in the run log).
 2. **Push another commit** to the same PR.
    - ✅ Expect: the **same** comment updates in place — no second difftree-action
      comment appears.

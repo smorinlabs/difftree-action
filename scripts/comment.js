@@ -379,10 +379,23 @@ function composeFoldedBody(tree, split, { truncated, heading, advertise, colorSt
     if (split.plain.length) {
       const notice = `_…and ${split.plain.length} more lines below (plain — GitHub renders a limited number of colored lines per page)._`;
       const plainText = split.plain.join("\n");
-      const fixedSoFar = coloredParts.join("\n").length + notice.length + (split.footer ? split.footer.length : 0) + 1024;
-      const r = truncateTree(plainText, GITHUB_COMMENT_LIMIT - fixedSoFar);
-      suffixTruncated = r.truncated;
-      coloredParts.push(notice, safeFence(r.tree.replace(/\s+$/, "")));
+      // Reserve the ACTUAL fence delimiter bytes (a suffix with a long backtick
+      // run needs a longer safeFence); a truncated prefix never needs more than
+      // the full text does. SCAFFOLD_BUDGET covers marker/heading/fold shell/ad
+      // and is handed back to truncateTree's limit convention below.
+      const delimBytes = safeFence(plainText).length - plainText.length;
+      const fixedSoFar =
+        coloredParts.join("\n").length + notice.length + delimBytes +
+        (split.footer ? split.footer.length : 0) + TRUNCATION_NOTICE.length + SCAFFOLD_BUDGET;
+      const capacity = GITHUB_COMMENT_LIMIT - fixedSoFar;
+      if (capacity <= 0) {
+        suffixTruncated = true;
+        coloredParts.push(notice, safeFence(""));
+      } else {
+        const r = truncateTree(plainText, capacity + SCAFFOLD_BUDGET);
+        suffixTruncated = r.truncated;
+        coloredParts.push(notice, safeFence(r.tree.replace(/\s+$/, "")));
+      }
     }
     if (truncated || suffixTruncated) coloredParts.push("", TRUNCATION_NOTICE);
     if (split.footer) coloredParts.push("", split.footer);
@@ -425,10 +438,12 @@ function composeFoldedBody(tree, split, { truncated, heading, advertise, colorSt
 
   let plainTree = "";
   let noticeNeeded = truncated;
-  if (capacity <= SCAFFOLD_BUDGET) {
-    noticeNeeded = true; // never call truncateTree with limit ≤ its reserve (negative slice)
+  if (capacity <= 0) {
+    noticeNeeded = true; // never call truncateTree with a limit ≤ its reserve (negative slice)
   } else {
-    const r = truncateTree(plainFullText, capacity);
+    // fixedBytes already measured every real byte, so hand truncateTree exactly
+    // `capacity` of content: its limit convention subtracts SCAFFOLD_BUDGET.
+    const r = truncateTree(plainFullText, capacity + SCAFFOLD_BUDGET);
     plainTree = r.tree.replace(/\s+$/, "");
     noticeNeeded = noticeNeeded || r.truncated;
   }

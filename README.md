@@ -213,8 +213,8 @@ GitHub's renderer imposes limits that were measured on 2026-09-01
   the tail of the colored section can show raw TeX; set `color: "false"`.
 - A filename containing a backtick cannot be encoded; that line and everything
   after it render plain.
-- Color shows on github.com only. Email notifications and mobile views show the
-  TeX source — which is why the default comment carries the plain tree in the
+- Color shows on github.com only. Email notifications and some mobile views show
+  the TeX source — which is why the default comment carries the plain tree in the
   📱 fold; mobile-first teams can set `plain-section: "open"` and
   `color-section: "closed"`.
 
