@@ -1166,7 +1166,8 @@ designed. Relaunched with provenance `b70ce28`. Threads: 1 permissions refutatio
 | terraform-gcp-template | #1 | `14ae771` | private; merged past pre-existing `gates` failure (broken on `main` since 2026-07-10; owner call) |
 | warpqueuekit | #5 | `988dd5a` | private; clean |
 
-**Fleet standing at the end of the fan-out:** 39 of 40 target repos carry the canonical workflow (template-press
-merge pending its CI), `difftree-action` dogfoods `uses: ./`. Open follow-ups: (a) 33 repos installed before
+**Fleet standing at the end of the fan-out:** all 39 install targets carry the canonical workflow (the last,
+template-press, landed at `c0992d8` after a hung Windows runner was cancelled and rerun); the 40th non-archived
+repo, `difftree-action` itself, dogfoods `uses: ./` and was never a target (T19 closed `[-]`). Open follow-ups: (a) 33 repos installed before
 `b70ce28` are one comment line behind the current canonical (`0143f5f1…` vs `c0e126bd…`) — a mechanical resync
 wave is the owner's call; (b) release PR #22 (v0.6.0: rename + color) is the owner's click.
