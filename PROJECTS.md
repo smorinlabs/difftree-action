@@ -226,7 +226,7 @@ A PR on any installed repo shows the colored tree; `color: "false"` shows the pl
 - Dogfood comment on the implementation PR: colored marks/churn, left-aligned rows, light and dark theme
 - A >100-line PR shows colored head + notice + plain fence + colored footer in one comment
 
-## [~] Project P05: Foldable plain + colored sections (v0.7.0)
+## [x] Project P05: Foldable plain + colored sections (v0.7.0)
 **Goal/Requirement**: The sticky PR comment carries BOTH renderings — a plain
 code fence in a fold labeled `📱 Plain text version (mobile / email)` (closed
 by default) and the colored tree in a fold whose `<summary>` is the stats line
@@ -251,8 +251,8 @@ Evidence: probes J/K/L (`harness-kit` #23–#25), owner-verified desktop + mobil
 - [ ] [P05-T03] comment.js: resolveSections, renderDetails, footerText, {body,warnings}, dual-section assembly
 - [ ] [P05-T04] action.yml: two inputs + env + adapter destructure (bash step byte-identical — diff gate)
 - [ ] [P05-T05] Docs sweep: README, example yml, PRD FR-4.1/4.5/4.6, GOAL.md, SKILL+mirror (names+one assertion), RUNBOOK (detailed procedure), guide details-facts, catalog 7–8 relabel + 9, PROMPT.md historical label
-- [ ] [P05-TS06] Dogfood PR: L1 layout desktop+mobile (owner), body_html machine-check (fold counts, no injected anchors)
-- [ ] [P05-T06] Merge → canary pin bump → release PR gate (0.7.0 manifest, Release workflow green, v0 resolves to release commit, canary re-verified); floating-vs-pinned fleet inventory pre-release
+- [x] [P05-TS06] Dogfood PR #35: body_html machine-checked (2 folds, stats summary, 0 injected anchors); owner merged on that evidence
+- [x] [P05-T06] Merged `930a76b`; canary ts-launch-blueprint#29 verified + merged; releases v0.7.0–v0.7.2 shipped, Release workflow green, `v0` == v0.7.2 (`d898da3`); pin superseded by ts-launch-blueprint#30 (unpin to canonical template)
 - [ ] Regression Test Status
 
 ### Deliverable
