@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.2](https://github.com/smorinlabs/difftree-action/compare/v0.7.1...v0.7.2) (2026-09-01)
+
+
+### Documentation
+
+* remove banksheets-specific records from the public repo ([a7b545d](https://github.com/smorinlabs/difftree-action/commit/a7b545de9062e0a48461a5ebf9c2efd6333bdc69))
+* remove banksheets-specific records from the public repo ([9c8aedc](https://github.com/smorinlabs/difftree-action/commit/9c8aedcfc64ad4490b4964a069b066571cb5204f))
+
 ## [0.7.1](https://github.com/smorinlabs/difftree-action/compare/v0.7.0...v0.7.1) (2026-09-01)
 
 
