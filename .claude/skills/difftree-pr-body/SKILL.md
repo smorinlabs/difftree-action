@@ -21,28 +21,25 @@ through an agent that re-syncs the description after pushes.
 
 ## The section
 
-The section is one foldable block, delimited by markers, living at the
-**bottom** of the PR body:
+The section is the **same rendering the difftree-action comment carries** —
+`### 🌳 difftree — changes in this PR` heading, closed 📱 plain-text fold,
+open colored fold whose `<summary>` is the stats line — wrapped in markers at
+the **bottom** of the PR body:
 
-````markdown
+```markdown
 <!-- difftree-pr-body:begin -->
-<details>
-<summary>🌳 <stats line></summary>
-
-```text
-<full difftree output>
+<rendered body from step 1>
+<!-- difftree-pr-body:end -->
 ```
 
-</details>
-<!-- difftree-pr-body:end -->
-````
-
-- `<stats line>` is the **last line** of the difftree output (e.g.
-  `4 dirs touched · 6 files changed (5 modified · 1 renamed) · +68 −28`), so
-  the fold shows the shape at a glance even when closed.
 - The markers are the splice contract: everything between and including them
   is owned by this skill and rewritten wholesale on refresh. Never hand-edit
   inside them; prose belongs above the `begin` marker.
+- Color comes from GitHub inline math and shares a **~145-expressions-per-page
+  budget** with every comment on the PR — so a repo using this skill should
+  not also run the action's colored comment on the same PRs (avoiding the
+  extra comment is this skill's point). See the README's
+  "Color rendering — limits".
 
 ## 1. Render
 
@@ -53,6 +50,7 @@ repo flox env that provides it). Then, from the PR's checkout:
 ```sh
 git fetch origin <base>                      # difftree needs the base history
 difftree --pr=origin/<base> --committed --no-color > "${TMPDIR:-/tmp}/difftree-pr.txt"
+node "<renderer>" < "${TMPDIR:-/tmp}/difftree-pr.txt" > "${TMPDIR:-/tmp}/difftree-section.txt"
 ```
 
 `<base>` is the PR's base branch (`gh pr view --json baseRefName -q
@@ -61,8 +59,22 @@ creating one). On a shallow clone, `git fetch --unshallow origin <base>`
 first — difftree computes `merge-base(base, HEAD)` and needs the full base
 history.
 
-**Done when:** the file holds a tree whose header names `origin/<base>` and
-whose last line is the stats line.
+`<renderer>` is difftree-action's `scripts/render-body.js` (composeBody minus
+the comment-ownership marker; flags: `--color-section=` / `--plain-section=` /
+`--no-advertise` / `--heading=`). Resolve it the way difftree-action-setup
+resolves its template: walk up from this skill's physical directory to a repo
+holding `action.yml` and `scripts/render-body.js`; copied out of the repo,
+fetch `scripts/comment.js` and `scripts/render-body.js` into one temp dir,
+pinned to the current `main` commit
+(`gh api repos/smorinlabs/difftree-action/commits/main --jq .sha`, then
+`https://raw.githubusercontent.com/smorinlabs/difftree-action/<sha>/scripts/<file>`).
+Renderer warnings on stderr (a decline to plain) are informational, not
+failures. **Fallback** when node or the renderer is unavailable: build the
+section by hand as a single fold — `<summary>🌳 <stats line></summary>` (the
+output's last line) with the tree in a ```` ```text ```` fence inside.
+
+**Done when:** `difftree-section.txt` holds the rendered section — heading
+first, tree present (colored folds, or the fallback fold).
 
 ## 2. Splice
 

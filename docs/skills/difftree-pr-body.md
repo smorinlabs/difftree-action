@@ -13,10 +13,17 @@ it stale until the next agent pass; prefer the difftree-action comment when
 those happen.
 
 The skill renders with `difftree --pr=origin/<base> --committed --no-color`
-(after fetching the base — full history required), uses the output's last line
-as the fold's `<summary>` stats line, strips any existing marker section, and
-appends the fresh one via `gh pr edit --body-file`. Its staleness criterion is
-byte-identity: a fresh render must match the tree inside the section on GitHub.
+(after fetching the base — full history required), pipes the tree through
+[`scripts/render-body.js`](../../scripts/render-body.js) — the same
+`composeBody` renderer the comment uses, minus the comment-ownership marker —
+so the body section carries the identical layout: heading, closed 📱
+plain-text fold, open colored stats-line fold. It then strips any existing
+marker section and appends the fresh one via `gh pr edit --body-file`. When
+node or the renderer is unreachable it falls back to a single plain fold.
+Because the color is GitHub inline math, the ~145-expressions-per-page budget
+is shared with every comment on the PR — don't run this alongside the
+action's colored comment. Its staleness criterion is re-render equality: a
+fresh render must match the section on GitHub.
 
 **Triggers on:** authoring a PR body, updating a PR description after pushes,
 "add a diff tree to the PR body", "refresh the diff tree".
