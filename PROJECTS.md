@@ -96,12 +96,12 @@ zero skill edits needed.
 - [x] [P03-T17] Fan-out: `contributors-please-test`
       Installed 2026-09-01: smorinlabs/contributors-please-test#13, merge `f747578`; 1 valid Codex finding fixed (validate-workflows allowlist registration).
 - [x] [P03-T18] Fan-out: `difftree`
-      Synced 2026-09-01 (wave 3): #17, merge `4d23cae`; replace-in-place of legacy difftree.yml (.1.0); clean.
+      Synced 2026-09-01 (wave 3): #17, merge `4d23cae`; replace-in-place of legacy difftree.yml (`@v0.1.0`); clean.
 - [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
 - [x] [P03-T20] Fan-out: `doxa-research`
       Installed 2026-09-01 (wave 3): #141, merge `e389e47`; merged past a new bandit/Hygiene drift failure (owner call).
 - [x] [P03-T21] Fan-out: `ge-smorin-app`
-      Installed 2026-09-01 (wave 3): #1, merge `22fe4e8`; private first workflow; local main diverged — owner to reconcile.
+      Installed 2026-09-01 (wave 3): #1, merge `22fe4e8`; private first workflow; local `main` diverged — owner to reconcile.
 - [x] [P03-T22] Fan-out: `harness-kit`
       Installed as cold retest 2 (2026-08-31): smorinlabs/harness-kit#12, merge `0a5d29a`; clean run, zero threads, no new findings.
 - [x] [P03-T23] Fan-out: `homebrew-tap`
