@@ -35,6 +35,9 @@ the **bottom** of the PR body:
 - The markers are the splice contract: everything between and including them
   is owned by this skill and rewritten wholesale on refresh. Never hand-edit
   inside them; prose belongs above the `begin` marker.
+- A marker counts only when it is **alone on its line** — the strip pattern
+  is anchored (`^...$`), so prose that merely mentions the marker string
+  inline stays untouched. Write the markers on their own lines, always.
 - Color comes from GitHub inline math and shares a **~145-expressions-per-page
   budget** with every comment on the PR — so a repo using this skill should
   not also run the action's colored comment on the same PRs (avoiding the
@@ -88,7 +91,7 @@ first, tree present (colored folds, or the fallback fold).
 
 ```sh
 gh pr view <pr> --json body -q .body > "${TMPDIR:-/tmp}/pr-body.md"
-awk '/<!-- difftree-pr-body:begin -->/{skip=1} !skip{print} /<!-- difftree-pr-body:end -->/{skip=0}' \
+awk '/^<!-- difftree-pr-body:begin -->$/{skip=1} !skip{print} /^<!-- difftree-pr-body:end -->$/{skip=0}' \
   "${TMPDIR:-/tmp}/pr-body.md" > "${TMPDIR:-/tmp}/pr-body-new.md"
 # append the section built from step 1's render, then:
 gh pr edit <pr> --body-file "${TMPDIR:-/tmp}/pr-body-new.md"
