@@ -101,6 +101,21 @@ PR comments" and it installs the difftree CLI (when needed) and scaffolds
 install the skill elsewhere, see
 [`docs/skills/difftree-action-setup.md`](docs/skills/difftree-action-setup.md).
 
+Prefer the tree in the PR **body** instead of a comment? The
+[`difftree-pr-body`](.claude/skills/difftree-pr-body/SKILL.md) skill has your
+agent render and splice a marker-delimited "🌳 Diff tree" fold into the PR
+description it authors, and refresh it whenever it re-syncs the description
+after pushes — no Action, no extra comment. See
+[`docs/skills/difftree-pr-body.md`](docs/skills/difftree-pr-body.md) for the
+trade-off against the self-updating comment and install instructions.
+
+## Developing
+
+This repo ships a [Flox](https://flox.dev) environment: `flox activate` pins
+the CI toolchain (`node --test`, `actionlint`, `shellcheck`, `yq`) and installs
+the `difftree` CLI itself from its prebuilt release binary (checksum-verified;
+the version mirrors `action.yml`'s `difftree-version` default).
+
 ## Inputs
 
 | Input | Default | Description |
