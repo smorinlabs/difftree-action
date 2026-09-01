@@ -241,6 +241,7 @@ a glance, with zero per-reviewer setup.
 | `base-ref` | PR base (`pull_request.base.ref`) | Override the comparison base. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
 | `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
+| `color` | `true` | Render the comment in color via GitHub's inline-math renderer (comment step only; CLI and `tree` output stay plain). `false` posts the plain code-fence comment. |
 | `level` | (unset) | Max tree depth → `difftree --level N`. |
 | `dirs-only` | `false` | Directories only → `difftree --dirs-only`. |
 | `extra-args` | `''` | Small escape hatch appended verbatim to the difftree call. |

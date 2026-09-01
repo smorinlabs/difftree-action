@@ -24,6 +24,14 @@ inputs:
       Set to "false" to disable.
     required: false
     default: "true"
+  color:
+    description: >-
+      Render the PR comment with colored status marks and churn counts via
+      GitHub's inline-math renderer. Set to "false" for the plain code-fence
+      comment. Affects only the posted comment; the `tree` output and the
+      difftree invocation are always plain.
+    required: false
+    default: "true"
   level:
     description: Maximum tree depth (difftree --level N). Unset means no limit.
     required: false
@@ -179,6 +187,7 @@ runs:
         DIFFTREE_TREE_FILE: ${{ steps.difftree.outputs.tree-file }}
         DIFFTREE_EMPTY: ${{ steps.difftree.outputs.empty }}
         DIFFTREE_ADVERTISE: ${{ inputs.advertise }}
+        DIFFTREE_COLOR: ${{ inputs.color }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
@@ -190,8 +199,9 @@ runs:
           const rawTree = fs.readFileSync(process.env.DIFFTREE_TREE_FILE, 'utf8');
           const empty = process.env.DIFFTREE_EMPTY === 'true';
           const advertise = process.env.DIFFTREE_ADVERTISE !== 'false';
+          const color = process.env.DIFFTREE_COLOR !== 'false';
           const { tree, truncated } = mod.truncateTree(rawTree);
-          const body = mod.composeBody(tree, { empty, truncated, advertise });
+          const body = mod.composeBody(tree, { empty, truncated, advertise, color });
 
           try {
             const res = await mod.upsertComment({

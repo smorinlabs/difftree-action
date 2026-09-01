@@ -12,14 +12,26 @@ glance. It's a thin wrapper over the
 ```text
 🌳 difftree — changes in this PR
 
-.
-├── src
-│   ├── index.ts        ●
-│   └── comment.ts      ?
-└── README.md           ○
+PR: origin/main...563a39c · committed
+difftree-action
+├── ● PROJECTS.md +6 −3
+├── ● README.md +5 −5
+├──   docs (3 files, +54 −10)
+│   ├── ● RUNBOOK.md +4 −2
+│   ├── ● rollout-findings.md +40 −0
+│   └──   skills (1 files, +10 −8)
+│       └── ● difftree-action-setup.md +10 −8
+└──   examples (1 files, +3 −3)
+    └── ↻ pr-diff-tree.yml -> difftree-pr-comment.yml +3 −3
 
-2 dirs touched · 3 files changed · +40 −5
+4 dirs touched · 6 files changed (5 modified · 1 renamed) · +68 −28
 ```
+
+By default the comment is rendered **in color** — status marks by git state,
+`+N` green / `−M` red churn, and the summary line — using GitHub's inline-math
+renderer, the same coloring `difftree` shows in a terminal. Set `color: "false"`
+to get the plain code block above instead. See
+[Color rendering — limits](#color-rendering--limits).
 
 > **Status — Phase 0 (composite).** This release builds difftree from
 > [crates.io](https://crates.io/crates/difftree) (`cargo install difftree@0.3.1`)
@@ -92,6 +104,7 @@ install the skill elsewhere, see
 | `base-ref` | PR base (`pull_request.base.ref`) | Ref to diff against; compared as `origin/<base-ref>`. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
 | `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
+| `color` | `true` | Render the comment in color via GitHub's inline-math renderer. `false` posts the plain code-fence comment. Only the posted comment is affected; the `tree` output is always plain. |
 | `level` | _(unset)_ | Max tree depth (`difftree --level N`). |
 | `dirs-only` | `false` | Show directories only (`difftree --dirs-only`). |
 | `extra-args` | `''` | Extra args appended verbatim to the difftree call. |
@@ -114,11 +127,34 @@ On a `pull_request` event the action:
    with `actions/cache`);
 2. resolves the base ref (default: the PR base) and ensures its history is present;
 3. runs `difftree --pr=origin/<base> --committed --no-color`;
-4. upserts **one** sticky comment (hidden marker `<!-- difftree-action -->`),
-   updating it in place on each push rather than stacking duplicates.
+4. colors the plain text for GitHub (unless `color: "false"`) and upserts
+   **one** sticky comment (hidden marker `<!-- difftree-action -->`), updating
+   it in place on each push rather than stacking duplicates.
 
 It authenticates with `GITHUB_TOKEN` only — it makes no repository writes other
 than the PR comment.
+
+### Color rendering — limits
+
+Color is produced entirely in the comment step from difftree's plain
+`--no-color` output: each line becomes one GitHub inline-math expression
+(`` $`…`$ ``), so the CLI, its flags, and the `tree` output are unchanged.
+GitHub's renderer imposes limits that were measured on 2026-09-01
+(see `docs/superpowers/specs/2026-09-01-color-comment-design.md`):
+
+- **~145 expressions per page**, shared by every comment on the PR. The action
+  colors at most **100 lines** and puts the rest of a large tree in a plain code
+  block under a one-line notice — still a single comment, with the summary line
+  colored at the bottom. If other comments on the same PR carry a lot of math,
+  the tail of the colored section can show raw TeX; set `color: "false"`.
+- A filename containing a backtick cannot be encoded; that line and everything
+  after it render plain.
+- Color shows on github.com only. Email notifications (and some mobile views)
+  show the TeX source, so teams that review by email should set `color: "false"`.
+
+Writing your own colored trees or debugging a rendering problem? See the
+"don't do this" guide [`docs/github-math-color-guide.md`](docs/github-math-color-guide.md)
+and the copy-paste catalog [`examples/github-math-color-examples.md`](examples/github-math-color-examples.md).
 
 ### Fork pull requests
 

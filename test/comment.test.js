@@ -13,8 +13,8 @@ const {
   GITHUB_COMMENT_LIMIT,
 } = require("../scripts/comment.js");
 
-test("composeBody embeds marker, heading, and a fenced tree", () => {
-  const body = composeBody("├── a\n└── b", {});
+test("composeBody embeds marker, heading, and a fenced tree (plain mode)", () => {
+  const body = composeBody("├── a\n└── b", { color: false });
   assert.ok(body.startsWith(MARKER), "must lead with the hidden marker");
   assert.match(body, /^### /m, "has a heading");
   assert.match(body, /```\n├── a\n└── b\n```/, "tree is inside a code fence");
@@ -28,8 +28,8 @@ test("composeBody empty case has no code fence and a no-changes line", () => {
   assert.match(body, /no file changes/i);
 });
 
-test("composeBody adds a truncation notice when truncated", () => {
-  const body = composeBody("├── a", { truncated: true });
+test("composeBody adds a truncation notice when truncated (plain mode)", () => {
+  const body = composeBody("├── a", { truncated: true, color: false });
   assert.match(body, /```\n├── a\n```/);
   assert.match(body, /truncat/i);
 });
