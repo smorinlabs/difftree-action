@@ -15,11 +15,14 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
 
 1. **Open a PR** touching a few files across at least two directories.
    - ✅ Expect: exactly one comment containing the marker `<!-- difftree-action -->`,
-     a `🌳 difftree — changes in this PR` heading, the tree rendered as colored
-     rows (one inline-math expression per line — the default), and a
-     `N dirs touched · N files changed · +N −M` summary line. A fenced ASCII
-     tree appears only with `color: "false"`, or as the plain remainder of a
-     tree longer than ~100 lines.
+     a `🌳 difftree — changes in this PR` heading, a **closed** fold labeled
+     `📱 Plain text version (mobile / email)`, and an **open** fold whose
+     summary is the `N dirs touched · N files changed · +N −M` stats line,
+     holding the tree as colored rows (one inline-math expression per line).
+     A bare fenced ASCII tree appears with `color-section: "hidden"`
+     (or the deprecated `color: "false"`), and also as the automatic safety
+     fallback when colored rendering declines (backticks or raw HTML tag text
+     in the tree — a warning names the reason in the run log).
 2. **Push another commit** to the same PR.
    - ✅ Expect: the **same** comment updates in place — no second difftree-action
      comment appears.
@@ -50,6 +53,20 @@ While reviewing step 1's comment, confirm the tree renders legibly:
 If anything renders poorly, tune the difftree flags in `action.yml`'s
 `Run difftree` step (`--format`, `--marks`) and re-verify. `--no-color` stays.
 Color-rendering limits are documented in the README ("Color rendering — limits").
+
+## Fold check (v0.7.0 foldable layout — the detailed procedure lives only here)
+
+1. Desktop: the 📱 plain fold starts closed and the 🌳 stats fold starts open;
+   expanding the plain fold shows the complete fenced tree; collapsing the
+   colored fold still shows the stats line in its summary.
+2. Mobile: expand the 📱 fold — the plain tree must be readable; the collapsed
+   or expanded colored fold showing TeX source there is expected.
+3. Large PR (> ~100 lines): the colored fold ends with
+   `…and N more lines — see the plain text version above.` and the plain fold
+   holds the full tree; exactly one truncation notice appears, in the plain
+   fold, and only when the 65,536-char budget required it.
+4. `plain-section: "hidden"`: the colored fold keeps the fenced remainder
+   inside itself (pre-fold hybrid).
 
 ## Notes
 
