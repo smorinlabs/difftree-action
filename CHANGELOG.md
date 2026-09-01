@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.6.0](https://github.com/smorinlabs/difftree-action/compare/v0.5.1...v0.6.0) (2026-09-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **skill:** rename workflow to difftree-pr-comment across template, skill, docs
+
+### Features
+
+* **comment:** colored PR comment by default, plain fence via color:"false" ([76c4b6a](https://github.com/smorinlabs/difftree-action/commit/76c4b6a8ff1381eb8291053ba1f0bdf4bf031a9e))
+* **comment:** render the PR comment in color by default; color:"false" keeps the plain fence ([b70ce28](https://github.com/smorinlabs/difftree-action/commit/b70ce28f0c4f588ee5b2f7cc3c486a65c7b4c7cd))
+* **skill:** rename workflow to difftree-pr-comment across template, skill, docs ([a57fb25](https://github.com/smorinlabs/difftree-action/commit/a57fb25f62cf24be0151b6abc81eaeec645d13fb))
+
+
+### Bug Fixes
+
+* **comment:** defeat GitHub autolinking inside math expressions ([5a1df6d](https://github.com/smorinlabs/difftree-action/commit/5a1df6d36a41c6d42d5cc89acfc536c685ade778))
+* **comment:** defeat GitHub autolinking inside math expressions ([cf88522](https://github.com/smorinlabs/difftree-action/commit/cf885225230ec89a0947d4a934cc3448cd4e3da9))
+* **comment:** keep pure-space tree prefixes aligned with │ prefixes ([ee68803](https://github.com/smorinlabs/difftree-action/commit/ee688031fe23c80eb7b57f31881a38d8ad20d843))
+* **comment:** keep pure-space tree prefixes aligned with │ prefixes ([b266b08](https://github.com/smorinlabs/difftree-action/commit/b266b08efb33ce7574b66b2309b094343d060c79))
+* **comment:** keep the comment-size contract when color declines; RUNBOOK expects colored rows ([de75236](https://github.com/smorinlabs/difftree-action/commit/de7523682e8bcd66b2d9d4d016a258ef5fb1012f))
+* **skill:** define &lt;clone&gt; in the no-clone path; quote &lt;clone&gt;/&lt;wt&gt; operands ([1e05da3](https://github.com/smorinlabs/difftree-action/commit/1e05da31deb533a6217d8e4ef309c3ded0968eee))
+* **skill:** define &lt;old-basename&gt;; clarify status check and wave-4 summary wording ([9152e77](https://github.com/smorinlabs/difftree-action/commit/9152e77063564d37c75932280880a1b75eaf759d))
+* **skill:** grep for stale old-path references after a replace-in-place (F76); log wave 4; tick 10 P03 rows ([329c6f5](https://github.com/smorinlabs/difftree-action/commit/329c6f504254b33b95c45d842e5d800d072277f5))
+* **skill:** grep for stale old-path refs after replace-in-place (F76); log wave 4 ([c928692](https://github.com/smorinlabs/difftree-action/commit/c928692d5764f9c9718b3084b544af18c9fbe547))
+* **skill:** harden §4 step 9 against arg substitution; log cold retest 3 (F72) ([c302bb3](https://github.com/smorinlabs/difftree-action/commit/c302bb3fbcc20adfefb85d1d8225c47636821b79))
+* **skill:** harden step 9 against arg substitution; log cold retest 3 (F72) ([5a52775](https://github.com/smorinlabs/difftree-action/commit/5a52775eeee688033d2713595030579b85b04ffe))
+* **skill:** replace machine-specific ~/c paths with &lt;clone&gt;/&lt;wt&gt; placeholders (F73) ([26ad1b7](https://github.com/smorinlabs/difftree-action/commit/26ad1b732d2b4b608e1ed66d739120fd7c56d4ae))
+* **skill:** replace machine-specific ~/c paths with generic placeholders (F73) ([bb4c5bc](https://github.com/smorinlabs/difftree-action/commit/bb4c5bc7c1aa9e3f1239e10342bd7f1f6f1aa87c))
+* **skill:** tighten replace-in-place pairing; RUNBOOK and mirror accuracy ([b62a104](https://github.com/smorinlabs/difftree-action/commit/b62a104d0e1d4a57e95213f33c0e1f49f4b72b40))
+
+
+### Documentation
+
+* **color:** add GitHub math color guide and copy-paste examples ([6da6322](https://github.com/smorinlabs/difftree-action/commit/6da6322d40cafb37b02fd6ab51bd197cd926b3e0))
+* fix [@v0](https://github.com/v0).1.0 marker and code-format branch name in P03 ticks ([1d3b643](https://github.com/smorinlabs/difftree-action/commit/1d3b643581cf51e2d7a732dc4b1252f168387d09))
+* log fan-out wave 3 (10 repos) and F75; tick T12-T15,T18,T20,T21,T23,T32,T35 ([7b49bfa](https://github.com/smorinlabs/difftree-action/commit/7b49bfae20e5d92e78e696ea0b0523f35144d26a))
+* log fan-out wave 3 and F75; tick 10 P03 rows ([af23898](https://github.com/smorinlabs/difftree-action/commit/af23898e326dc9aebb3845c8dabe9a0fe11c1b85))
+* log rename resync wave and fan-out wave 2; tick T07/T08/T16 ([9468c69](https://github.com/smorinlabs/difftree-action/commit/9468c692a5cda0e36b80bc05499b9fe38ad7d33b))
+* log rename resync wave and fan-out wave 2; tick T07/T08/T16 ([3acbfeb](https://github.com/smorinlabs/difftree-action/commit/3acbfeb86dc09af7dd90a7dc11d998f7fdb600b0))
+* point P03 goal and deliverable at renamed difftree-pr-comment.yml ([d8aa531](https://github.com/smorinlabs/difftree-action/commit/d8aa531ebedd3c9c2ee8ae5fa6dec2fa4ce0857f))
+* reword wave-4 summary (no run needed a skill correction; F76 folded afterward) ([a8ac69b](https://github.com/smorinlabs/difftree-action/commit/a8ac69b3c37314dbf013fddd333a3e8e58fa5685))
+
 ## [0.5.1](https://github.com/smorinlabs/difftree-action/compare/v0.5.0...v0.5.1) (2026-08-31)
 
 
