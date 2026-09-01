@@ -73,9 +73,10 @@ zero skill edits needed.
       PR #18 merged `c7a1191`; action worked; 5 skill edits (F26–F30) → not clean
 - [x] [P03-TS01] One clean pilot after the §4 rewrite, on a private repo, meets all five no-gotchas criteria
       Pilot 4 not clean (G17, G18). Cold retest 1 (`agent2linear`, public, 2026-08-31) clean — owner-ratified; consecutive-clean 1. Cold retest 2 (`harness-kit`, unprotected, `delete_branch_on_merge=false`, 2026-08-31) clean, zero threads; consecutive-clean 2. Cold retest 3 (`shelf`, private, no prior workflows, 2026-08-31) clean, zero threads; consecutive-clean 3 — private-repo clause satisfied (F72 is a harness-level loading finding, not a skill-step failure).
-- [ ] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
-      `pr-diff-tree.yml` (already wired; drift finding #1)
-- [ ] [P03-T08] Fan-out: `agent-fork`
+- [x] [P03-T07] `difftree-action-test`: rename `difftree.yml` → canonical
+      Synced 2026-09-01 as fan-out run 5: smorinlabs/difftree-action-test#3, merge `2f9a359` (canonical name is now `difftree-pr-comment.yml`); drift finding #1 closed; F74 fix validated live.
+- [x] [P03-T08] Fan-out: `agent-fork`
+      Installed 2026-09-01: smorinlabs/agent-fork#71, merge `99b78a0`; clean run, 2 threads (drift claim refuted by hash, checkout-version ask declined).
 - [x] [P03-T09] Fan-out: `agent2linear`
       Installed as cold retest 1 (2026-08-31): PR #25, merge `d6c64fb`; clean run, findings F66–F70.
 - [x] [P03-T10] Fan-out: `blueprint-dryrun`
@@ -86,7 +87,8 @@ zero skill edits needed.
 - [ ] [P03-T13] Fan-out: `cli-standards`
 - [ ] [P03-T14] Fan-out: `contributors-please`
 - [ ] [P03-T15] Fan-out: `contributors-please-action`
-- [ ] [P03-T16] Fan-out: `contributors-please-e2e`
+- [x] [P03-T16] Fan-out: `contributors-please-e2e`
+      Installed 2026-09-01: smorinlabs/contributors-please-e2e#135, merge `609a66c`; clean run, permissions ask refuted with run evidence.
 - [x] [P03-T17] Fan-out: `contributors-please-test`
       Installed 2026-09-01: smorinlabs/contributors-please-test#13, merge `f747578`; 1 valid Codex finding fixed (validate-workflows allowlist registration).
 - [ ] [P03-T18] Fan-out: `difftree`

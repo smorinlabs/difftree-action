@@ -1048,3 +1048,33 @@ comment marker (renaming would orphan every existing comment's dedup), the `diff
 group, the `<repo>-difftree` worktree naming, and the skill/action names. Already-wired repos get simple
 rename resyncs (git mv + name lines, no re-verification — owner's call); historical docs keep old names.
 The canonical template's SHA-256 after the rename: `0143f5f19cc10da6d2f44b3dbdb314253b1112b206c78ac89128de33ee17c703`.
+
+## Rename resync wave (2026-09-01)
+
+All 9 wired repos synced to `difftree-pr-comment.yml` (byte-identical, SHA-256 `0143f5f1…c703`) after
+difftree-action#24: worktreeflow#24 `69f84cf` (sequential pilot) · mockcast#13 `67b935a` · envgen#20
+`c75c805` · agent2linear#26 `a1c779e` · harness-kit#13 `5a976c9` · shelf#5 `de148e0` · blueprint-dryrun#15
+`482dec6` · blueprint-press-dryrun#9 `fbef69d` · contributors-please-test#14 `7f3b7c5` (allowlist updated in
+the same commit). Owner waived re-verification; each merge still passed a per-repo required-context check.
+Executed as 1 sequential pilot + 8 parallel subagents. **Two operational learnings:** (a) the Claude Code
+auto-mode permission classifier blocks `gh pr merge` in subagents — the working pattern is *agents verify,
+the main session merges* (3 of 8 closed that way); (b) three pilots (worktreeflow, envgen, agent2linear)
+have protected default branches with required contexts — the "wired repos are unprotected" assumption is
+dead; every future recipe keeps the per-repo protection check.
+
+## Fan-out wave 2 (2026-09-01, runs 4–6) — first runs under the new naming
+
+4. **`contributors-please-e2e`** (#135, merge `609a66c`) — plain add; §4's renamed filters worked unchanged;
+   1 thread (Copilot `issues: write` permissions ask) refuted with the run's own `GITHUB_TOKEN Permissions`
+   log (`PullRequests: write`, no Issues scope) plus the observed create-then-update. Clean.
+5. **`difftree-action-test`** (#3, merge `2f9a359`) — closes drift finding #1 / `[P03-T07]`: legacy
+   `difftree.yml` → canonical. **F74's fixed pass condition validated live** (`removed` old + `added` new
+   accepted). 1 thread (CodeRabbit stale README path) fixed in a `docs:` commit; §4 restarted from step 4
+   per the head-move rule. Owner's `test/validate-v0` checkout deliberately left untouched (local `main`
+   there is behind; branch cleanup left to the owner).
+6. **`agent-fork`** (#71, merge `99b78a0`) — plain add; 2 threads: CodeRabbit byte-drift claim refuted with
+   an empty diff + matching SHA-256s against raw@`$PROV`; Copilot `checkout@v6→v7` alignment declined as
+   template-level (noted for upstream: consider a checkout major bump at the next template wave). Cleanup
+   pulled past owner-approved untracked-only dirt (two handoff docs, reported, untouched).
+
+Fan-out verdict so far: 6 runs, 0 skill-text corrections needed since the rename PR. Remaining targets: 25.
