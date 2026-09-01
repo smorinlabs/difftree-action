@@ -1147,3 +1147,27 @@ declined as upstream, 2 valid repo-local fixes (press rules).
 
 Fan-out standing: 33 repos carry the canonical workflow; 6 remain (wave 5: smorinlabs-harness, template-press,
 terraform-gcp-design, terraform-gcp-poc, terraform-gcp-template, warpqueuekit — worktrees prepped, all lefthook).
+
+## Fan-out wave 5 (2026-09-01, runs 27–32) — final wave
+
+Six repos, all lefthook, four private. Mid-wave the owner merged difftree-action#26/#28 (color comment), and
+`b70ce28` added one commented example line to the canonical template (70 → 71 lines, SHA-256
+`0143f5f1…` → `c0e126bd…`). The prepared worktrees already held the new canonical bytes; the agent briefs carried
+the stale hash, and **all six agents stopped at the byte check without pushing** — the gate worked exactly as
+designed. Relaunched with provenance `b70ce28`. Threads: 1 permissions refutation, 1 valid Codex finding
+(template-press is itself a press template → `[[remove]]` rule added, same as py-launch-blueprint, F76 class).
+
+| Repo | PR | Merge | Notes |
+|---|---|---|---|
+| smorinlabs-harness | #45 | `2179068` | clean |
+| template-press | #106 | `c0992d8` | press `[[remove]]` rule added (`72eabce`); all other required contexts green |
+| terraform-gcp-design | #1 | `ebbd545` | private, first workflow; clean |
+| terraform-gcp-poc | #1 | `d069835` | private; permissions ask refuted with run evidence |
+| terraform-gcp-template | #1 | `14ae771` | private; merged past pre-existing `gates` failure (broken on `main` since 2026-07-10; owner call) |
+| warpqueuekit | #5 | `988dd5a` | private; clean |
+
+**Fleet standing at the end of the fan-out:** all 39 install targets carry the canonical workflow (the last,
+template-press, landed at `c0992d8` after a hung Windows runner was cancelled and rerun); the 40th non-archived
+repo, `difftree-action` itself, dogfoods `uses: ./` and was never a target (T19 closed `[-]`). Open follow-ups: (a) 33 repos installed before
+`b70ce28` are one comment line behind the current canonical (`0143f5f1…` vs `c0e126bd…`) — a mechanical resync
+wave is the owner's call; (b) release PR #22 (v0.6.0: rename + color) is the owner's click.
