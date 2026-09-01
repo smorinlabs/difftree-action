@@ -30,7 +30,7 @@ glance. It's a thin wrapper over the
 ## Usage
 
 ```yaml
-name: PR Diff Tree
+name: Difftree PR Comment
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited]
@@ -38,7 +38,7 @@ permissions:
   contents: read
   pull-requests: write        # required to post the comment
 jobs:
-  diff-tree:
+  difftree-pr-comment:
     # `edited` re-renders only when the PR's base branch changed
     if: github.event.action != 'edited' || github.event.changes.base != null
     # Job-level, not workflow-level: a skipped no-op `edited` run must never
@@ -59,8 +59,8 @@ jobs:
 ```
 
 > **Copy-paste ready:** the canonical version of this workflow is committed as
-> [`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml). Save it to
-> `.github/workflows/pr-diff-tree.yml` in your repo. `@v0` floats by default;
+> [`examples/difftree-pr-comment.yml`](./examples/difftree-pr-comment.yml). Save it to
+> `.github/workflows/difftree-pr-comment.yml` in your repo. `@v0` floats by default;
 > SHA-pin the action (see the comment in that file) if your repo's policy requires it.
 
 The action keeps a single sticky comment (hidden marker `<!-- difftree-action -->`).
@@ -81,7 +81,7 @@ This repo ships the [`difftree-action-setup`](.claude/skills/difftree-action-set
 skill — auto-discovered by Claude Code (`.claude/skills/`) and Codex
 (`.agents/skills/`) when working in this repo. Ask your agent to "set up difftree
 PR comments" and it installs the difftree CLI (when needed) and scaffolds
-[`examples/pr-diff-tree.yml`](./examples/pr-diff-tree.yml) into your repo. To
+[`examples/difftree-pr-comment.yml`](./examples/difftree-pr-comment.yml) into your repo. To
 install the skill elsewhere, see
 [`docs/skills/difftree-action-setup.md`](docs/skills/difftree-action-setup.md).
 

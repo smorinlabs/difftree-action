@@ -1,13 +1,14 @@
 ---
 name: difftree-action-setup
 description: >-
-  Install the difftree CLI and/or add difftree PR diff-tree comments to a
+  Install the difftree CLI and/or add self-updating difftree PR comments to a
   repository. Use when the user says "install difftree", "set up difftree",
-  "add difftree to my repo", "add PR diff-tree comments", "set up
-  difftree-action", or wants difftree running locally or in CI. Installs the
-  difftree CLI (prebuilt binary, `cargo install difftree`, or from source),
-  scaffolds `.github/workflows/pr-diff-tree.yml` from this repo's canonical
-  examples/pr-diff-tree.yml in a worktree, opens a PR, and verifies the run
+  "add difftree to my repo", "add difftree PR comments", "add PR diff-tree
+  comments", "set up difftree-action", or wants difftree running locally or in
+  CI. Installs the difftree CLI (prebuilt binary, `cargo install difftree`, or
+  from source),
+  scaffolds `.github/workflows/difftree-pr-comment.yml` from this repo's canonical
+  examples/difftree-pr-comment.yml in a worktree, opens a PR, and verifies the run
   and comment on that PR before merging. This is the difftree-action repo's
   own setup skill; the difftree CLI repo ships a lightweight pointer to it.
 allowed-tools: Bash, Read, Write, Edit
@@ -15,13 +16,14 @@ allowed-tools: Bash, Read, Write, Edit
 
 # difftree-action-setup
 
-Install the difftree CLI and/or add self-updating PR diff-tree comments to a
+Install the difftree CLI and/or add self-updating difftree PR comments to a
 repository via `smorinlabs/difftree-action`.
 
 ## When this fires
 
 Triggers: "install difftree", "set up difftree", "add difftree to my repo",
-"add PR diff-tree comments", "set up difftree-action". First confirm which half
+"add difftree PR comments", "add PR diff-tree comments", "set up
+difftree-action". First confirm which half
 the user wants — **CLI install**, **repo/CI wiring**, or **both** — then run
 only those steps.
 
@@ -47,12 +49,12 @@ Use the first method that fits the environment, then verify with
 
 1. **Intent:** start from a fresh worktree on the up-to-date default branch so nothing from the user's live checkout, and
    no leftover from a previous run, can enter the PR. The clone location and the default-branch name differ per repo;
-   the branch name `ci/difftree-pr-diff-tree` and the isolation do not.
-   Identify the **target repo** — the user's repo, not this one — and locate the user's existing local clone of it; `<clone>` is that clone's absolute path, in whatever directory the user keeps repositories. If there is no clone, pick that repositories directory, clone over HTTPS into it, and set `<clone>` to the new clone's absolute path: `git clone https://github.com/<owner>/<repo>.git "<clone>"`. An existing clone must point at the target: `git -C "<clone>" ls-remote --get-url origin` must match `github\.com[:/]<owner>/<repo>(\.git)?$` — a clone that reaches the repo only through a GitHub transfer redirect (old owner in the URL), a same-named clone of another repo, or a non-GitHub host stops the run: report the URL and let the user `git remote set-url origin …`. Do not commit in the user's live checkout. `git -C "<clone>" fetch origin` once, at the top of this step — everything below reuses that fetch, none of it fetches again. Then `git -C "<clone>" ls-remote --heads origin ci/difftree-pr-diff-tree` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): if `git -C "<clone>" merge-base --is-ancestor <its-sha> origin/<default-branch>` exits 0 (an ancestor of the just-fetched default branch) delete it with `gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/ci/difftree-pr-diff-tree"`; exit 1 (not an ancestor) → someone has work in flight — stop and ask; exit 128 ("Not a valid commit name" — the object is missing locally, e.g. a shallow checkout) is neither verdict: `git -C "<clone>" fetch origin ci/difftree-pr-diff-tree` and retry once; still 128 → stop and report. A leftover **local** branch of that name makes `worktree add -b` fail: `git -C "<clone>" branch -d ci/difftree-pr-diff-tree` first, only if it too is an ancestor of `origin/<default-branch>` (same `merge-base` test on the branch name), else stop and ask. Then create the worktree from that default branch and work there — `git -C "<clone>" worktree add ../<repo>-difftree -b ci/difftree-pr-diff-tree origin/<default-branch>` — recording the worktree's absolute path as `<wt>` (`<clone>`'s parent directory + `/<repo>-difftree`; §4 step 9 checks it against `worktree list --porcelain`, which prints absolute paths).
+   the branch name `ci/difftree-pr-comment` and the isolation do not.
+   Identify the **target repo** — the user's repo, not this one — and locate the user's existing local clone of it; `<clone>` is that clone's absolute path, in whatever directory the user keeps repositories. If there is no clone, pick that repositories directory, clone over HTTPS into it, and set `<clone>` to the new clone's absolute path: `git clone https://github.com/<owner>/<repo>.git "<clone>"`. An existing clone must point at the target: `git -C "<clone>" ls-remote --get-url origin` must match `github\.com[:/]<owner>/<repo>(\.git)?$` — a clone that reaches the repo only through a GitHub transfer redirect (old owner in the URL), a same-named clone of another repo, or a non-GitHub host stops the run: report the URL and let the user `git remote set-url origin …`. Do not commit in the user's live checkout. `git -C "<clone>" fetch origin` once, at the top of this step — everything below reuses that fetch, none of it fetches again. Then `git -C "<clone>" ls-remote --heads origin ci/difftree-pr-comment` must be empty — a hit is a leftover from an unfinished cleanup (§4 step 9): if `git -C "<clone>" merge-base --is-ancestor <its-sha> origin/<default-branch>` exits 0 (an ancestor of the just-fetched default branch) delete it with `gh api -X DELETE "repos/<owner>/<repo>/git/refs/heads/ci/difftree-pr-comment"`; exit 1 (not an ancestor) → someone has work in flight — stop and ask; exit 128 ("Not a valid commit name" — the object is missing locally, e.g. a shallow checkout) is neither verdict: `git -C "<clone>" fetch origin ci/difftree-pr-comment` and retry once; still 128 → stop and report. A leftover **local** branch of that name makes `worktree add -b` fail: `git -C "<clone>" branch -d ci/difftree-pr-comment` first, only if it too is an ancestor of `origin/<default-branch>` (same `merge-base` test on the branch name), else stop and ask. Then create the worktree from that default branch and work there — `git -C "<clone>" worktree add ../<repo>-difftree -b ci/difftree-pr-comment origin/<default-branch>` — recording the worktree's absolute path as `<wt>` (`<clone>`'s parent directory + `/<repo>-difftree`; §4 step 9 checks it against `worktree list --porcelain`, which prints absolute paths).
    If `.github/workflows/` already has a workflow using `smorinlabs/difftree-action` (any file name), replace it rather than adding a second one:
-   if its name is not `pr-diff-tree.yml`, `git mv <old> .github/workflows/pr-diff-tree.yml` first, then write the template over that path, and
-   say so in the PR body. Confirm the replacement fired before committing — `git status --porcelain` shows one entry for `pr-diff-tree.yml`, no
-   leftover old file — and post-PR, `gh api repos/<owner>/<repo>/pulls/<pr>/files --jq '.[].status'` reads `modified`/`renamed`, never `added`.
+   if its name is not `difftree-pr-comment.yml`, `git mv <old> .github/workflows/difftree-pr-comment.yml` first, then write the template over that path, and
+   say so in the PR body. Confirm the replacement fired before committing — `git status --porcelain` shows one entry for `difftree-pr-comment.yml`, no
+   leftover old file — and post-PR, `gh api repos/<owner>/<repo>/pulls/<pr>/files --jq '.[] | "\(.status) \(.filename)"'` includes, among the PR's listed files, either one `renamed`/`modified` row for `.github/workflows/difftree-pr-comment.yml`, or — when the old file diverged past GitHub's rename-similarity threshold (F74) — a `removed` row whose filename is exactly `<old>` paired with the `added` row for the new path; an `added` row with no `removed` row for `<old>` means the replacement did not fire.
 
    **Intent (hooks bypass):** get the workflow committed and pushed past a hook manager the worktree inherits, without
    installing tooling there or editing the workflow to satisfy a hook. Which bypass applies (lefthook, husky,
@@ -76,25 +78,25 @@ Use the first method that fits the environment, then verify with
    it works from every placement: inside the difftree-action repo (under
    `.claude/skills/` or its `.agents/skills/` symlink), dev-symlinked into
    `~/.claude/skills` / `~/.agents/skills`, or copied anywhere, on any agent
-   tool — then save it to the target's `.github/workflows/pr-diff-tree.yml`.
+   tool — then save it to the target's `.github/workflows/difftree-pr-comment.yml`.
 
    ```sh
    # <skill-dir> = the directory this SKILL.md was loaded from
    d="$(cd "<skill-dir>" && pwd -P)"; TEMPLATE=""   # physical path: symlinks resolved
    for _ in 1 2 3 4; do                               # walk up to the repo root
      d="$(dirname "$d")"
-     if [ -f "$d/action.yml" ] && [ -f "$d/examples/pr-diff-tree.yml" ]; then
-       TEMPLATE="$d/examples/pr-diff-tree.yml"; break
+     if [ -f "$d/action.yml" ] && [ -f "$d/examples/difftree-pr-comment.yml" ]; then
+       TEMPLATE="$d/examples/difftree-pr-comment.yml"; break
      fi
    done
    if [ -z "$TEMPLATE" ]; then                        # copied-out skill: fetch canonical main, pinned to its commit
      PROV="$(gh api repos/smorinlabs/difftree-action/commits/main --jq .sha)"   # <provenance-sha>
-     TEMPLATE="${TMPDIR:-/tmp}/pr-diff-tree.yml"
+     TEMPLATE="${TMPDIR:-/tmp}/difftree-pr-comment.yml"
      curl -fsSL -o "$TEMPLATE" \
-       "https://raw.githubusercontent.com/smorinlabs/difftree-action/$PROV/examples/pr-diff-tree.yml"
+       "https://raw.githubusercontent.com/smorinlabs/difftree-action/$PROV/examples/difftree-pr-comment.yml"
    else                                               # in-repo: the working-tree bytes must be the committed bytes
-     git -C "$d" diff --quiet HEAD -- examples/pr-diff-tree.yml || { echo "examples/pr-diff-tree.yml has uncommitted changes — commit or stash first" >&2; false; }
-     PROV="$(git -C "$d" log -1 --format=%H -- examples/pr-diff-tree.yml)"   # <provenance-sha>, in-repo
+     git -C "$d" diff --quiet HEAD -- examples/difftree-pr-comment.yml || { echo "examples/difftree-pr-comment.yml has uncommitted changes — commit or stash first" >&2; false; }
+     PROV="$(git -C "$d" log -1 --format=%H -- examples/difftree-pr-comment.yml)"   # <provenance-sha>, in-repo
    fi
    grep -q 'smorinlabs/difftree-action@' "$TEMPLATE" || { echo "template resolution failed" >&2; false; }
    ```
@@ -118,11 +120,11 @@ Use the first method that fits the environment, then verify with
    template's own comment sanctions this as the only deviation the fleet drift check ignores.
 
    The **byte check** later steps use — default:
-   `git show HEAD:.github/workflows/pr-diff-tree.yml | diff - "$TEMPLATE"` prints nothing; when pinned, normalize
-   that one line back to `@v0` first: `git show HEAD:.github/workflows/pr-diff-tree.yml | sed -E
+   `git show HEAD:.github/workflows/difftree-pr-comment.yml | diff - "$TEMPLATE"` prints nothing; when pinned, normalize
+   that one line back to `@v0` first: `git show HEAD:.github/workflows/difftree-pr-comment.yml | sed -E
    's|difftree-action@[0-9a-f]{40} # v[0-9.]+|difftree-action@v0|' | diff - "$TEMPLATE"` prints nothing. When
    step 4 recorded a hash instead:
-   `[ "$(git show HEAD:.github/workflows/pr-diff-tree.yml | shasum -a 256 | cut -d' ' -f1)" = "$(cut -d' ' -f1 "${TMPDIR:-/tmp}/pr-diff-tree.sha256")" ]`
+   `[ "$(git show HEAD:.github/workflows/difftree-pr-comment.yml | shasum -a 256 | cut -d' ' -f1)" = "$(cut -d' ' -f1 "${TMPDIR:-/tmp}/difftree-pr-comment.sha256")" ]`
    exits 0. On fail: the committed bytes are not what you wrote (a hook rewrote
    them) — recommit the written file and re-check; never continue on a drifted file.
 3. **Keep the three load-bearing bits** the template carries; removing any one
@@ -133,7 +135,7 @@ Use the first method that fits the environment, then verify with
    explicitly asked for inputs (`level`, `dirs-only`, `difftree-version`,
    `comment`, `advertise`; `action.yml` is authoritative) add just those and
    record the hash of the file **as written**, which later byte checks use:
-   `shasum -a 256 .github/workflows/pr-diff-tree.yml > "${TMPDIR:-/tmp}/pr-diff-tree.sha256"`.
+   `shasum -a 256 .github/workflows/difftree-pr-comment.yml > "${TMPDIR:-/tmp}/difftree-pr-comment.sha256"`.
 
 ## 3. Commit / open a PR
 
@@ -143,7 +145,7 @@ from older ones. The commit message, bypass prefix, and hosting details differ p
 taking `<T_open>` from the API do not.
 
 In the worktree from section 2 step 1, commit the workflow on its branch with a conventional message — `ci: add difftree
-PR diff-tree comments` for a first install, `ci: sync difftree PR diff-tree workflow to canonical template` when §2
+PR comment workflow` for a first install, `ci: sync difftree PR comment workflow to canonical template` when §2
 step 1's replace-in-place branch fired — then publish the branch by
 explicit ref (a bare `git push` can refuse, or under
 `push.default=upstream` push to the default branch), open the PR with
@@ -166,7 +168,7 @@ is observable and false until the event it checks has happened. Throughout: REST
 never a background watcher; at least 20 s between polling calls (a reply and its resolve are one action — sleep 20 s between threads, not between the
 two); every loop bounded as stated; scratch files under `${TMPDIR:-/tmp}`; timestamps are the API's own (UTC ISO-8601) and sort lexically — compare
 with `[ "$(printf '%s\n%s\n' "$a" "$b" | sort | tail -1)" = "$b" ]` (true when `$b` is later; works under `sh` and `zsh` — `[ "$a" \> "$b" ]` is a zsh
-syntax error). `PR Diff Tree` is the *workflow* name in the runs API; the same check is the *job* name `diff-tree` in `/commits/<sha>/check-runs` and
+syntax error). `Difftree PR Comment` is the *workflow* name in the runs API; the same check is the *job* name `difftree-pr-comment` in `/commits/<sha>/check-runs` and
 `gh pr checks`. Every step carries an **Intent** line: adapt a command to a repo that differs (workflow or job names,
 hook bypass, merge settings, bot roster) by preserving that intent, never by dropping the pass condition it serves.
 
@@ -178,13 +180,13 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
    - **Command:** poll at most 15 times, 20 s apart (5 min):
      ```sh
      gh api "repos/<owner>/<repo>/actions/runs?event=pull_request&branch=<branch>&head_sha=<sha>" \
-       --jq '.workflow_runs[] | select(.name=="PR Diff Tree") | "\(.id) \(.status) \(.conclusion) \(.created_at) \(.pull_requests|map(.number)) \(.html_url)"'
+       --jq '.workflow_runs[] | select(.name=="Difftree PR Comment") | "\(.id) \(.status) \(.conclusion) \(.created_at) \(.pull_requests|map(.number)) \(.html_url)"'
      ```
    - **Pass:** a line reads `completed success` with `created_at` ≥ `<T_open>` and `<pr>` among its `pull_requests` numbers
      (the runs API fills them for same-repo PRs; on a fork PR the list is empty — already a fail); no output = not created
      yet, keep polling; a `skipped` line is an `edited` event, not it — expect several on one PR, and expect one to appear
      *before* the success run completes, so never treat the first `completed` line as terminal. `/commits/<sha>/check-runs`
-     likewise returns one row named `diff-tree` per run on that sha — the count varies with how many `edited` events fired
+     likewise returns one row named `difftree-pr-comment` per run on that sha — the count varies with how many `edited` events fired
      (e.g. two `edited` runs plus the real one is three rows; a `synchronize`-only push is one) — match on the
      conclusion, never on the name or the row count.
    - **On fail:** `failure` is a setup bug — `gh run view <id> --log-failed`; a template-level cause is
@@ -241,7 +243,7 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
    - **Precondition:** step 5 passed. `T0` = the later of `<T_open>` and `<T_push>` (the push
      re-triggers every reviewer). Floor = `T0` + 10 min — a heuristic for "the bots have posted",
      not proof (step 8 re-checks). Ceiling = floor + 20 min, an absolute time.
-   - **Command:** reviewer bots — Copilot, CodeRabbit, Greptile, Codex — may open threads on the workflow, and may instead post only a standing summary *issue* comment (Codex always does; CodeRabbit and Greptile do when they find nothing); a summary issue comment is not a review thread and needs no reply — only `reviewThreads` gate the merge. Whichever path below you take, the workflow stays byte-identical whatever a bot asks; template-level asks (fork PRs, checkout version) are "tracked upstream in difftree-action"; a permissions ask ("`issues: write` is missing — the action calls `github.rest.issues.*`") is answered from this PR's own evidence: `pull-requests: write` covers the issue-comment API on pull requests, which the passing run's `GITHUB_TOKEN Permissions` log group (`PullRequests: write`, no `Issues`) and step 5's later `updated_at` already prove — quote both; a byte-identity/drift claim ("extra lines vs. the canonical file") is answered with proof, never an edit: `diff` the PR-head file (`gh api "repos/<owner>/<repo>/contents/.github/workflows/pr-diff-tree.yml?ref=<sha2>" --jq .content | base64 -d`) against `https://raw.githubusercontent.com/smorinlabs/difftree-action/$PROV/examples/pr-diff-tree.yml` (`$PROV` is the provenance commit §2 step 2 recorded; when `$PROV` is unpublished — `git -C "$d" branch -r --contains "$PROV"` empty — the raw URL cannot serve it, so diff against `git -C "$d" show "$PROV:examples/pr-diff-tree.yml"` and say so) and quote both `shasum -a 256` values — bots withdraw on that; a SHA-pinning ask is different — it is the one sanctioned deviation (§2 step 2): honour it in place if the repo's own policy requires it, else decline with the template's comment quoted; a runner-policy ask gets the template's `runs-on` carve-out note, quoted; where an ask has a half that does not touch the file (updating the PR description, linking a ref), do that half. State this constraint to `pr-merge-flow` when handing off — its triage rubric would otherwise fix a valid small finding in place. Where `pr-merge-flow` is installed, hand it the PR in `--ready` mode (it replies and resolves; step 8 is yours) — but its own bot-wait bound is shorter than this step's floor, so its "ready" is not this step's **Pass**: after it returns, run call 1 yourself at or after the floor and require exit 0 with an empty `$out`. Otherwise: (a) from the push until the floor (≤ 30 polls at 20 s), poll call 1 and answer threads as they arrive with calls 2–3 — an empty result before the floor is "not yet", never "done"; (b) from the first query at or after the floor, rounds of call 1 → calls 2–3 per unresolved thread → call 1, stopping at the ceiling or after 3 rounds, whichever comes first:
+   - **Command:** reviewer bots — Copilot, CodeRabbit, Greptile, Codex — may open threads on the workflow, and may instead post only a standing summary *issue* comment (Codex always does; CodeRabbit and Greptile do when they find nothing); a summary issue comment is not a review thread and needs no reply — only `reviewThreads` gate the merge. Whichever path below you take, the workflow stays byte-identical whatever a bot asks; template-level asks (fork PRs, checkout version) are "tracked upstream in difftree-action"; a permissions ask ("`issues: write` is missing — the action calls `github.rest.issues.*`") is answered from this PR's own evidence: `pull-requests: write` covers the issue-comment API on pull requests, which the passing run's `GITHUB_TOKEN Permissions` log group (`PullRequests: write`, no `Issues`) and step 5's later `updated_at` already prove — quote both; a byte-identity/drift claim ("extra lines vs. the canonical file") is answered with proof, never an edit: `diff` the PR-head file (`gh api "repos/<owner>/<repo>/contents/.github/workflows/difftree-pr-comment.yml?ref=<sha2>" --jq .content | base64 -d`) against `https://raw.githubusercontent.com/smorinlabs/difftree-action/$PROV/examples/difftree-pr-comment.yml` (`$PROV` is the provenance commit §2 step 2 recorded; when `$PROV` is unpublished — `git -C "$d" branch -r --contains "$PROV"` empty — the raw URL cannot serve it, so diff against `git -C "$d" show "$PROV:examples/difftree-pr-comment.yml"` and say so) and quote both `shasum -a 256` values — bots withdraw on that; a SHA-pinning ask is different — it is the one sanctioned deviation (§2 step 2): honour it in place if the repo's own policy requires it, else decline with the template's comment quoted; a runner-policy ask gets the template's `runs-on` carve-out note, quoted; where an ask has a half that does not touch the file (updating the PR description, linking a ref), do that half. State this constraint to `pr-merge-flow` when handing off — its triage rubric would otherwise fix a valid small finding in place. Where `pr-merge-flow` is installed, hand it the PR in `--ready` mode (it replies and resolves; step 8 is yours) — but its own bot-wait bound is shorter than this step's floor, so its "ready" is not this step's **Pass**: after it returns, run call 1 yourself at or after the floor and require exit 0 with an empty `$out`. Otherwise: (a) from the push until the floor (≤ 30 polls at 20 s), poll call 1 and answer threads as they arrive with calls 2–3 — an empty result before the floor is "not yet", never "done"; (b) from the first query at or after the floor, rounds of call 1 → calls 2–3 per unresolved thread → call 1, stopping at the ceiling or after 3 rounds, whichever comes first:
      ```sh
      # 1. unresolved threads, all pages, one compact-JSON line each; a failed call must never read as "none" — capture status and stderr
      if out="$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner:"<owner>", name:"<repo>") {
@@ -378,7 +380,7 @@ hook bypass, merge settings, bot roster) by preserving that intent, never by dro
 
 ## See also
 
-- `examples/pr-diff-tree.yml` — the canonical workflow this skill scaffolds; the
+- `examples/difftree-pr-comment.yml` — the canonical workflow this skill scaffolds; the
   single source of truth (do not embed a second copy here).
 - `README.md`, `action.yml` — full input/output reference for difftree-action.
 - difftree CLI: <https://github.com/smorinlabs/difftree> — its `difftree-setup`

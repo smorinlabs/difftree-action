@@ -6,11 +6,11 @@ self-updating PR diff-tree comments to a repository via
 install difftree`, or from source), then works worktree-first: it locates the
 user's local clone of the target repo (cloning it over HTTPS if absent — into
 whatever directory the user keeps repositories), checks that no leftover
-`ci/difftree-pr-diff-tree` branch survives on the remote from a previous run
+`ci/difftree-pr-comment` branch survives on the remote from a previous run
 (deleting it first if merged, else stopping), creates a worktree off the
 repo's up-to-date default branch (it never commits in the user's live
 checkout), scaffolds the repo's canonical
-[`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) into
+[`examples/difftree-pr-comment.yml`](../../examples/difftree-pr-comment.yml) into
 `.github/workflows/` there (replacing any existing difftree-action workflow in
 place), byte-identical to the template **as resolved from where the skill
 loaded** — an unpublished local branch's copy where that's what resolved,
@@ -30,7 +30,7 @@ into the worktree or edit the workflow, then re-verify the committed bytes
 still match the template. It then verifies on that PR with a checklist whose
 every step states a precondition, a command, a pass condition, and what to do
 on fail — and each verification step states its intent, so operators can adapt
-its commands to a repo's differences rather than reverse-engineer them: wait for the `PR Diff Tree` run pinned to the install commit's SHA
+its commands to a repo's differences rather than reverse-engineer them: wait for the `Difftree PR Comment` run pinned to the install commit's SHA
 (an unpinned wait is satisfied by an older green run), confirm exactly one
 `<!-- difftree-action -->` comment and record its `id` and `updated_at`, push
 an empty commit, wait for the run pinned to the new SHA, and require the same
@@ -86,17 +86,19 @@ symlink `.agents/skills/difftree-action-setup`.
 
 > The skill finds the template by walking up from its own physical directory
 > (symlinks resolved) to a directory holding both `action.yml` and
-> `examples/pr-diff-tree.yml`, so every placement above works. Copied out of
-> this repo, nothing is found and it fetches the canonical file from
-> `https://raw.githubusercontent.com/smorinlabs/difftree-action/main/examples/pr-diff-tree.yml`.
+> `examples/difftree-pr-comment.yml`, so every placement above works. Copied out of
+> this repo, nothing is found and it resolves `main` to its current commit sha
+> (recorded as the provenance `$PROV`, which the later byte checks and drift
+> answers cite), then fetches the canonical file pinned to that commit:
+> `https://raw.githubusercontent.com/smorinlabs/difftree-action/<PROV>/examples/difftree-pr-comment.yml`.
 
 ## Example session
 
 > Set up difftree PR comments on this repo.
 > → Confirms you want the CI wiring, locates your local clone of the repo
 > (cloning it if missing), creates a worktree from the repo's default branch, writes
-> [`examples/pr-diff-tree.yml`](../../examples/pr-diff-tree.yml) to
-> `.github/workflows/pr-diff-tree.yml`, commits (bypassing any
+> [`examples/difftree-pr-comment.yml`](../../examples/difftree-pr-comment.yml) to
+> `.github/workflows/difftree-pr-comment.yml`, commits (bypassing any
 > worktree-inherited hook that can't resolve the live checkout's tooling),
 > opens a PR, waits for the run pinned to that commit's SHA, records the
 > comment's `id` and `updated_at`, pushes an empty commit, waits for the run

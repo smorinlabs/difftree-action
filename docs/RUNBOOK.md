@@ -5,8 +5,10 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
 
 ## Prerequisites
 
-- A test repository (or this repo) with the `PR Diff Tree` workflow
-  (`.github/workflows/difftree.yml`) installed, using `actions/checkout` with
+- A test repository (or this repo) with the `Difftree PR Comment` workflow
+  installed — `.github/workflows/difftree-pr-comment.yml` from
+  `examples/difftree-pr-comment.yml` in a test repo; in this repo, the dogfood
+  `.github/workflows/difftree.yml` — using `actions/checkout` with
   `fetch-depth: 0` and `permissions: { contents: read, pull-requests: write }`.
 
 ## Acceptance steps
