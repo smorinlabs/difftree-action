@@ -83,21 +83,29 @@ zero skill edits needed.
       Installed 2026-08-31: smorinlabs/blueprint-dryrun#14, merge `89ee012`; clean run, 1 declined SHA-pin thread; pre-existing CI failures reported (init-integration, dependency-review).
 - [x] [P03-T11] Fan-out: `blueprint-press-dryrun`
       Installed 2026-09-01: smorinlabs/blueprint-press-dryrun#7, merge `7ac9bfe`; replace-in-place of legacy difftree.yml; F74 found; 2 declined mutable-ref threads.
-- [ ] [P03-T12] Fan-out: `claude-openrouter-launcher`
-- [ ] [P03-T13] Fan-out: `cli-standards`
-- [ ] [P03-T14] Fan-out: `contributors-please`
-- [ ] [P03-T15] Fan-out: `contributors-please-action`
+- [x] [P03-T12] Fan-out: `claude-openrouter-launcher`
+      Installed 2026-09-01 (wave 3): #6, merge `a762a02`; agent stalled, main session completed (F75); SHA-pin declined.
+- [x] [P03-T13] Fan-out: `cli-standards`
+      Installed 2026-09-01 (wave 3): #4, merge `139e727`; clean.
+- [x] [P03-T14] Fan-out: `contributors-please`
+      Installed 2026-09-01 (wave 3): #34, merge `86fbc68`; clean, 12 required contexts green.
+- [x] [P03-T15] Fan-out: `contributors-please-action`
+      Installed 2026-09-01 (wave 3): #55, merge `962659c`; clean.
 - [x] [P03-T16] Fan-out: `contributors-please-e2e`
       Installed 2026-09-01: smorinlabs/contributors-please-e2e#135, merge `609a66c`; clean run, permissions ask refuted with run evidence.
 - [x] [P03-T17] Fan-out: `contributors-please-test`
       Installed 2026-09-01: smorinlabs/contributors-please-test#13, merge `f747578`; 1 valid Codex finding fixed (validate-workflows allowlist registration).
-- [ ] [P03-T18] Fan-out: `difftree`
+- [x] [P03-T18] Fan-out: `difftree`
+      Synced 2026-09-01 (wave 3): #17, merge `4d23cae`; replace-in-place of legacy difftree.yml (`@v0.1.0`); clean.
 - [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
-- [ ] [P03-T20] Fan-out: `doxa-research`
-- [ ] [P03-T21] Fan-out: `ge-smorin-app`
+- [x] [P03-T20] Fan-out: `doxa-research`
+      Installed 2026-09-01 (wave 3): #141, merge `e389e47`; merged past a new bandit/Hygiene drift failure (owner call).
+- [x] [P03-T21] Fan-out: `ge-smorin-app`
+      Installed 2026-09-01 (wave 3): #1, merge `22fe4e8`; private first workflow; local `main` diverged — owner to reconcile.
 - [x] [P03-T22] Fan-out: `harness-kit`
       Installed as cold retest 2 (2026-08-31): smorinlabs/harness-kit#12, merge `0a5d29a`; clean run, zero threads, no new findings.
-- [ ] [P03-T23] Fan-out: `homebrew-tap`
+- [x] [P03-T23] Fan-out: `homebrew-tap`
+      Installed 2026-09-01 (wave 3): #5, merge `053a7f6`; merged past pre-existing test-bot failures (owner call).
 - [ ] [P03-T24] Fan-out: `identikit`
 - [ ] [P03-T25] Fan-out: `identikit-py`
 - [ ] [P03-T26] Fan-out: `identikit-pylib`
@@ -106,11 +114,13 @@ zero skill edits needed.
 - [ ] [P03-T29] Fan-out: `identikit-tslib`
 - [ ] [P03-T30] Fan-out: `py-launch-blueprint`
 - [ ] [P03-T31] Fan-out: `register-gated-verification`
-- [ ] [P03-T32] Fan-out: `rest-standards`
+- [x] [P03-T32] Fan-out: `rest-standards`
+      Installed 2026-09-01 (wave 3): #14, merge `5ad550a`; clean, 2 SHA-pin threads declined.
 - [x] [P03-T33] Fan-out: `shelf`
       Installed as cold retest 3 (2026-08-31): smorinlabs/shelf#4, merge `a8a13ed`; clean run, zero threads; finding F72 (harness-level, step 9 hardened).
 - [ ] [P03-T34] Fan-out: `skillsmith`
-- [ ] [P03-T35] Fan-out: `smorin-segment-timer`
+- [x] [P03-T35] Fan-out: `smorin-segment-timer`
+      Installed 2026-09-01 (wave 3): #6, merge `25144c5`; private first workflow; clean.
 - [ ] [P03-T36] Fan-out: `smorinlabs-harness`
 - [ ] [P03-T37] Fan-out: `substrata`
 - [ ] [P03-T38] Fan-out: `template-press`

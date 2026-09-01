@@ -1078,3 +1078,37 @@ dead; every future recipe keeps the per-repo protection check.
    pulled past owner-approved untracked-only dirt (two handoff docs, reported, untouched).
 
 Fan-out verdict so far: 6 runs, 0 skill-text corrections needed since the rename PR. Remaining targets: 25.
+
+## Fan-out wave 3 (2026-09-01, runs 7–16) — first 10-repo parallel wave
+
+Pattern: main session preps all worktrees and takes one batch PR-open gate; 10 parallel verify-only subagents
+each run commit → push → PR → §4 steps 1–5 → bot floor → thread inventory + step 7 (read-only); the main
+session answers threads with the canned playbook, takes one consolidated multi-select merge gate, merges pinned,
+cleans up. All 10 merged; 0 skill-text corrections.
+
+| Repo | PR | Merge | Notes |
+|---|---|---|---|
+| cli-standards | #4 | `139e727` | first workflow; 0 threads |
+| rest-standards | #14 | `5ad550a` | first workflow; 2 SHA-pin threads declined; untracked-only dirt pulled past (owner precedent) |
+| doxa-research | #141 | `e389e47` | lefthook; drift claim refuted by hash + SHA-pin declined; **new** `Hygiene` failure (bandit unused-`#nosec` in untouched `errors.py` — environmental drift) merged past on owner call |
+| difftree | #17 | `4d23cae` | replace-in-place (`difftree.yml` `@v0.1.0` → canonical); 0 threads |
+| contributors-please | #34 | `86fbc68` | 12 required `CP-LIB-*` contexts green; 0 threads |
+| contributors-please-action | #55 | `962659c` | required `check` green; 0 threads |
+| claude-openrouter-launcher | #6 | `a762a02` | agent stalled after step 2 — main session completed steps 3–7 (see F75); required `actionlint`,`ci` green; SHA-pin declined |
+| ge-smorin-app | #1 | `22fe4e8` | private, first workflow; 0 threads; local `main` diverged (owner's unpushed commits) → cleanup pull refused, worktree left for the owner |
+| homebrew-tap | #5 | `053a7f6` | 2 SHA-pin threads declined; pre-existing `test-bot` ×3 failures (same on `main`) merged past on owner call |
+| smorin-segment-timer | #6 | `25144c5` | private, first workflow; 0 threads |
+
+### F75 — a verify-only subagent can stall silently mid-recipe; the controller must re-derive state from GitHub
+- **Where:** the parallel-wave operating pattern (not the skill text).
+- **What:** the `claude-openrouter-launcher` agent completed steps 1–2, then stopped issuing calls while "waiting
+  for the run" and never resumed; its last notifications read as progress. The controller only noticed by querying
+  the PR directly (1 success run, no re-trigger commit, 1 open thread).
+- **Fix:** operating rule — before a merge gate, re-derive every wave repo's state from the API (success-run count
+  ≥ 2, comment updated twice, threads, checks) rather than trusting agent reports; stand a stalled agent down via
+  message before completing its steps in the main session (done here; no double-push occurred).
+- **Class:** process.
+
+Fan-out standing: 23 repos carry the canonical workflow; 16 remain (wave 4: identikit ×6, py-launch-blueprint,
+register-gated-verification, skillsmith, substrata — worktrees prepped; wave 5: smorinlabs-harness,
+template-press, terraform-gcp ×3, warpqueuekit).
