@@ -264,7 +264,7 @@ A PR comment with a closed 📱 plain fold, an open 🌳 stats-summary colored f
 ### Manual Verification
 - Owner: dogfood comment on the implementation PR, both folds, both themes, phone
 
-## [~] Project P05: banksheets fleet rollout of difftree-action (v0.6.1 — docs/tracker only, no release)
+## [~] Project P06: banksheets fleet rollout of difftree-action (v0.6.1 — docs/tracker only, no release)
 **Goal/Requirement**: Every non-archived `banksheets` repo (9 as of 2026-09-01, the fork
 mirror `get-bank-sheets-web-fork` opted in by the owner at the PR-open gate) runs the canonical `difftree-pr-comment.yml` workflow, installed by
 the `difftree-action-setup` skill using the parallel wave pattern proven on the
@@ -283,18 +283,18 @@ threads, takes one consolidated merge gate, merges pinned, cleans up.
 - Skill-text changes (fold any gotcha as an F-entry; edit the skill in its own PR).
 
 ### Tests & Tasks
-- [x] [P05-T01] Recon sweep over all 9 targets (read-only, parallel) → facts table at the PR-open gate
-- [x] [P05-T02] Fan-out: `get-bank-sheets-web`
-- [x] [P05-T03] Fan-out: `get-bank-sheets-site`
-- [x] [P05-T04] Fan-out: `get-bank-sheets-mcp`
-- [x] [P05-T05] Fan-out: `banksheets-landing` (clone on `docs/terraform-infra-design` → partial cleanup expected)
-- [x] [P05-T06] Fan-out: `banksheets-loops`
-- [x] [P05-T07] Fan-out: `rpi-artifacts`
-- [x] [P05-T08] Fan-out: `banksheets-harness`
-- [x] [P05-T09] Fan-out: `terraform-stripe`
-- [x] [P05-T11] Fan-out: `get-bank-sheets-web-fork` (fork mirror; same-repo PR against the fork's own `main`)
-- [x] [P05-TS01] F75 re-derivation from the API before the merge gate: per repo ≥ 2 success runs, one comment updated twice, 0 unresolved threads, checks green, mergeable
-- [~] [P05-T10] Fold PR: wave log + findings (F77+) in `docs/rollout-findings.md`, tracker ticks
+- [x] [P06-T01] Recon sweep over all 9 targets (read-only, parallel) → facts table at the PR-open gate
+- [x] [P06-T02] Fan-out: `get-bank-sheets-web`
+- [x] [P06-T03] Fan-out: `get-bank-sheets-site`
+- [x] [P06-T04] Fan-out: `get-bank-sheets-mcp`
+- [x] [P06-T05] Fan-out: `banksheets-landing` (clone on `docs/terraform-infra-design` → partial cleanup expected)
+- [x] [P06-T06] Fan-out: `banksheets-loops`
+- [x] [P06-T07] Fan-out: `rpi-artifacts`
+- [x] [P06-T08] Fan-out: `banksheets-harness`
+- [x] [P06-T09] Fan-out: `terraform-stripe`
+- [x] [P06-T11] Fan-out: `get-bank-sheets-web-fork` (fork mirror; same-repo PR against the fork's own `main`)
+- [x] [P06-TS01] F75 re-derivation from the API before the merge gate: per repo ≥ 2 success runs, one comment updated twice, 0 unresolved threads, checks green, mergeable
+- [~] [P06-T10] Fold PR: wave log + findings (F77+) in `docs/rollout-findings.md`, tracker ticks
 - [ ] Regression Test Status
 
 ### Deliverable
