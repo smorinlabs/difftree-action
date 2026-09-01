@@ -205,6 +205,21 @@ test("plain suffix over budget is truncated with today's notice; colored lines u
   for (const e of r.colored) assert.ok(body.includes(e), "every colored expression survives intact");
 });
 
+test("color declined on an oversized root/footer still yields a body within the comment limit", () => {
+  // Greptile P1 on PR #26: composeBody called directly (no upstream truncateTree)
+  // with a 66,000-char root or footer line must not exceed GITHUB_COMMENT_LIMIT.
+  const hugeRoot = ["PR: origin/main...abc · committed", "r".repeat(66000), "├── ● a.ts +1 −0", "", "0 dirs touched · 1 files modified · +1 −0"].join("\n");
+  const hugeFooter = ["PR: origin/main...abc · committed", "repo", "├── ● a.ts +1 −0", "", "0 dirs touched · 1 files modified · +1 −0 " + "f".repeat(66000)].join("\n");
+  for (const tree of [hugeRoot, hugeFooter]) {
+    const body = composeBody(tree, { color: true });
+    assert.ok(body.length <= GITHUB_COMMENT_LIMIT, `body ${body.length}`);
+    assert.ok(body.startsWith(MARKER + "\n"));
+    assert.match(body, /Tree truncated to fit GitHub's comment size limit/);
+  }
+  // and color:false on the same input is still the untouched plain path (caller truncates)
+  assert.ok(composeBody(hugeRoot, { color: false }).includes("r".repeat(66000)));
+});
+
 test("upstream-truncated input keeps the truncation notice in color mode", () => {
   const body = composeBody(synth(300), { color: true, truncated: true });
   assert.match(body, /Tree truncated to fit GitHub's comment size limit/);

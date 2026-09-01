@@ -15,8 +15,11 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
 
 1. **Open a PR** touching a few files across at least two directories.
    - ✅ Expect: exactly one comment containing the marker `<!-- difftree-action -->`,
-     a `🌳 difftree — changes in this PR` heading, and a fenced ASCII tree with a
-     `N dirs touched · N files changed · +N −M` summary line.
+     a `🌳 difftree — changes in this PR` heading, the tree rendered as colored
+     rows (one inline-math expression per line — the default), and a
+     `N dirs touched · N files changed · +N −M` summary line. A fenced ASCII
+     tree appears only with `color: "false"`, or as the plain remainder of a
+     tree longer than ~100 lines.
 2. **Push another commit** to the same PR.
    - ✅ Expect: the **same** comment updates in place — no second difftree-action
      comment appears.

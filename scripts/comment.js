@@ -257,6 +257,12 @@ function composeBody(tree, opts = {}) {
   if (color && !empty) {
     const body = composeColorBody(tree, { truncated, heading, advertise });
     if (body !== null) return body;
+    // Color declined (backtick in header/root/footer, or oversized fixed lines).
+    // action.yml truncates the raw tree before calling us, so this is only
+    // reachable with an untruncated tree when composeBody is used directly;
+    // keep the ≤ GITHUB_COMMENT_LIMIT contract regardless.
+    const r = truncateTree(tree);
+    if (r.truncated) return composeBody(r.tree, { ...opts, truncated: true, color: false });
   }
 
   const lines = [MARKER, `### ${heading}`, ""];
