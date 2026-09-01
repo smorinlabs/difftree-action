@@ -225,3 +225,52 @@ A PR on any installed repo shows the colored tree; `color: "false"` shows the pl
 ### Manual Verification
 - Dogfood comment on the implementation PR: colored marks/churn, left-aligned rows, light and dark theme
 - A >100-line PR shows colored head + notice + plain fence + colored footer in one comment
+
+## [~] Project P05: banksheets fleet rollout of difftree-action (v0.6.1 — docs/tracker only, no release)
+**Goal/Requirement**: Every non-archived `banksheets` repo (9 as of 2026-09-01, the fork
+mirror `get-bank-sheets-web-fork` opted in by the owner at the PR-open gate) runs the canonical `difftree-pr-comment.yml` workflow, installed by
+the `difftree-action-setup` skill using the parallel wave pattern proven on the
+40-repo smorinlabs rollout (P03): controller preps worktrees → one batch PR-open
+gate → verify-only subagents run §2–§4 through step 7 → controller answers
+threads, takes one consolidated merge gate, merges pinned, cleans up.
+- Handoff of record: `docs/handoffs/2026-09-01-banksheets-difftree-fanout.md`.
+- Wave log and any new findings (F77+) append to `docs/rollout-findings.md`.
+- Canonical template at wave time: provenance `b70ce28`, SHA-256 `c0e126bd…`
+  (71 lines) — re-derived at run time, not copied from the handoff.
+- All repos are private; calibration per the handoff (protection 404 = none
+  required; an empty thread set at the floor is genuinely none).
+
+**Out of Scope**
+- Any smorinlabs work, including the 33-repo resync to the post-`b70ce28` template.
+- Skill-text changes (fold any gotcha as an F-entry; edit the skill in its own PR).
+
+### Tests & Tasks
+- [x] [P05-T01] Recon sweep over all 9 targets (read-only, parallel) → facts table at the PR-open gate
+- [x] [P05-T02] Fan-out: `get-bank-sheets-web`
+- [x] [P05-T03] Fan-out: `get-bank-sheets-site`
+- [x] [P05-T04] Fan-out: `get-bank-sheets-mcp`
+- [x] [P05-T05] Fan-out: `banksheets-landing` (clone on `docs/terraform-infra-design` → partial cleanup expected)
+- [x] [P05-T06] Fan-out: `banksheets-loops`
+- [x] [P05-T07] Fan-out: `rpi-artifacts`
+- [x] [P05-T08] Fan-out: `banksheets-harness`
+- [x] [P05-T09] Fan-out: `terraform-stripe`
+- [x] [P05-T11] Fan-out: `get-bank-sheets-web-fork` (fork mirror; same-repo PR against the fork's own `main`)
+- [x] [P05-TS01] F75 re-derivation from the API before the merge gate: per repo ≥ 2 success runs, one comment updated twice, 0 unresolved threads, checks green, mergeable
+- [~] [P05-T10] Fold PR: wave log + findings (F77+) in `docs/rollout-findings.md`, tracker ticks
+- [ ] Regression Test Status
+
+### Deliverable
+```bash
+$ for r in get-bank-sheets-web get-bank-sheets-site get-bank-sheets-mcp banksheets-landing banksheets-loops rpi-artifacts banksheets-harness terraform-stripe get-bank-sheets-web-fork; do
+    gh api "repos/banksheets/$r/contents/.github/workflows/difftree-pr-comment.yml" --jq .sha >/dev/null && echo "$r ok"; done | wc -l
+9
+```
+
+### Automated Verification
+- Each merged workflow file is byte-identical to `examples/difftree-pr-comment.yml`
+  at the recorded provenance (SHA-256 match), modulo the sanctioned SHA-pin line
+
+### Manual Verification
+- On each install PR: the `Difftree PR Comment` run is green, the
+  `<!-- difftree-action -->` comment exists, and after the empty re-trigger commit
+  the same comment (same id) carries a strictly later `updated_at`.
