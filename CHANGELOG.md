@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/smorinlabs/difftree-action/compare/v0.6.0...v0.6.1) (2026-09-01)
+
+
+### Documentation
+
+* **projects:** close P04 — v0.6.0 released ([dd63aa1](https://github.com/smorinlabs/difftree-action/commit/dd63aa1da8d675fe784ffb4b80e5e0d266787557))
+* **projects:** close P04 — v0.6.0 released, canary and dogfood verified ([00c51cf](https://github.com/smorinlabs/difftree-action/commit/00c51cfe68e372db65d409d6466dd3addc884338))
+
 ## [0.6.0](https://github.com/smorinlabs/difftree-action/compare/v0.5.1...v0.6.0) (2026-09-01)
 
 
