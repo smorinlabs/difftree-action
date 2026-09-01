@@ -1117,8 +1117,8 @@ template-press, terraform-gcp ×3, warpqueuekit).
 
 Same pattern as wave 3, with the F75 rule applied: before the merge gate the controller re-derived every repo's
 state from the API and caught **two** stalled verify-only agents (`identikit`, `skillsmith` — both stopped after
-opening their PRs); the controller stood them down by message and completed steps 3–7 itself. All 10 merged;
-0 skill-text corrections. Threads: 6 SHA-pin declines, 3 drift refutes-by-hash, 1 template-comment critique
+opening their PRs); the controller stood them down by message and completed steps 3–7 itself. All 10 merged; no skill-text correction was needed to complete any run (F76 below is a guidance
+gap folded in afterward). Threads: 6 SHA-pin declines, 3 drift refutes-by-hash, 1 template-comment critique
 declined as upstream, 2 valid repo-local fixes (press rules).
 
 | Repo | PR | Merge | Notes |
