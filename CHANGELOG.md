@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.0](https://github.com/smorinlabs/difftree-action/compare/v0.6.2...v0.7.0) (2026-09-01)
+
+
+### Features
+
+* **comment:** foldable plain + colored sections (color-section / plain-section) ([930a76b](https://github.com/smorinlabs/difftree-action/commit/930a76bae22a03eb545b31c018576e187fd99cde))
+
+
+### Bug Fixes
+
+* **comment:** exact fence-delimiter reserves and no double SCAFFOLD subtraction; review fixes ([f964431](https://github.com/smorinlabs/difftree-action/commit/f96443156fb05d75e994a7b96ecdc04cccabc1c5))
+
+
+### Documentation
+
+* **readme:** sketch the output layout for each color-section/plain-section configuration ([fb22dfa](https://github.com/smorinlabs/difftree-action/commit/fb22dfa3018972826e4822b04f9c67b34f2a6454))
+
 ## [0.6.2](https://github.com/smorinlabs/difftree-action/compare/v0.6.1...v0.6.2) (2026-09-01)
 
 
