@@ -39,6 +39,7 @@ Probes were pasted into `smorinlabs/harness-kit` issues #14–#20 and PR #13
 | Clean page renders 145 per-line expressions; #146 fails "Unable to render expression"; budget is per page and shared across comments (saturated PR #13 rendered nothing new) | probe A (120 ok), probe G (fail at #146), PR #13 |
 | No 50-`\color`-per-expression cap (90 rendered) | probe C |
 | Hex `\color{#rrggbb}` works; all 11 difftree mark glyphs render; palette legible in light and dark | round 4, probe B7 |
+| The fallback `│` glyph is not one `~` cell wide, so pure-space prefixes drift; an invisible `{\color{transparent}\texttt{│}}` in place of the first space fixes it (`\color{transparent}` is accepted) | probe I (harness-kit #22), 2026-09-01 |
 | Escapes that work inside `\texttt{}`: `\_ \# \& \% \{ \} \$`, `\^{}`, `\~{}`, space→`~`; backslash via `}\backslash\texttt{`; `< > \| ' " -> --`, accented and CJK pass through; backtick has no encoding | probes B6, D5 |
 
 ## 4. Design
