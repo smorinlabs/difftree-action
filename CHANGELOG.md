@@ -13,8 +13,8 @@
 
 ### Documentation
 
-* fan-out wave log (F77–F80) and tracker (relocated to a private tracker) ([6d8fe55](https://github.com/smorinlabs/difftree-action/commit/6d8fe5541acf3ce984e3c7acb91fa91750669d05))
-* fan-out wave log (F77–F80) and tracker (relocated to a private tracker) ([1544e2b](https://github.com/smorinlabs/difftree-action/commit/1544e2bd1ee451b08b432105df30f2757a02b259))
+* fan-out wave log (F77–F80) and tracker, initial P05 numbering (relocated to a private tracker) ([6d8fe55](https://github.com/smorinlabs/difftree-action/commit/6d8fe5541acf3ce984e3c7acb91fa91750669d05))
+* fan-out wave log (F77–F80) and tracker, final P06 numbering (relocated to a private tracker) ([1544e2b](https://github.com/smorinlabs/difftree-action/commit/1544e2bd1ee451b08b432105df30f2757a02b259))
 * close P06 (fold merged completes T10); version ref v0.7.0 ([35b63db](https://github.com/smorinlabs/difftree-action/commit/35b63db7ebd0ab0bc7d198c3cacbafdec113f66f))
 * renumber the private tracker block to P06 (P05 taken by foldable sections) ([241d7ba](https://github.com/smorinlabs/difftree-action/commit/241d7ba14dae3f8fa0af57ffa3b60e31b11cea46))
 
