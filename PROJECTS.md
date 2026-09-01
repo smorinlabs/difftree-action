@@ -162,7 +162,7 @@ $ gh api "search/code?q=org:smorinlabs+path:.github/workflows+filename:difftree-
 - On each install PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
   comment exists, and after a second push the same comment (same id) is updated.
 
-## [~] Project P04: Colored PR comment via GitHub inline math, plain as opt-in (v0.6.0)
+## [x] Project P04: Colored PR comment via GitHub inline math, plain as opt-in (v0.6.0)
 **Goal/Requirement**: The sticky PR comment renders in color by default —
 status marks by git state, `+N`/`−M` churn, and the summary line, mirroring
 `difftree`'s terminal colors — using GitHub's inline-math renderer
@@ -198,9 +198,9 @@ in the plain fence under a one-line notice, the summary line colored last.
 - [x] [P04-T13] Fix GitHub autolinking inside math (SHA/@/# tokens split across groups; evidence: canary comment body_html) before v0.6.0
 - [x] [P04-T12] Fix indentation drift for pure-space prefixes (invisible `│` spacer; probe I, harness-kit #22) before v0.6.0
 - [x] [P04-T07] Merge PR #26 (merge commit `76c4b6a`) → `git pull --ff-only` in the main checkout
-- [ ] [P04-TS03] Dogfood: implementation PR's own comment renders in color (light + dark); one run with `color: "false"` shows the fence
-- [ ] [P04-T08] Canary: bump the SHA pin in `ts-launch-blueprint` to the merge SHA on a PR; confirm colored comment
-- [ ] [P04-T09] Merge the release-please PR → v0.6.0 → `v0` moves; fleet renders in color on next PR events
+- [x] [P04-TS03] Dogfood: PR #26's own comment rendered in color (owner-verified light + dark); seam split verified on harness-kit #21; `color: "false"` byte-identity pinned by the golden matrix
+- [x] [P04-T08] Canary: `ts-launch-blueprint#28` pinned to `ee68803` rendered the colored comment (surfaced the autolink bug → PR #30), then re-pinned to `v0.6.0`
+- [x] [P04-T09] Release PR #22 merged 2026-09-01 → tag `v0.6.0` (`0195d79`), `v0` moved by release.yml; fleet renders in color on next PR events
 - [ ] Regression Test Status
 
 ### Deliverable
