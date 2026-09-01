@@ -154,15 +154,18 @@ $`\texttt{├──~}\texttt{~}\texttt{~docs}\texttt{~(3~files,~}{\color{#2da44e
 $`\texttt{└──~}{\color{#0969da}\texttt{↻}}\texttt{~old-name.yml~->~new-name.yml}\texttt{~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$<br>
 $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
 
-### 7. A complete comment body (real difftree output from difftree-action PR #24)
+### 7. A colored-only comment body (`plain-section: hidden`; real difftree output from PR #24)
 
-Exactly what the action posts for a small PR: marker, heading, one expression per line, blank line, colored footer, attribution.
+Exactly what the action posts for a small PR under `plain-section: hidden` — since v0.7.0 the DEFAULT body wraps this in the foldable layout of example 9.
 
 **Source — paste into a PR or issue comment:**
 
 ````markdown
 <!-- difftree-action -->
 ### 🌳 difftree — changes in this PR
+
+<details open>
+<summary>🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52</summary>
 
 $`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$
 $`\texttt{difftree-action}`$
@@ -185,6 +188,8 @@ $`{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#0969da}\texttt
 
 $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
 
+</details>
+
 <sub>🌳 Get your own diff tree at <a href="https://github.com/smorinlabs/difftree-action">smorinlabs/difftree-action</a></sub>
 ````
 
@@ -192,6 +197,9 @@ $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified
 
 <!-- difftree-action --><br>
 ### 🌳 difftree — changes in this PR<br>
+<br>
+<details open><br>
+<summary>🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52</summary><br>
 <br>
 $`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$<br>
 $`\texttt{difftree-action}`$<br>
@@ -214,9 +222,11 @@ $`{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#0969da}\texttt
 <br>
 $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$<br>
 <br>
+</details><br>
+<br>
 <sub>🌳 Get your own diff tree at <a href="https://github.com/smorinlabs/difftree-action">smorinlabs/difftree-action</a></sub>
 
-### 8. The hybrid split (large trees)
+### 8. The hybrid split (large trees, `plain-section: hidden`)
 
 Shown with a budget of 8 expressions so the seam fits here; the action's budget is 100. Colored head → one-line notice → plain fence → colored footer, all one comment.
 
@@ -270,4 +280,132 @@ _…and 7 more lines below (plain — GitHub renders a limited number of colored
 ```
 
 $`\texttt{0~dirs~touched~·~12~files~}{\color{#bf8700}\texttt{modified}}\texttt{~·~}{\color{#2da44e}\texttt{+78}}\texttt{~}{\color{#cf222e}\texttt{−12}}`$
+
+### 9. The DEFAULT comment body (v0.7.0 foldable layout)
+
+What the action posts by default: a closed 📱 plain fold, then an open fold whose <summary> is the stats line, holding the colored tree; attribution outside. Configure with color-section / plain-section.
+
+**Source — paste into a PR or issue comment:**
+
+````markdown
+<!-- difftree-action -->
+### 🌳 difftree — changes in this PR
+
+<details>
+<summary>📱 Plain text version (mobile / email)</summary>
+
+```
+PR: origin/main...563a39c · committed
+difftree-action
+├──   .claude (1 files, +32 −30)
+│   └──   skills (1 files, +32 −30)
+│       └──   difftree-action-setup (1 files, +32 −30)
+│           └── ● SKILL.md +32 −30
+├──   .github (1 files, +1 −1)
+│   └──   workflows (1 files, +1 −1)
+│       └── ● difftree.yml +1 −1
+├── ● PROJECTS.md +6 −3
+├── ● README.md +5 −5
+├──   docs (3 files, +54 −10)
+│   ├── ● RUNBOOK.md +4 −2
+│   ├── ● rollout-findings.md +40 −0
+│   └──   skills (1 files, +10 −8)
+│       └── ● difftree-action-setup.md +10 −8
+└──   examples (1 files, +3 −3)
+    └── ↻ pr-diff-tree.yml -> difftree-pr-comment.yml +3 −3
+
+8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+```
+
+</details>
+
+<details open>
+<summary>🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52</summary>
+
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$
+$`\texttt{difftree-action}`$
+$`\texttt{├──~}\texttt{~}\texttt{~.claude}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}\texttt{~}\texttt{~difftree-action-setup}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~SKILL.md}\texttt{~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}`$
+$`\texttt{├──~}\texttt{~}\texttt{~.github}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}\texttt{)}`$
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~workflows}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}\texttt{)}`$
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~difftree.yml}\texttt{~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$
+$`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~PROJECTS.md}\texttt{~}{\color{#2da44e}\texttt{+6}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$
+$`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~README.md}\texttt{~}{\color{#2da44e}\texttt{+5}}\texttt{~}{\color{#cf222e}\texttt{−5}}`$
+$`\texttt{├──~}\texttt{~}\texttt{~docs}\texttt{~(3~files,~}{\color{#2da44e}\texttt{+54}}\texttt{~}{\color{#cf222e}\texttt{−10}}\texttt{)}`$
+$`\texttt{│~~~├──~}{\color{#2da44e}\texttt{●}}\texttt{~RUNBOOK.md}\texttt{~}{\color{#2da44e}\texttt{+4}}\texttt{~}{\color{#cf222e}\texttt{−2}}`$
+$`\texttt{│~~~├──~}{\color{#2da44e}\texttt{●}}\texttt{~rollout-findings.md}\texttt{~}{\color{#2da44e}\texttt{+40}}\texttt{~}{\color{#cf222e}\texttt{−0}}`$
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+10}}\texttt{~}{\color{#cf222e}\texttt{−8}}\texttt{)}`$
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~difftree-action-setup.md}\texttt{~}{\color{#2da44e}\texttt{+10}}\texttt{~}{\color{#cf222e}\texttt{−8}}`$
+$`\texttt{└──~}\texttt{~}\texttt{~examples}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}\texttt{)}`$
+$`{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#0969da}\texttt{↻}}\texttt{~pr-diff-tree.yml~->~difftree-pr-comment.yml}\texttt{~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$
+
+$`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
+
+</details>
+
+<sub>🌳 Get your own diff tree at <a href="https://github.com/smorinlabs/difftree-action">smorinlabs/difftree-action</a></sub>
+````
+
+**Rendered here** (`.md` files need `<br>`; comments do not):
+
+<!-- difftree-action -->
+### 🌳 difftree — changes in this PR
+
+<details>
+<summary>📱 Plain text version (mobile / email)</summary>
+
+```
+PR: origin/main...563a39c · committed
+difftree-action
+├──   .claude (1 files, +32 −30)
+│   └──   skills (1 files, +32 −30)
+│       └──   difftree-action-setup (1 files, +32 −30)
+│           └── ● SKILL.md +32 −30
+├──   .github (1 files, +1 −1)
+│   └──   workflows (1 files, +1 −1)
+│       └── ● difftree.yml +1 −1
+├── ● PROJECTS.md +6 −3
+├── ● README.md +5 −5
+├──   docs (3 files, +54 −10)
+│   ├── ● RUNBOOK.md +4 −2
+│   ├── ● rollout-findings.md +40 −0
+│   └──   skills (1 files, +10 −8)
+│       └── ● difftree-action-setup.md +10 −8
+└──   examples (1 files, +3 −3)
+    └── ↻ pr-diff-tree.yml -> difftree-pr-comment.yml +3 −3
+
+8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+```
+
+</details>
+
+<details open>
+<summary>🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52</summary>
+
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$<br>
+$`\texttt{difftree-action}`$<br>
+$`\texttt{├──~}\texttt{~}\texttt{~.claude}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$<br>
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$<br>
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}\texttt{~}\texttt{~difftree-action-setup}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$<br>
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~SKILL.md}\texttt{~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}`$<br>
+$`\texttt{├──~}\texttt{~}\texttt{~.github}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}\texttt{)}`$<br>
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~workflows}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}\texttt{)}`$<br>
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~difftree.yml}\texttt{~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$<br>
+$`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~PROJECTS.md}\texttt{~}{\color{#2da44e}\texttt{+6}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$<br>
+$`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~README.md}\texttt{~}{\color{#2da44e}\texttt{+5}}\texttt{~}{\color{#cf222e}\texttt{−5}}`$<br>
+$`\texttt{├──~}\texttt{~}\texttt{~docs}\texttt{~(3~files,~}{\color{#2da44e}\texttt{+54}}\texttt{~}{\color{#cf222e}\texttt{−10}}\texttt{)}`$<br>
+$`\texttt{│~~~├──~}{\color{#2da44e}\texttt{●}}\texttt{~RUNBOOK.md}\texttt{~}{\color{#2da44e}\texttt{+4}}\texttt{~}{\color{#cf222e}\texttt{−2}}`$<br>
+$`\texttt{│~~~├──~}{\color{#2da44e}\texttt{●}}\texttt{~rollout-findings.md}\texttt{~}{\color{#2da44e}\texttt{+40}}\texttt{~}{\color{#cf222e}\texttt{−0}}`$<br>
+$`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+10}}\texttt{~}{\color{#cf222e}\texttt{−8}}\texttt{)}`$<br>
+$`\texttt{│~~~}{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#2da44e}\texttt{●}}\texttt{~difftree-action-setup.md}\texttt{~}{\color{#2da44e}\texttt{+10}}\texttt{~}{\color{#cf222e}\texttt{−8}}`$<br>
+$`\texttt{└──~}\texttt{~}\texttt{~examples}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}\texttt{)}`$<br>
+$`{\color{transparent}\texttt{│}}\texttt{~~~└──~}{\color{#0969da}\texttt{↻}}\texttt{~pr-diff-tree.yml~->~difftree-pr-comment.yml}\texttt{~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$
+
+$`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
+
+</details>
+
+<sub>🌳 Get your own diff tree at <a href="https://github.com/smorinlabs/difftree-action">smorinlabs/difftree-action</a></sub>
 

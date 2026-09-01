@@ -186,8 +186,13 @@ a glance, with zero per-reviewer setup.
 ### 6.4 Comment Rendering & Upsert
 
 - FR-4.1 The comment body is composed of: the hidden marker
-  `<!-- difftree-action -->`, a heading, and a fenced code block containing the
-  captured tree text.
+  `<!-- difftree-action -->` (always the first line), a heading, and — by
+  default since v0.7.0 — two foldable sections: a closed `<details>` fold
+  labeled "📱 Plain text version (mobile / email)" containing the fenced tree
+  text, and an open `<details>` fold whose `<summary>` is the stats line,
+  containing the colored inline-math tree. `color-section: "hidden"` (or the
+  deprecated `color: "false"`) restores the pre-v0.6.0 body: marker, heading,
+  fenced code block.
 - FR-4.2 The action finds its prior comment on the PR by the marker and
   **updates it in place**; if none exists it creates one. There is at most one
   difftree-action comment per PR (sticky pattern, as in
@@ -196,9 +201,12 @@ a glance, with zero per-reviewer setup.
   sets outputs but posts/updates nothing.
 - FR-4.4 When the tree is empty (no changes between base and head), the action
   posts a short "no file changes" body rather than an empty code block.
-- FR-4.5 An over-long tree is truncated to stay within GitHub's comment size
-  limit, with a trailing notice; the `tree` output (FR-6.x) always carries the
-  full text.
+- FR-4.5 Truncation is two-stage and the whole body stays within GitHub's
+  65,536-character comment limit: the raw tree is truncated before composition;
+  in the foldable body the plain fold receives the remaining capacity and
+  carries exactly one truncation notice, while colored inline-math markup is
+  bounded separately and never cut mid-expression. The `tree` output (FR-6.x)
+  always carries the full text.
 - FR-4.6 The comment ends with a small self-attribution footer — a `<sub>` line
   reading "🌳 Get your own diff tree at …" linking to this repository — unless
   the `advertise` input is `"false"` (default `"true"`). Both `<sub>` and the
@@ -241,7 +249,9 @@ a glance, with zero per-reviewer setup.
 | `base-ref` | PR base (`pull_request.base.ref`) | Override the comparison base. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
 | `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
-| `color` | `true` | Render the comment in color via GitHub's inline-math renderer (comment step only; CLI and `tree` output stay plain). `false` posts the plain code-fence comment. |
+| `color-section` | `open` | Colored fold (`<summary>` = stats line): `open` / `closed` / `hidden`. |
+| `plain-section` | `closed` | 📱 plain fold above the colored fold: `closed` / `open` / `hidden`. |
+| `color` | `true` | Deprecated alias: `false` forces `color-section: hidden` (bare plain comment). CLI and `tree` output stay plain in every mode. |
 | `level` | (unset) | Max tree depth → `difftree --level N`. |
 | `dirs-only` | `false` | Directories only → `difftree --dirs-only`. |
 | `extra-args` | `''` | Small escape hatch appended verbatim to the difftree call. |

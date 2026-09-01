@@ -24,6 +24,8 @@ const {
   composeBody,
 } = require("../scripts/comment.js");
 
+const composeBodyStr = (tree, opts) => composeBody(tree, { plainSection: "hidden", ...opts }).body;
+
 const FIXTURE = fs.readFileSync(path.join(__dirname, "fixtures", "pr24-tree.txt"), "utf8");
 const GOLDEN = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "plain-golden.json"), "utf8"));
 
@@ -50,13 +52,13 @@ function synth(n, { header = true, footer = true, nameFor } = {}) {
 test("color:false reproduces today's body byte-for-byte (8-way golden matrix)", () => {
   for (const [key, expected] of Object.entries(GOLDEN)) {
     const opts = Object.fromEntries(key.split(",").map((kv) => { const [k, v] = kv.split("="); return [k, v === "true"]; }));
-    const actual = composeBody(opts.empty ? "" : FIXTURE, { ...opts, color: false });
+    const actual = composeBodyStr(opts.empty ? "" : FIXTURE, { ...opts, color: false });
     assert.equal(actual, expected, `golden mismatch for ${key}`);
   }
 });
 
 test("empty diff ignores color and matches the plain body", () => {
-  assert.equal(composeBody("", { empty: true, color: true }), GOLDEN["empty=true,truncated=false,advertise=true"]);
+  assert.equal(composeBodyStr("", { empty: true, color: true }), GOLDEN["empty=true,truncated=false,advertise=true"]);
 });
 
 // ------------------------------------------------------------------ escaping
@@ -143,7 +145,7 @@ test("renderColorLine renders header gray, footer kinds+churn colored, unknown l
 // ------------------------------------------------------------------ fixture
 
 test("PR #24 fixture renders every line as one expression with expected colors", () => {
-  const body = composeBody(FIXTURE, { color: true });
+  const body = composeBodyStr(FIXTURE, { color: true });
   const lines = FIXTURE.trimEnd().split("\n").filter((l) => l !== "");
   assert.equal(countExpressions(body), lines.length, "one expression per non-empty line");
   assert.ok(body.startsWith(MARKER + "\n"), "marker first");
@@ -165,7 +167,7 @@ test("small tree: all colored, no notice, no fence; footer is the last expressio
 });
 
 test("large tree splits at the expression budget and keeps the footer colored", () => {
-  const body = composeBody(synth(500), { color: true });
+  const body = composeBodyStr(synth(500), { color: true });
   assert.equal(countExpressions(body), MAX_COLOR_EXPRESSIONS);
   const fixed = 3; // header, root, footer
   const k = MAX_COLOR_EXPRESSIONS - fixed;
@@ -187,17 +189,17 @@ test("backtick in a body line moves it and everything after into the fence", () 
   assert.equal(r.colored.length, 40);
   assert.equal(r.plain.length, 20);
   assert.ok(r.plain[0].includes("we`ird.ts"));
-  const body = composeBody(tree, { color: true });
+  const body = composeBodyStr(tree, { color: true });
   for (const l of body.split("\n")) if (EXPR.test(l)) assert.ok(!l.slice(2, -2).includes("`"), "no backtick inside an expression");
 });
 
 test("backtick on the first body line, or in header/root/footer, yields today's plain body", () => {
   const first = synth(5, { nameFor: (i) => (i === 1 ? "a`b" : `f${i}`) });
-  assert.equal(composeBody(first, { color: true }), composeBody(first, { color: false }));
+  assert.equal(composeBodyStr(first, { color: true }), composeBodyStr(first, { color: false }));
   const rootTick = synth(5).replace("\nrepo\n", "\nre`po\n");
-  assert.equal(composeBody(rootTick, { color: true }), composeBody(rootTick, { color: false }));
+  assert.equal(composeBodyStr(rootTick, { color: true }), composeBodyStr(rootTick, { color: false }));
   const footTick = synth(5).replace("files changed", "files ch`anged");
-  assert.equal(composeBody(footTick, { color: true }), composeBody(footTick, { color: false }));
+  assert.equal(composeBodyStr(footTick, { color: true }), composeBodyStr(footTick, { color: false }));
 });
 
 test("absent header/footer shrink the fixed count so more body lines get color", () => {
@@ -214,13 +216,13 @@ test("long paths: colored section is bounded by COLOR_BYTES_MAX and total stays 
   assert.ok(r.colored.length < MAX_COLOR_EXPRESSIONS - 3, "k reduced below the expression budget");
   const coloredBytes = [r.header, r.root, ...r.colored, r.footer].filter(Boolean).join("\n").length;
   assert.ok(coloredBytes <= COLOR_BYTES_MAX, `colored bytes ${coloredBytes}`);
-  const body = composeBody(tree, { color: true });
+  const body = composeBodyStr(tree, { color: true });
   assert.ok(body.length <= GITHUB_COMMENT_LIMIT, `body ${body.length}`);
 });
 
 test("plain suffix over budget is truncated with today's notice; colored lines untouched", () => {
   const tree = synth(1000, { nameFor: (i) => "x".repeat(400) + `_${i}.ts` });
-  const body = composeBody(tree, { color: true });
+  const body = composeBodyStr(tree, { color: true });
   assert.ok(body.length <= GITHUB_COMMENT_LIMIT, `body ${body.length}`);
   assert.match(body, /Tree truncated to fit GitHub's comment size limit/);
   const r = splitForColor(tree);
@@ -233,27 +235,27 @@ test("color declined on an oversized root/footer still yields a body within the 
   const hugeRoot = ["PR: origin/main...abc · committed", "r".repeat(66000), "├── ● a.ts +1 −0", "", "0 dirs touched · 1 files modified · +1 −0"].join("\n");
   const hugeFooter = ["PR: origin/main...abc · committed", "repo", "├── ● a.ts +1 −0", "", "0 dirs touched · 1 files modified · +1 −0 " + "f".repeat(66000)].join("\n");
   for (const tree of [hugeRoot, hugeFooter]) {
-    const body = composeBody(tree, { color: true });
+    const body = composeBodyStr(tree, { color: true });
     assert.ok(body.length <= GITHUB_COMMENT_LIMIT, `body ${body.length}`);
     assert.ok(body.startsWith(MARKER + "\n"));
     assert.match(body, /Tree truncated to fit GitHub's comment size limit/);
   }
   // and color:false on the same input is still the untouched plain path (caller truncates)
-  assert.ok(composeBody(hugeRoot, { color: false }).includes("r".repeat(66000)));
+  assert.ok(composeBodyStr(hugeRoot, { color: false }).includes("r".repeat(66000)));
 });
 
 test("upstream-truncated input keeps the truncation notice in color mode", () => {
-  const body = composeBody(synth(300), { color: true, truncated: true });
+  const body = composeBodyStr(synth(300), { color: true, truncated: true });
   assert.match(body, /Tree truncated to fit GitHub's comment size limit/);
 });
 
 test("CRLF and trailing whitespace normalize to the LF output", () => {
   const lf = synth(30);
   const crlf = lf.split("\n").map((l) => l + "   ").join("\r\n");
-  assert.equal(composeBody(crlf, { color: true }), composeBody(lf, { color: true }));
+  assert.equal(composeBodyStr(crlf, { color: true }), composeBodyStr(lf, { color: true }));
 });
 
 test("advertise:false drops the footer in color mode too", () => {
-  const body = composeBody(FIXTURE, { color: true, advertise: false });
+  const body = composeBodyStr(FIXTURE, { color: true, advertise: false });
   assert.ok(!body.includes("<sub>"));
 });

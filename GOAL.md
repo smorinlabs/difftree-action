@@ -22,7 +22,9 @@ thin wrapper over the `difftree` Rust CLI, mirroring the engine→wrapper split 
 
 **Definition of "done":** a pull request in a consumer repository (starting with
 `difftree`'s own repo) triggers `smorinlabs/difftree-action@v1`, which posts one
-fenced-code-block comment containing the PR's diff-tree; subsequent pushes update
+self-updating comment containing the PR's diff-tree (since v0.7.0 the default
+body wraps the fenced code block in a foldable plain section beside a colored
+section; `color-section: hidden` restores the bare fence); subsequent pushes update
 that same comment in place; the action authenticates with `GITHUB_TOKEN` alone
 and requests only `pull-requests: write` + `contents: read`. The full functional
 contract is [`PRD.md`](./PRD.md).
@@ -80,8 +82,9 @@ without conflating two release lifecycles.
 The GOAL is "done" when **all** of the following hold:
 
 1. A pull request in `smorinlabs/difftree` (dogfood consumer) triggers
-   `smorinlabs/difftree-action@v1` and a comment appears containing a fenced
-   ASCII diff-tree of the PR's changes plus a churn summary line.
+   `smorinlabs/difftree-action@v1` and a comment appears containing the PR's
+   ASCII diff-tree plus a churn summary line (by default inside the foldable
+   plain + colored layout; the fenced form via `color-section: hidden`).
 2. A second push to the same PR **updates the existing comment in place** — there
    is never more than one `difftree-action` comment (marker
    `<!-- difftree-action -->`) per PR.
@@ -190,8 +193,9 @@ problem).
 On a scratch repo (and then `difftree` itself):
 
 1. Open a PR touching a few files across two directories.
-2. **Expect:** one comment with marker `<!-- difftree-action -->` containing a
-   fenced ASCII diff-tree and churn summary.
+2. **Expect:** one comment with marker `<!-- difftree-action -->` containing
+   the ASCII diff-tree and churn summary (default: 📱 plain fold + colored
+   stats-summary fold; fenced-only via `color-section: hidden`).
 3. Push another commit. **Expect:** the same comment updates; no second comment.
 4. Set `comment: false` in a variant run. **Expect:** outputs set, no comment.
 5. Open the PR from a fork. **Expect:** check stays green; warning logged; no

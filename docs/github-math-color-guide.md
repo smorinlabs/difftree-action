@@ -30,6 +30,23 @@ limits below come from one of those two stages.
 | Box-drawing characters | `├── └── │` inside `\texttt{}` | Render; every expression starts at the left margin |
 | Equal-width indentation without a `│` | `{\color{transparent}\texttt{│}}\texttt{~~~}` in place of four spaces | `│` is not in the math monospace font, so its width differs from a `~` cell; an invisible `│` keeps `    ├──` aligned with `│   ├──` (probe I2) |
 
+### Foldable sections (`<details>`) — verified facts (probes J/K/L, harness-kit #23–#25)
+
+- `<details>` and `<details open>` both survive GitHub's comment sanitizer;
+  the `open` attribute controls the default state and the reader can toggle it.
+- Math inside an initially **closed** fold renders correctly after expanding
+  (probe J3) — a colored tree may be folded either way.
+- **Blank lines are required** after `<summary>` and before `</details>`;
+  without them the content renders on one line (probe J4).
+- A `<summary>` can carry the stats line, so a fully collapsed comment still
+  shows the result (probe K2). Only grammar-matching, HTML-escaped text goes
+  there; anything else gets a static label.
+- Whether folded-closed expressions count against the ~145-per-page math budget
+  is an **assumption** (kept conservative: the action's 100-expression cap
+  applies comment-wide); J3 only proves expansion-time rendering works.
+- Fences inside folds use a delimiter one backtick longer than the longest
+  backtick run in the content, so hostile filenames cannot close the fold.
+
 ## Don't do this
 
 | Don't | What you see | Why | Do instead |

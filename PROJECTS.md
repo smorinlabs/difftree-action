@@ -225,3 +225,41 @@ A PR on any installed repo shows the colored tree; `color: "false"` shows the pl
 ### Manual Verification
 - Dogfood comment on the implementation PR: colored marks/churn, left-aligned rows, light and dark theme
 - A >100-line PR shows colored head + notice + plain fence + colored footer in one comment
+
+## [~] Project P05: Foldable plain + colored sections (v0.7.0)
+**Goal/Requirement**: The sticky PR comment carries BOTH renderings — a plain
+code fence in a fold labeled `📱 Plain text version (mobile / email)` (closed
+by default) and the colored tree in a fold whose `<summary>` is the stats line
+(open by default) — because inline-math color does not render on mobile/email.
+Inputs `color-section` / `plain-section` (`open|closed|hidden`); `color:
+"false"` stays as a deprecated alias forcing `color-section: hidden` and the
+byte-identical legacy plain body. Spec (incl. Codex adversarial-review
+amendments A–O): `docs/superpowers/specs/2026-09-01-foldable-sections-design.md`.
+Evidence: probes J/K/L (`harness-kit` #23–#25), owner-verified desktop + mobile.
+
+**Out of Scope**
+- Device-conditional rendering; CLI/renderer changes; per-fold custom labels.
+
+### Tests & Tasks
+- [x] [P05-T01] Probes J/K/L: details/summary facts, K2 stats-summary layout, L1 default
+- [x] [P05-T02] Plan + Codex adversarial review → amendments A–O (budget, injection containment, decline semantics, golden×alias, release gate)
+- [ ] [P05-TS01] Golden: 8 entries × color:false×{open,closed,hidden} + colorSection:hidden — fixture untouched
+- [ ] [P05-TS02] 9-state section table (marker line 1, order, open attrs, balanced tags, blank-line law, ad outside)
+- [ ] [P05-TS03] Budget: adversarial dual-section ≤ 65536; capacity edges <768/=768/>768; no mid-expression cuts; notice exactly once per mode
+- [ ] [P05-TS04] Containment: content-safe fence, anchored stats grammar + static fallback, colored-source guard, hostile inputs; decline×plain-section matrix
+- [ ] [P05-TS05] Action-contract test parses action.yml (inputs, env, alias, {body,warnings} destructure, warning emission)
+- [ ] [P05-T03] comment.js: resolveSections, renderDetails, footerText, {body,warnings}, dual-section assembly
+- [ ] [P05-T04] action.yml: two inputs + env + adapter destructure (bash step byte-identical — diff gate)
+- [ ] [P05-T05] Docs sweep: README, example yml, PRD FR-4.1/4.5/4.6, GOAL.md, SKILL+mirror (names+one assertion), RUNBOOK (detailed procedure), guide details-facts, catalog 7–8 relabel + 9, PROMPT.md historical label
+- [ ] [P05-TS06] Dogfood PR: L1 layout desktop+mobile (owner), body_html machine-check (fold counts, no injected anchors)
+- [ ] [P05-T06] Merge → canary pin bump → release PR gate (0.7.0 manifest, Release workflow green, v0 resolves to release commit, canary re-verified); floating-vs-pinned fleet inventory pre-release
+- [ ] Regression Test Status
+
+### Deliverable
+A PR comment with a closed 📱 plain fold, an open 🌳 stats-summary colored fold, readable on desktop and mobile.
+
+### Automated Verification
+- `node --test` passes; `actionlint` passes; action.yml bash blocks byte-identical to main
+
+### Manual Verification
+- Owner: dogfood comment on the implementation PR, both folds, both themes, phone
