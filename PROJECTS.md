@@ -97,7 +97,8 @@ zero skill edits needed.
       Installed 2026-09-01: smorinlabs/contributors-please-test#13, merge `f747578`; 1 valid Codex finding fixed (validate-workflows allowlist registration).
 - [x] [P03-T18] Fan-out: `difftree`
       Synced 2026-09-01 (wave 3): #17, merge `4d23cae`; replace-in-place of legacy difftree.yml (`@v0.1.0`); clean.
-- [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
+- [-] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
+      Closed 2026-09-01: never a target — the dogfood `difftree.yml` runs `uses: ./` by design; only its display name was aligned in #24.
 - [x] [P03-T20] Fan-out: `doxa-research`
       Installed 2026-09-01 (wave 3): #141, merge `e389e47`; merged past a new bandit/Hygiene drift failure (owner call).
 - [x] [P03-T21] Fan-out: `ge-smorin-app`
@@ -130,16 +131,22 @@ zero skill edits needed.
       Installed 2026-09-01 (wave 4): #47, merge `d97fbc1`; private; owner clone on docs/landing-page left un-pulled.
 - [x] [P03-T35] Fan-out: `smorin-segment-timer`
       Installed 2026-09-01 (wave 3): #6, merge `25144c5`; private first workflow; clean.
-- [ ] [P03-T36] Fan-out: `smorinlabs-harness`
+- [x] [P03-T36] Fan-out: `smorinlabs-harness`
+      Installed 2026-09-01 (wave 5): #45, merge `2179068`; clean.
 - [x] [P03-T37] Fan-out: `substrata`
       Installed 2026-09-01 (wave 4): #3, merge `b993211`; merged past pre-existing claude-review failure (owner call).
-- [ ] [P03-T38] Fan-out: `template-press`
-- [ ] [P03-T39] Fan-out: `terraform-gcp-design`
-- [ ] [P03-T40] Fan-out: `terraform-gcp-poc`
-- [ ] [P03-T41] Fan-out: `terraform-gcp-template`
+- [~] [P03-T38] Fan-out: `template-press`
+      2026-09-01 (wave 5): #106 verified, press `[[remove]]` rule added; merge pending required `ci-ok` (slow Windows job).
+- [x] [P03-T39] Fan-out: `terraform-gcp-design`
+      Installed 2026-09-01 (wave 5): #1, merge `ebbd545`; private first workflow; clean.
+- [x] [P03-T40] Fan-out: `terraform-gcp-poc`
+      Installed 2026-09-01 (wave 5): #1, merge `d069835`; private; clean.
+- [x] [P03-T41] Fan-out: `terraform-gcp-template`
+      Installed 2026-09-01 (wave 5): #1, merge `14ae771`; merged past pre-existing gates failure (owner call).
 - [x] [P03-T42] Fan-out: `ts-launch-blueprint`
       installed (SHA-pinned per D-022(9)) — pilot 4, PR #27
-- [ ] [P03-T43] Fan-out: `warpqueuekit`
+- [x] [P03-T43] Fan-out: `warpqueuekit`
+      Installed 2026-09-01 (wave 5): #5, merge `988dd5a`; private; clean.
 - [x] [P03-T44] Pre-fan-out: merge difftree-action's release-please PR so `v0`
       moves (closes F03 and the release half of F06)
 - [x] [P03-T45] Pre-fan-out: one batched template PR for F09/F10/F11 (+F13 only
