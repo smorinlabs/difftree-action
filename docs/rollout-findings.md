@@ -1008,3 +1008,43 @@ the loading path, not the skill text. `[P03-TS01]`'s private-repo clause is sati
   `<wt>` (the sibling worktree's absolute path, recorded at `worktree add` time); every path reference in §2
   step 1 and §4 step 9 now uses them, and the clone-if-missing instruction no longer names a directory (this PR).
 - **Class:** skill.
+
+## Fan-out wave 1 (2026-08-31 → 2026-09-01)
+
+Sequential runs per the run-3 handoff mechanics; owner approval at PR-open and merge for each. Skill text:
+`main` @ `bb4c5bc` (F72 grep form + F73 generic paths) — each run executed the loaded skill text as-is, the
+in-context regression coverage promised in the F72 fold.
+
+1. **`blueprint-dryrun`** (#14, merge `89ee012`) — plain add; lefthook bypassed with `LEFTHOOK=0`; 1 thread
+   (CodeRabbit SHA-pin ask) declined with the template quote + the repo's own version-tag convention; merged
+   past 7 pre-existing failures (`init-integration.yml` broken on `main` since 08-17, `dependency-review.yml`
+   failing every PR since July — repo-level, none required). Clean for the skill.
+2. **`blueprint-press-dryrun`** (#7, merge `7ac9bfe`) — first replace-in-place in the wild: legacy
+   `difftree.yml` (`@v0.2.0`) → canonical; no clone existed (the F73 no-clone path exercised); 2 threads
+   (Greptile P2 + CodeRabbit Major, both mutable-refs) declined with the template quote; merged past 2
+   repo-level failures (`claude-review` missing secret, `dependency-review`). Produced F74.
+3. **`contributors-please-test`** (#13, merge `f747578`) — plain add; 1 valid Codex P2: the repo's
+   workspace conformance script `scripts/validate-workflows.mjs` asserts an exact workflow set; fixed by
+   registering the new file in `expectedWorkflowFiles` (workflow file untouched); a ~17-minute GitHub API
+   outage during the floor wait was correctly treated as "query failed", never "no threads". Clean.
+
+### F74 — replace-in-place pass condition rejects a legitimate heavily-diverged replacement
+- **Where:** SKILL.md §2 step 1, the post-PR check "`gh api …/pulls/<pr>/files --jq '.[].status'` reads
+  `modified`/`renamed`, never `added`".
+- **What:** on `blueprint-press-dryrun`, the legacy 26-line workflow differs from the canonical 70-line
+  template by more than GitHub's ~50% rename-similarity threshold, so the files API reports
+  `removed` + `added` — failing the letter of the check while its intent (old file gone, exactly one
+  canonical workflow) held exactly.
+- **Fix:** the condition now also accepts a `removed`+`added` pair where the removed path is the old
+  workflow and the added path is the canonical file (this PR).
+- **Class:** skill.
+
+### Naming decision (owner, 2026-09-01) — workflow file renamed to `difftree-pr-comment.yml`
+The owner chose full-consistency naming: filename `difftree-pr-comment.yml`, workflow name
+`Difftree PR Comment`, job/check id `difftree-pr-comment`, install branch `ci/difftree-pr-comment`, commit
+titles `ci: add difftree PR comment workflow` / `ci: sync difftree PR comment workflow to canonical
+template`. Kept as-is (they name the tool/action, or are load-bearing): the `<!-- difftree-action -->`
+comment marker (renaming would orphan every existing comment's dedup), the `difftree-<PR#>` concurrency
+group, the `<repo>-difftree` worktree naming, and the skill/action names. Already-wired repos get simple
+rename resyncs (git mv + name lines, no re-verification — owner's call); historical docs keep old names.
+The canonical template's SHA-256 after the rename: `0143f5f19cc10da6d2f44b3dbdb314253b1112b206c78ac89128de33ee17c703`.

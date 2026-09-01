@@ -1,4 +1,4 @@
-name: PR Diff Tree
+name: Difftree PR Comment
 
 # Dogfood: run difftree-action on this repository's own pull requests so each PR
 # carries its diff-tree comment. Doubles as a live end-to-end check.

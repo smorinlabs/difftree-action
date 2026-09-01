@@ -5,7 +5,7 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
 
 ## Prerequisites
 
-- A test repository (or this repo) with the `PR Diff Tree` workflow
+- A test repository (or this repo) with the `Difftree PR Comment` workflow
   (`.github/workflows/difftree.yml`) installed, using `actions/checkout` with
   `fetch-depth: 0` and `permissions: { contents: read, pull-requests: write }`.
 

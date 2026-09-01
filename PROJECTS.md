@@ -78,14 +78,17 @@ zero skill edits needed.
 - [ ] [P03-T08] Fan-out: `agent-fork`
 - [x] [P03-T09] Fan-out: `agent2linear`
       Installed as cold retest 1 (2026-08-31): PR #25, merge `d6c64fb`; clean run, findings F66–F70.
-- [ ] [P03-T10] Fan-out: `blueprint-dryrun`
-- [ ] [P03-T11] Fan-out: `blueprint-press-dryrun`
+- [x] [P03-T10] Fan-out: `blueprint-dryrun`
+      Installed 2026-08-31: smorinlabs/blueprint-dryrun#14, merge `89ee012`; clean run, 1 declined SHA-pin thread; pre-existing CI failures reported (init-integration, dependency-review).
+- [x] [P03-T11] Fan-out: `blueprint-press-dryrun`
+      Installed 2026-09-01: smorinlabs/blueprint-press-dryrun#7, merge `7ac9bfe`; replace-in-place of legacy difftree.yml; F74 found; 2 declined mutable-ref threads.
 - [ ] [P03-T12] Fan-out: `claude-openrouter-launcher`
 - [ ] [P03-T13] Fan-out: `cli-standards`
 - [ ] [P03-T14] Fan-out: `contributors-please`
 - [ ] [P03-T15] Fan-out: `contributors-please-action`
 - [ ] [P03-T16] Fan-out: `contributors-please-e2e`
-- [ ] [P03-T17] Fan-out: `contributors-please-test`
+- [x] [P03-T17] Fan-out: `contributors-please-test`
+      Installed 2026-09-01: smorinlabs/contributors-please-test#13, merge `f747578`; 1 valid Codex finding fixed (validate-workflows allowlist registration).
 - [ ] [P03-T18] Fan-out: `difftree`
 - [ ] [P03-T19] Fan-out: `difftree-action` — keep as is: already runs `uses: ./` (F04)
 - [ ] [P03-T20] Fan-out: `doxa-research`
