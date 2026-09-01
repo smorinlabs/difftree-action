@@ -37,7 +37,7 @@ each other on any shared discovery path. Renamed the CLI repo's pointer to
 
 ## [~] Project P03: Fleet rollout of difftree-action to all smorinlabs repos (v0.4.0 → v0.5.0)
 **Goal/Requirement**: Every non-archived `smorinlabs` repo (40 as of 2026-08-29)
-runs the canonical `pr-diff-tree.yml` workflow, installed by the
+runs the canonical `difftree-pr-comment.yml` workflow (renamed from `pr-diff-tree.yml` 2026-09-01), installed by the
 `difftree-action-setup` skill. The skill is the thing under test: pilot it on
 three repos with different CI shapes, fold every gotcha back into the skill,
 and fan out only after three consecutive repos need **zero skill edits**
@@ -130,7 +130,7 @@ zero skill edits needed.
 
 ### Deliverable
 ```bash
-$ gh api "search/code?q=org:smorinlabs+path:.github/workflows+filename:pr-diff-tree.yml" --jq .total_count
+$ gh api "search/code?q=org:smorinlabs+path:.github/workflows+filename:difftree-pr-comment.yml" --jq .total_count
 40
 ```
 
