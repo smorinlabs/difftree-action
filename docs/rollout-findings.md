@@ -1154,13 +1154,13 @@ Six repos, all lefthook, four private. Mid-wave the owner merged difftree-action
 `b70ce28` added one commented example line to the canonical template (70 → 71 lines, SHA-256
 `0143f5f1…` → `c0e126bd…`). The prepared worktrees already held the new canonical bytes; the agent briefs carried
 the stale hash, and **all six agents stopped at the byte check without pushing** — the gate worked exactly as
-designed. Relaunched with provenance `b70ce28`. Threads: 1 permissions refute, 1 valid Codex finding
+designed. Relaunched with provenance `b70ce28`. Threads: 1 permissions refutation, 1 valid Codex finding
 (template-press is itself a press template → `[[remove]]` rule added, same as py-launch-blueprint, F76 class).
 
 | Repo | PR | Merge | Notes |
 |---|---|---|---|
 | smorinlabs-harness | #45 | `2179068` | clean |
-| template-press | #106 | pending `ci-ok` (Windows test job) | press `[[remove]]` rule added (`72eabce`); all other required contexts green |
+| template-press | #106 | `c0992d8` | press `[[remove]]` rule added (`72eabce`); all other required contexts green |
 | terraform-gcp-design | #1 | `ebbd545` | private, first workflow; clean |
 | terraform-gcp-poc | #1 | `d069835` | private; permissions ask refuted with run evidence |
 | terraform-gcp-template | #1 | `14ae771` | private; merged past pre-existing `gates` failure (broken on `main` since 2026-07-10; owner call) |

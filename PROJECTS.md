@@ -135,8 +135,8 @@ zero skill edits needed.
       Installed 2026-09-01 (wave 5): #45, merge `2179068`; clean.
 - [x] [P03-T37] Fan-out: `substrata`
       Installed 2026-09-01 (wave 4): #3, merge `b993211`; merged past pre-existing claude-review failure (owner call).
-- [~] [P03-T38] Fan-out: `template-press`
-      2026-09-01 (wave 5): #106 verified, press `[[remove]]` rule added; merge pending required `ci-ok` (slow Windows job).
+- [x] [P03-T38] Fan-out: `template-press`
+      Installed 2026-09-01 (wave 5): #106, merge `c0992d8`; press `[[remove]]` rule added (F76 class); hung Windows runner cancelled+rerun to land ci-ok.
 - [x] [P03-T39] Fan-out: `terraform-gcp-design`
       Installed 2026-09-01 (wave 5): #1, merge `ebbd545`; private first workflow; clean.
 - [x] [P03-T40] Fan-out: `terraform-gcp-poc`
