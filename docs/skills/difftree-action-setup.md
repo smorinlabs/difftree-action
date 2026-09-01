@@ -87,8 +87,10 @@ symlink `.agents/skills/difftree-action-setup`.
 > The skill finds the template by walking up from its own physical directory
 > (symlinks resolved) to a directory holding both `action.yml` and
 > `examples/difftree-pr-comment.yml`, so every placement above works. Copied out of
-> this repo, nothing is found and it fetches the canonical file from
-> `https://raw.githubusercontent.com/smorinlabs/difftree-action/main/examples/difftree-pr-comment.yml`.
+> this repo, nothing is found and it resolves `main` to its current commit sha
+> (recorded as the provenance `$PROV`, which the later byte checks and drift
+> answers cite), then fetches the canonical file pinned to that commit:
+> `https://raw.githubusercontent.com/smorinlabs/difftree-action/<PROV>/examples/difftree-pr-comment.yml`.
 
 ## Example session
 

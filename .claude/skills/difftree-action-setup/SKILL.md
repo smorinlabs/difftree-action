@@ -54,7 +54,7 @@ Use the first method that fits the environment, then verify with
    If `.github/workflows/` already has a workflow using `smorinlabs/difftree-action` (any file name), replace it rather than adding a second one:
    if its name is not `difftree-pr-comment.yml`, `git mv <old> .github/workflows/difftree-pr-comment.yml` first, then write the template over that path, and
    say so in the PR body. Confirm the replacement fired before committing — `git status --porcelain` shows one entry for `difftree-pr-comment.yml`, no
-   leftover old file — and post-PR, `gh api repos/<owner>/<repo>/pulls/<pr>/files --jq '.[] | "\(.status) \(.filename)"'` shows either one `renamed`/`modified` row for `.github/workflows/difftree-pr-comment.yml`, or — when the old file diverged past GitHub's rename-similarity threshold (F74) — a `removed` row for the old path paired with the `added` row for the new one; a bare `added` with no paired `removed` means the replacement did not fire.
+   leftover old file — and post-PR, `gh api repos/<owner>/<repo>/pulls/<pr>/files --jq '.[] | "\(.status) \(.filename)"'` includes, among the PR's listed files, either one `renamed`/`modified` row for `.github/workflows/difftree-pr-comment.yml`, or — when the old file diverged past GitHub's rename-similarity threshold (F74) — a `removed` row whose filename is exactly `<old>` paired with the `added` row for the new path; an `added` row with no `removed` row for `<old>` means the replacement did not fire.
 
    **Intent (hooks bypass):** get the workflow committed and pushed past a hook manager the worktree inherits, without
    installing tooling there or editing the workflow to satisfy a hook. Which bypass applies (lefthook, husky,
