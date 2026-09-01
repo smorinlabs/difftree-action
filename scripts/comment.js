@@ -111,10 +111,20 @@ const TEXTTT_ESCAPES = {
   " ": "~",
 };
 
+// GitHub's server-side autolinker runs INSIDE math source: a 7–40 hex token
+// that matches a commit becomes <a class="commit-link">, "@name" a mention,
+// "#123" an issue link — and the injected anchor corrupts the expression
+// (seen on the header's merge-base SHA). Breaking such tokens across two
+// \texttt{} groups renders identically and never forms a linkable token.
+const GROUP_BREAK = "}\\texttt{";
+
 function escapeTexttt(s) {
   return s
     .replace(/[\u0000-\u001f\u007f]/g, "?")
-    .replace(/[\\{}$&#%_^~ ]/g, (c) => TEXTTT_ESCAPES[c]);
+    .replace(/[\\{}$&#%_^~ ]/g, (c) => TEXTTT_ESCAPES[c])
+    .replace(/[0-9a-f]{7,}/gi, (run) => run.match(/.{1,6}/g).join(GROUP_BREAK))
+    .replace(/@(?=[A-Za-z0-9])/g, "@" + GROUP_BREAK)
+    .replace(/\\#(?=\d)/g, "\\#" + GROUP_BREAK);
 }
 
 const tt = (s) => (s ? `\\texttt{${escapeTexttt(s)}}` : "");

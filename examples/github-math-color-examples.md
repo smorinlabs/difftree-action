@@ -141,7 +141,7 @@ The four non-file line shapes difftree emits.
 **Source — paste into a PR or issue comment:**
 
 ````markdown
-$`{\color{#6e7781}\texttt{PR:~origin/main...563a39c~·~committed}}`$
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$
 $`\texttt{├──~}\texttt{~}\texttt{~docs}\texttt{~(3~files,~}{\color{#2da44e}\texttt{+54}}\texttt{~}{\color{#cf222e}\texttt{−10}}\texttt{)}`$
 $`\texttt{└──~}{\color{#0969da}\texttt{↻}}\texttt{~old-name.yml~->~new-name.yml}\texttt{~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$
 $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
@@ -149,7 +149,7 @@ $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified
 
 **Rendered here** (`.md` files need `<br>`; comments do not):
 
-$`{\color{#6e7781}\texttt{PR:~origin/main...563a39c~·~committed}}`$<br>
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$<br>
 $`\texttt{├──~}\texttt{~}\texttt{~docs}\texttt{~(3~files,~}{\color{#2da44e}\texttt{+54}}\texttt{~}{\color{#cf222e}\texttt{−10}}\texttt{)}`$<br>
 $`\texttt{└──~}{\color{#0969da}\texttt{↻}}\texttt{~old-name.yml~->~new-name.yml}\texttt{~}{\color{#2da44e}\texttt{+3}}\texttt{~}{\color{#cf222e}\texttt{−3}}`$<br>
 $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified}}\texttt{~·~1~}{\color{#0969da}\texttt{renamed}}\texttt{)~·~}{\color{#2da44e}\texttt{+101}}\texttt{~}{\color{#cf222e}\texttt{−52}}`$
@@ -164,7 +164,7 @@ Exactly what the action posts for a small PR: marker, heading, one expression pe
 <!-- difftree-action -->
 ### 🌳 difftree — changes in this PR
 
-$`{\color{#6e7781}\texttt{PR:~origin/main...563a39c~·~committed}}`$
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$
 $`\texttt{difftree-action}`$
 $`\texttt{├──~}\texttt{~}\texttt{~.claude}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$
 $`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$
@@ -193,7 +193,7 @@ $`\texttt{8~dirs~touched~·~8~files~changed~(7~}{\color{#bf8700}\texttt{modified
 <!-- difftree-action --><br>
 ### 🌳 difftree — changes in this PR<br>
 <br>
-$`{\color{#6e7781}\texttt{PR:~origin/main...563a39c~·~committed}}`$<br>
+$`{\color{#6e7781}\texttt{PR:~origin/main...563a39}\texttt{c~·~committed}}`$<br>
 $`\texttt{difftree-action}`$<br>
 $`\texttt{├──~}\texttt{~}\texttt{~.claude}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$<br>
 $`\texttt{│~~~└──~}\texttt{~}\texttt{~skills}\texttt{~(1~files,~}{\color{#2da44e}\texttt{+32}}\texttt{~}{\color{#cf222e}\texttt{−30}}\texttt{)}`$<br>
@@ -226,7 +226,7 @@ Shown with a budget of 8 expressions so the seam fits here; the action's budget 
 <!-- difftree-action -->
 ### 🌳 difftree — changes in this PR
 
-$`{\color{#6e7781}\texttt{PR:~origin/main...abc1234~·~committed}}`$
+$`{\color{#6e7781}\texttt{PR:~origin/main...abc123}\texttt{4~·~committed}}`$
 $`\texttt{repo}`$
 $`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~file\_1.ts}\texttt{~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$
 $`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~file\_2.ts}\texttt{~}{\color{#2da44e}\texttt{+2}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$
@@ -249,7 +249,7 @@ $`\texttt{0~dirs~touched~·~12~files~}{\color{#bf8700}\texttt{modified}}\texttt{
 
 **Rendered here** (`.md` files need `<br>`; comments do not):
 
-$`{\color{#6e7781}\texttt{PR:~origin/main...abc1234~·~committed}}`$<br>
+$`{\color{#6e7781}\texttt{PR:~origin/main...abc123}\texttt{4~·~committed}}`$<br>
 $`\texttt{repo}`$<br>
 $`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~file\_1.ts}\texttt{~}{\color{#2da44e}\texttt{+1}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$<br>
 $`\texttt{├──~}{\color{#2da44e}\texttt{●}}\texttt{~file\_2.ts}\texttt{~}{\color{#2da44e}\texttt{+2}}\texttt{~}{\color{#cf222e}\texttt{−1}}`$<br>

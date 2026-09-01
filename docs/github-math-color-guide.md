@@ -48,6 +48,7 @@ limits below come from one of those two stages.
 | Unescaped `_` or `^` | Subscript / superscript, or a parse error | Math operators | `\_`, `\^{}` |
 | A backtick anywhere in the text | Expression ends early, garbage after it | Backtick is the delimiter of `` $`…`$ `` | There is no escape — render that line plain |
 | Plain spaces inside `\texttt{}` | Words run together | Spaces collapse in math | `~` |
+| A 7+-character hex token (commit SHA), `@name`, or `#123` inside an expression | That token renders alone, or the expression breaks | GitHub's **autolinker runs inside math source** and injects `<a>` (visible in `body_html`) | Break the token across groups: `590596}\texttt{4`, `@}\texttt{types`, `\#}\texttt{26` |
 | Four `~` to indent under the last child of a directory | Those rows drift left or right of the `│   ` rows | The fallback `│` glyph and a `~` cell have different widths (`││││x` vs `~~~~x` do not line up) | Invisible `│`: `{\color{transparent}\texttt{│}}\texttt{~~~}` |
 | Emoji inside an expression | Missing or replaced glyphs | Not in the math fonts | Keep emoji in normal markdown (e.g. the heading) |
 | More than ~145 expressions **on the page** | `Unable to render expression` from some point onward | A per-**page** rendering budget shared by every comment on it | Stay ≤ 100 per comment (the action's `MAX_COLOR_EXPRESSIONS`); fall back to a code fence for the rest |
@@ -78,7 +79,11 @@ limits below come from one of those two stages.
 8. **`│` and a space are not the same width.** Rows whose prefix has no `│`
    (children of the last entry in a directory) drift unless the missing `│` is
    rendered invisibly with `\color{transparent}` — `\phantom` is banned.
-9. **Directory lines have a space as their mark** (`├──   docs (3 files, …)`);
+9. **GitHub autolinks inside math.** Commit SHAs that exist in the repo, `@mentions`,
+   and `#123` references get an `<a>` injected into the expression source before
+   the math renderer runs (the merge-base SHA in difftree's header line hit this).
+   `escapeTexttt` splits such tokens across `\texttt{}` groups.
+10. **Directory lines have a space as their mark** (`├──   docs (3 files, …)`);
    a naive regex that requires a glyph misses every directory.
 
 ## Troubleshooting
@@ -95,6 +100,7 @@ limits below come from one of those two stages.
 | Double-spaced lines in a comment | `<br>` plus newline | Remove `<br>` |
 | Lines run together in a `.md` file | Newlines are soft there | Add `<br>` (for the rendered doc only) |
 | Words glued together | Spaces inside `\texttt{}` | Use `~` |
+| Only a short hex string (or `@name`/`#123`) shows where a whole line should be | GitHub autolinked a token inside the expression | Inspect `body_html` via the API for an `<a>` inside `<math-renderer>`; split the token across groups |
 | A filename shows a subscript or breaks the line | Unescaped `_` `^` `~` `\` `#` `$` `%` `&` `{` `}` | Run it through `escapeTexttt` (see `scripts/comment.js`) |
 | One line renders as garbage after a backtick | Backtick in the text | No encoding exists; render that line plain (the action moves it and the rest to the fence) |
 
