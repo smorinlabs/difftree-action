@@ -1,7 +1,9 @@
 # Colored PR comment via GitHub inline math — design (v0.6.0)
 
 Status: approved by owner 2026-09-01 after a Codex adversarial review; implemented in this PR.
-Project: `PROJECTS.md` P04.
+Project: `PROJECTS.md` P04. Practitioner docs distilled from this spec:
+[`docs/github-math-color-guide.md`](../../github-math-color-guide.md) (what works / don't do this / troubleshooting)
+and [`examples/github-math-color-examples.md`](../../../examples/github-math-color-examples.md) (copy-paste catalog).
 
 ## 1. Goal
 

@@ -152,6 +152,10 @@ GitHub's renderer imposes limits that were measured on 2026-09-01
 - Color shows on github.com only. Email notifications (and some mobile views)
   show the TeX source, so teams that review by email should set `color: "false"`.
 
+Writing your own colored trees or debugging a rendering problem? See the
+"don't do this" guide [`docs/github-math-color-guide.md`](docs/github-math-color-guide.md)
+and the copy-paste catalog [`examples/github-math-color-examples.md`](examples/github-math-color-examples.md).
+
 ### Fork pull requests
 
 On PRs from forks, `GITHUB_TOKEN` is read-only, so the comment can't be posted.
