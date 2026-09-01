@@ -27,7 +27,8 @@ limits below come from one of those two stages.
 | Backslash | Close the group, emit math `\backslash`, reopen: `\texttt{a}\backslash\texttt{b}` | There is no text-mode backslash macro that GitHub accepts |
 | Pass-through characters | `< > \| ' " -> --`, accented letters, CJK | Render as typed (no TeX ligatures) |
 | difftree's mark glyphs | `● ○ ◐ ? ↻ ⧉ × ◆ ‼ ⚠ !` | All render in the math font |
-| Box-drawing characters | `├── └── │` inside `\texttt{}` | Render and align because every expression starts at the left margin |
+| Box-drawing characters | `├── └── │` inside `\texttt{}` | Render; every expression starts at the left margin |
+| Equal-width indentation without a `│` | `{\color{transparent}\texttt{│}}\texttt{~~~}` in place of four spaces | `│` is not in the math monospace font, so its width differs from a `~` cell; an invisible `│` keeps `    ├──` aligned with `│   ├──` (probe I2) |
 
 ## Don't do this
 
@@ -47,6 +48,7 @@ limits below come from one of those two stages.
 | Unescaped `_` or `^` | Subscript / superscript, or a parse error | Math operators | `\_`, `\^{}` |
 | A backtick anywhere in the text | Expression ends early, garbage after it | Backtick is the delimiter of `` $`…`$ `` | There is no escape — render that line plain |
 | Plain spaces inside `\texttt{}` | Words run together | Spaces collapse in math | `~` |
+| Four `~` to indent under the last child of a directory | Those rows drift left or right of the `│   ` rows | The fallback `│` glyph and a `~` cell have different widths (`││││x` vs `~~~~x` do not line up) | Invisible `│`: `{\color{transparent}\texttt{│}}\texttt{~~~}` |
 | Emoji inside an expression | Missing or replaced glyphs | Not in the math fonts | Keep emoji in normal markdown (e.g. the heading) |
 | More than ~145 expressions **on the page** | `Unable to render expression` from some point onward | A per-**page** rendering budget shared by every comment on it | Stay ≤ 100 per comment (the action's `MAX_COLOR_EXPRESSIONS`); fall back to a code fence for the rest |
 | One expression larger than ~7–10 KB | `Unable to render expression` | Per-expression size cap | Keep expressions per-line |
@@ -73,7 +75,10 @@ limits below come from one of those two stages.
    report no longer holds, and the "~50 expressions" folklore is really the
    ~145-per-page budget plus whatever else the page already carries.
    Re-measure rather than trust old numbers.
-8. **Directory lines have a space as their mark** (`├──   docs (3 files, …)`);
+8. **`│` and a space are not the same width.** Rows whose prefix has no `│`
+   (children of the last entry in a directory) drift unless the missing `│` is
+   rendered invisibly with `\color{transparent}` — `\phantom` is banned.
+9. **Directory lines have a space as their mark** (`├──   docs (3 files, …)`);
    a naive regex that requires a glyph misses every directory.
 
 ## Troubleshooting

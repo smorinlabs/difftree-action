@@ -144,12 +144,35 @@ const HEADER_LINE = /^(PR: |Staged changes|Unstaged changes|Uncommitted changes|
 const FOOTER_LINE = /^(?:\d+ dirs? touched · )?\d+ files? /;
 const KIND_WORD = /\b(added|modified|deleted|renamed|copied|typechanged|conflicted|unreadable)\b/;
 
+// The box-drawing "│" is not in the math monospace font, so its advance width
+// differs from a "~" cell. A prefix group of four spaces (below the last child
+// of a directory) would therefore not line up with a "│   " group. Rendering an
+// invisible "│" in place of the first space keeps every depth the same width.
+// (\phantom is banned on GitHub; \color{transparent} is not — probe I2.)
+const SPACER = "{\\color{transparent}\\texttt{│}}";
+
+function prefixTex(prefix, rest) {
+  const out = [];
+  let buf = "";
+  for (let i = 0; i < prefix.length; i += 4) {
+    const group = prefix.slice(i, i + 4);
+    if (group === "    ") {
+      out.push(tt(buf), SPACER);
+      buf = "   ";
+    } else {
+      buf += group;
+    }
+  }
+  out.push(tt(buf + rest));
+  return out.join("");
+}
+
 function renderColorLine(line) {
   let m;
   if ((m = TREE_LINE.exec(line))) {
     const [, prefix, conn, mark, name, metric = ""] = m;
     const markTex = MARK_COLORS[mark] ? colored(mark, MARK_COLORS[mark]) : tt(mark);
-    return expression(`${tt(prefix + conn + " ")}${markTex}${tt(" " + name)}${churn(metric)}`);
+    return expression(`${prefixTex(prefix, conn + " ")}${markTex}${tt(" " + name)}${churn(metric)}`);
   }
   if (HEADER_LINE.test(line)) return expression(colored(line, "Gray"));
   if (FOOTER_LINE.test(line)) {

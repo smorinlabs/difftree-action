@@ -92,6 +92,15 @@ test("renderColorLine colors mark and churn on a file line, keeps prefix and nam
   assert.ok(e.includes(`{\\color{${PALETTE.Red}}\\texttt{−5}}`), "−M red");
 });
 
+test("pure-space prefix groups get an invisible │ so every depth has the same width (probe I2)", () => {
+  const spacer = "{\\color{transparent}\\texttt{│}}";
+  assert.ok(renderColorLine("    ├── ● a.ts +1 −0").includes(spacer + "\\texttt{~~~├──~}"), "one 4-space group");
+  assert.ok(renderColorLine("        └── ● b.ts +1 −0").includes(spacer + "\\texttt{~~~}" + spacer + "\\texttt{~~~└──~}"), "two groups");
+  assert.ok(renderColorLine("│       ├── ● c.ts +1 −0").includes("\\texttt{│~~~}" + spacer + "\\texttt{~~~├──~}"), "│ group then space group");
+  assert.ok(renderColorLine("│   ├── ● d.ts +1 −0").includes("\\texttt{│~~~├──~}"), "│ groups unchanged");
+  assert.ok(!renderColorLine("├── ● e.ts +1 −0").includes("transparent"), "top level has no spacer");
+});
+
 test("renderColorLine handles directory rollups, renames with spaces, and a space mark", () => {
   const dir = renderColorLine("├──   docs (3 files, +54 −10)");
   assert.ok(dir.includes("\\texttt{~docs}"), "dir name");
