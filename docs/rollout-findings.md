@@ -1112,3 +1112,38 @@ cleans up. All 10 merged; 0 skill-text corrections.
 Fan-out standing: 23 repos carry the canonical workflow; 16 remain (wave 4: identikit ×6, py-launch-blueprint,
 register-gated-verification, skillsmith, substrata — worktrees prepped; wave 5: smorinlabs-harness,
 template-press, terraform-gcp ×3, warpqueuekit).
+
+## Fan-out wave 4 (2026-09-01, runs 17–26) — second 10-repo parallel wave
+
+Same pattern as wave 3, with the F75 rule applied: before the merge gate the controller re-derived every repo's
+state from the API and caught **two** stalled verify-only agents (`identikit`, `skillsmith` — both stopped after
+opening their PRs); the controller stood them down by message and completed steps 3–7 itself. All 10 merged;
+0 skill-text corrections. Threads: 6 SHA-pin declines, 3 drift refutes-by-hash, 1 template-comment critique
+declined as upstream, 2 valid repo-local fixes (press rules).
+
+| Repo | PR | Merge | Notes |
+|---|---|---|---|
+| identikit | #5 | `e5008b7` | 7 required contexts green; agent stalled → controller completed |
+| identikit-py | #1 | `bf87f77` | first workflow; drift claim refuted by hash |
+| identikit-pylib | #1 | `18905eb` | first workflow; Greptile critique of the template's concurrency comment declined (upstream) |
+| identikit-rs | #1 | `0ae1c24` | first workflow; permissions ask refuted with run evidence |
+| identikit-rslib | #1 | `8c0f300` | first workflow; clean |
+| identikit-tslib | #1 | `31da60f` | first workflow; clean (`blacksmith-sh` app duplicates PR events — the template's guard skipped the dup) |
+| py-launch-blueprint | #524 | `6094f23` | replace-in-place; **required `press-verify` failed until `press/press-rules.toml`'s `[[remove]]` rule was retargeted to the new filename** (repo-local fix, F76); 2 SHA-pin declines |
+| register-gated-verification | #1 | `16b7a61` | first workflow; 2 SHA-pin declines |
+| skillsmith | #47 | `d97fbc1` | private, lefthook; agent stalled → controller completed; owner's clone on `docs/landing-page` → local pull/branch left |
+| substrata | #3 | `b993211` | SHA-pin declined, drift refuted; merged past pre-existing `claude-review` missing-secret failure (owner call) |
+
+### F76 — a replace-in-place must also update repo tooling that names the old workflow path
+- **Where:** SKILL.md §2 step 1's replace-in-place branch (guidance gap); first hit on `py-launch-blueprint`.
+- **What:** the blueprint's `press/press-rules.toml` carried a `[[remove]]` rule for `.github/workflows/difftree.yml`;
+  after the rename its required `press-verify` check failed ("`[[remove]]` target … does not exist"). Three
+  reviewers converged on it. The same class already appeared on `contributors-please-test` (a validator
+  allowlist) and `difftree-action-test` (a README path).
+- **Fix:** §2 step 1 now instructs: after `git mv`, grep the repo for the old basename outside `.github/workflows` and
+  update every hit (config rules, allowlists, docs) in the same commit, never the workflow file (this PR). Applied by
+  hand on all three occurrences so far.
+- **Class:** skill.
+
+Fan-out standing: 33 repos carry the canonical workflow; 6 remain (wave 5: smorinlabs-harness, template-press,
+terraform-gcp-design, terraform-gcp-poc, terraform-gcp-template, warpqueuekit — worktrees prepped, all lefthook).
