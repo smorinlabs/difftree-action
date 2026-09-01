@@ -264,7 +264,7 @@ A PR comment with a closed 📱 plain fold, an open 🌳 stats-summary colored f
 ### Manual Verification
 - Owner: dogfood comment on the implementation PR, both folds, both themes, phone
 
-## [~] Project P06: banksheets fleet rollout of difftree-action (v0.6.1 — docs/tracker only, no release)
+## [x] Project P06: banksheets fleet rollout of difftree-action (v0.7.0 — docs/tracker only, no release)
 **Goal/Requirement**: Every non-archived `banksheets` repo (9 as of 2026-09-01, the fork
 mirror `get-bank-sheets-web-fork` opted in by the owner at the PR-open gate) runs the canonical `difftree-pr-comment.yml` workflow, installed by
 the `difftree-action-setup` skill using the parallel wave pattern proven on the
@@ -294,7 +294,7 @@ threads, takes one consolidated merge gate, merges pinned, cleans up.
 - [x] [P06-T09] Fan-out: `terraform-stripe`
 - [x] [P06-T11] Fan-out: `get-bank-sheets-web-fork` (fork mirror; same-repo PR against the fork's own `main`)
 - [x] [P06-TS01] F75 re-derivation from the API before the merge gate: per repo ≥ 2 success runs, one comment updated twice, 0 unresolved threads, checks green, mergeable
-- [~] [P06-T10] Fold PR: wave log + findings (F77+) in `docs/rollout-findings.md`, tracker ticks
+- [x] [P06-T10] Fold PR: wave log + findings (F77+) in `docs/rollout-findings.md`, tracker ticks
 - [ ] Regression Test Status
 
 ### Deliverable
