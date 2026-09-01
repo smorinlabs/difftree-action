@@ -117,6 +117,63 @@ install the skill elsewhere, see
 | `difftree-version` | `0.3.1` | difftree crates.io version to install. |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. |
 
+## Output layouts by configuration
+
+Sketches of the posted comment per configuration (`▾` = fold open, `▸` = fold
+closed; the reader can toggle every fold). Live rendered versions of these
+layouts are in
+[`examples/github-math-color-examples.md`](examples/github-math-color-examples.md)
+(example 9 is the default).
+
+**Default — `color-section: "open"`, `plain-section: "closed"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▸ 📱 Plain text version (mobile / email)
+▾ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+│   PR: origin/main...563a39c · committed        ← colored inline-math tree
+│   difftree-action
+│   ├── ● PROJECTS.md +6 −3   (● green, ↻ blue, +N green, −M red, …)
+│   └── …
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+**Mobile-first — `plain-section: "open"`, `color-section: "closed"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▾ 📱 Plain text version (mobile / email)
+│   ┌────────────────────────────────┐
+│   │ plain ASCII tree (code block)  │
+│   └────────────────────────────────┘
+▸ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+Collapsed folds still show the stats line, so the result is visible at a glance.
+
+**Colored-only — `plain-section: "hidden"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▾ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+│   (colored tree; trees longer than ~100 lines continue in a plain
+│    code block inside this fold)
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+**Legacy plain — `color-section: "hidden"` (or the deprecated `color: "false"`):**
+
+```text
+### 🌳 difftree — changes in this PR
+┌────────────────────────────────┐
+│ plain ASCII tree (code block)  │
+└────────────────────────────────┘
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+Byte-identical to the pre-v0.6.0 comment — the rollback format.
+
 ## Outputs
 
 | Output | Description |
