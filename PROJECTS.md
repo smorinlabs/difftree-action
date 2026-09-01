@@ -106,23 +106,33 @@ zero skill edits needed.
       Installed as cold retest 2 (2026-08-31): smorinlabs/harness-kit#12, merge `0a5d29a`; clean run, zero threads, no new findings.
 - [x] [P03-T23] Fan-out: `homebrew-tap`
       Installed 2026-09-01 (wave 3): #5, merge `053a7f6`; merged past pre-existing test-bot failures (owner call).
-- [ ] [P03-T24] Fan-out: `identikit`
-- [ ] [P03-T25] Fan-out: `identikit-py`
-- [ ] [P03-T26] Fan-out: `identikit-pylib`
-- [ ] [P03-T27] Fan-out: `identikit-rs`
-- [ ] [P03-T28] Fan-out: `identikit-rslib`
-- [ ] [P03-T29] Fan-out: `identikit-tslib`
-- [ ] [P03-T30] Fan-out: `py-launch-blueprint`
-- [ ] [P03-T31] Fan-out: `register-gated-verification`
+- [x] [P03-T24] Fan-out: `identikit`
+      Installed 2026-09-01 (wave 4): #5, merge `e5008b7`; clean.
+- [x] [P03-T25] Fan-out: `identikit-py`
+      Installed 2026-09-01 (wave 4): #1, merge `bf87f77`; first workflow; clean.
+- [x] [P03-T26] Fan-out: `identikit-pylib`
+      Installed 2026-09-01 (wave 4): #1, merge `18905eb`; first workflow; clean.
+- [x] [P03-T27] Fan-out: `identikit-rs`
+      Installed 2026-09-01 (wave 4): #1, merge `0ae1c24`; first workflow; clean.
+- [x] [P03-T28] Fan-out: `identikit-rslib`
+      Installed 2026-09-01 (wave 4): #1, merge `8c0f300`; first workflow; clean.
+- [x] [P03-T29] Fan-out: `identikit-tslib`
+      Installed 2026-09-01 (wave 4): #1, merge `31da60f`; first workflow; clean.
+- [x] [P03-T30] Fan-out: `py-launch-blueprint`
+      Synced 2026-09-01 (wave 4): #524, merge `6094f23`; replace-in-place; press-rules remove rule retargeted (F76).
+- [x] [P03-T31] Fan-out: `register-gated-verification`
+      Installed 2026-09-01 (wave 4): #1, merge `16b7a61`; first workflow; clean.
 - [x] [P03-T32] Fan-out: `rest-standards`
       Installed 2026-09-01 (wave 3): #14, merge `5ad550a`; clean, 2 SHA-pin threads declined.
 - [x] [P03-T33] Fan-out: `shelf`
       Installed as cold retest 3 (2026-08-31): smorinlabs/shelf#4, merge `a8a13ed`; clean run, zero threads; finding F72 (harness-level, step 9 hardened).
-- [ ] [P03-T34] Fan-out: `skillsmith`
+- [x] [P03-T34] Fan-out: `skillsmith`
+      Installed 2026-09-01 (wave 4): #47, merge `d97fbc1`; private; owner clone on docs/landing-page left un-pulled.
 - [x] [P03-T35] Fan-out: `smorin-segment-timer`
       Installed 2026-09-01 (wave 3): #6, merge `25144c5`; private first workflow; clean.
 - [ ] [P03-T36] Fan-out: `smorinlabs-harness`
-- [ ] [P03-T37] Fan-out: `substrata`
+- [x] [P03-T37] Fan-out: `substrata`
+      Installed 2026-09-01 (wave 4): #3, merge `b993211`; merged past pre-existing claude-review failure (owner call).
 - [ ] [P03-T38] Fan-out: `template-press`
 - [ ] [P03-T39] Fan-out: `terraform-gcp-design`
 - [ ] [P03-T40] Fan-out: `terraform-gcp-poc`
