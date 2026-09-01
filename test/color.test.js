@@ -73,6 +73,19 @@ test("escapeTexttt handles every special character and passes safe ones through"
   assert.equal(escapeTexttt("a\u0001b\u007fc"), "a?b?c", "control characters become ?");
 });
 
+test("escapeTexttt breaks tokens GitHub would autolink inside math (SHAs, @mentions, #refs)", () => {
+  // body_html evidence: ts-launch-blueprint#28 comment had <a class="commit-link"> injected around 5905964
+  assert.equal(escapeTexttt("main...5905964 x"), "main...590596}\\texttt{4~x");
+  assert.equal(escapeTexttt("c19c0d85d3787e42"), "c19c0d}\\texttt{85d378}\\texttt{7e42");
+  assert.equal(escapeTexttt("abcdef"), "abcdef", "six hex chars are not a SHA");
+  assert.equal(escapeTexttt("@types/node"), "@}\\texttt{types/node");
+  assert.equal(escapeTexttt("issue #26.md"), "issue~\\#}\\texttt{26.md");
+  assert.equal(escapeTexttt("a#b"), "a\\#b", "# not followed by a digit is left alone");
+  const header = renderColorLine("PR: origin/main...5905964 · committed");
+  assert.ok(!/[0-9a-f]{7}/i.test(header.replace(/#[0-9a-f]{6}/g, "")), "no 7-hex token outside palette colors");
+  assert.ok(header.includes("590596}\\texttt{4"));
+});
+
 test("every difftree mark glyph maps to a palette color", () => {
   for (const g of ["●", "○", "◐", "?", "↻", "⧉", "×", "◆", "‼", "⚠", "!"]) {
     assert.ok(MARK_COLORS[g], `mark ${g} unmapped`);
@@ -113,7 +126,7 @@ test("renderColorLine handles directory rollups, renames with spaces, and a spac
 
 test("renderColorLine renders header gray, footer kinds+churn colored, unknown lines plain", () => {
   const header = renderColorLine("PR: origin/main...563a39c · committed");
-  assert.ok(header.startsWith(`$\`{\\color{${PALETTE.Gray}}\\texttt{PR:~origin/main...563a39c~·~committed}}\`$`));
+  assert.ok(header.startsWith(`$\`{\\color{${PALETTE.Gray}}\\texttt{PR:~origin/main...563a39}\\texttt{c~·~committed}}\`$`), "header gray; 7-hex SHA split against autolinking");
   const footer = renderColorLine("8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52");
   assert.ok(footer.includes(`{\\color{${PALETTE.Yellow}}\\texttt{modified}}`));
   assert.ok(footer.includes(`{\\color{${PALETTE.Blue}}\\texttt{renamed}}`));
