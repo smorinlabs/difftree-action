@@ -199,15 +199,16 @@ function normalizeTree(tree) {
     .map((l) => l.replace(/\s+$/, ""));
 }
 
-// Decide how much of the tree gets color. Returns { mode: "plain" } when the
-// whole body must be today's fenced form, else the pieces of the hybrid body:
-// header/root/footer expressions (or null), `colored` expressions for the
-// leading body lines, and `plain` — the remaining body lines for the fence.
+// Decide how much of the tree gets color. Returns { mode: "plain", reason } when
+// the whole body must be today's fenced form, else the pieces of the hybrid body:
+// header/root/footer expressions (or null), `footerText` (the raw footer line,
+// additive — used for the fold <summary>), `colored` expressions for the leading
+// body lines, and `plain` — the remaining body lines for the fence.
 function splitForColor(tree, { maxExpressions = MAX_COLOR_EXPRESSIONS, maxBytes = COLOR_BYTES_MAX } = {}) {
   const lines = normalizeTree(tree);
   while (lines.length && lines[lines.length - 1] === "") lines.pop();
   while (lines.length && lines[0] === "") lines.shift();
-  if (!lines.length) return { mode: "plain" };
+  if (!lines.length) return { mode: "plain", reason: "empty content" };
 
   let headerLine = null;
   let rootLine = null;
@@ -221,7 +222,7 @@ function splitForColor(tree, { maxExpressions = MAX_COLOR_EXPRESSIONS, maxBytes 
     while (lines.length && lines[lines.length - 1] === "") lines.pop();
   }
   for (const l of [headerLine, rootLine, footerLine]) {
-    if (l !== null && l.includes("`")) return { mode: "plain" };
+    if (l !== null && l.includes("`")) return { mode: "plain", reason: "backtick in header/root/footer" };
   }
 
   const body = lines;
@@ -233,7 +234,7 @@ function splitForColor(tree, { maxExpressions = MAX_COLOR_EXPRESSIONS, maxBytes 
   let k = Math.min(maxExpressions - fixed, body.length);
   const tick = body.findIndex((l) => l.includes("`"));
   if (tick !== -1) k = Math.min(k, tick);
-  if (k <= 0) return { mode: "plain" };
+  if (k <= 0) return { mode: "plain", reason: "no colorable lines (backtick on the first line, or no body)" };
 
   const rendered = body.slice(0, k).map(renderColorLine);
   const fixedBytes = [header, root, footer].filter(Boolean).join("\n").length;
@@ -242,13 +243,14 @@ function splitForColor(tree, { maxExpressions = MAX_COLOR_EXPRESSIONS, maxBytes 
     k -= 1;
     bytes -= rendered[k].length + 1;
   }
-  if (k <= 0) return { mode: "plain" };
+  if (k <= 0) return { mode: "plain", reason: "oversized fixed lines" };
 
   return {
     mode: "color",
     header,
     root,
     footer,
+    footerText: footerLine,
     colored: rendered.slice(0, k),
     plain: body.slice(k),
   };
@@ -278,28 +280,70 @@ function composeColorBody(tree, { truncated, heading, advertise }) {
   return lines.join("\n");
 }
 
-function composeBody(tree, opts = {}) {
-  const {
-    empty = false,
-    truncated = false,
-    heading = HEADING,
-    advertise = true,
-    color = true,
-  } = opts;
+// ---------------------------------------------------------------------------
+// Foldable sections (v0.7.0). Spec:
+// docs/superpowers/specs/2026-09-01-foldable-sections-design.md
+// The plain fence and the colored tree each live in a <details> fold. Section
+// states come from the `color-section` / `plain-section` inputs; the legacy
+// `color: "false"` alias forces the colored section hidden and the byte-
+// identical bare plain body.
 
-  if (color && !empty) {
-    const body = composeColorBody(tree, { truncated, heading, advertise });
-    if (body !== null) return body;
-    // Color declined (backtick in header/root/footer, or oversized fixed lines).
-    // action.yml truncates the raw tree before calling us, so this is only
-    // reachable with an untruncated tree when composeBody is used directly;
-    // keep the ≤ GITHUB_COMMENT_LIMIT contract regardless.
-    const r = truncateTree(tree);
-    if (r.truncated) return composeBody(r.tree, { ...opts, truncated: true, color: false });
+const SECTION_STATES = ["open", "closed", "hidden"];
+const PLAIN_SUMMARY = "📱 Plain text version (mobile / email)";
+const COLOR_SUMMARY_FALLBACK = "🎨 Colored diff tree";
+// Only a footer that fully matches difftree's footer grammar may become a
+// <summary> (spec L.2); anything else uses the static fallback label.
+const FOOTER_GRAMMAR =
+  /^\d+ dirs? touched · \d+ files? (?:changed|added|modified|deleted|renamed|copied|typechanged|conflicted|unreadable)(?: \(\d+ [a-z]+(?: · \d+ [a-z]+)*\))? · \+\d+ −\d+$/;
+// Raw HTML tag delimiters inside fold-bound math source decline the folds
+// entirely (spec L.3) — the legacy bare body has no such exposure.
+const HTML_TAG_GUARD = /<\/|<[A-Za-z]/;
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Single home for the fold invariants: blank line after <summary> and before
+// </details> (probe J4: without them GitHub renders the content on one line).
+function renderDetails({ open, summary, content }) {
+  return `<details${open ? " open" : ""}>\n<summary>${summary}</summary>\n\n${content}\n\n</details>`;
+}
+
+// A fence hostile content cannot close: its delimiter is one backtick longer
+// than the longest backtick run in the content (spec L.1). Used only in folded
+// modes; the legacy bare body keeps its fixed ``` fence (golden contract).
+function safeFence(text) {
+  const runs = text.match(/`+/g) || [];
+  const delim = "`".repeat(Math.max(3, ...runs.map((r) => r.length + 1)));
+  return `${delim}\n${text}\n${delim}`;
+}
+
+// Resolve raw input strings to section states + warnings, in the deterministic
+// order of spec C: validate values → apply the `color:"false"` alias → flag
+// both-hidden. Warnings never change the golden legacy body.
+function resolveSections({ color = true, colorSection = "open", plainSection = "closed" } = {}) {
+  const warnings = [];
+  let colorState = colorSection;
+  let plainState = plainSection;
+  if (!SECTION_STATES.includes(colorState)) {
+    warnings.push(`invalid color-section value "${colorState}"; using "open"`);
+    colorState = "open";
   }
+  if (!SECTION_STATES.includes(plainState)) {
+    warnings.push(`invalid plain-section value "${plainState}"; using "closed"`);
+    plainState = "closed";
+  }
+  if (color === false) colorState = "hidden";
+  if (colorState === "hidden" && plainState === "hidden") {
+    warnings.push("both sections hidden; posting the plain comment");
+  }
+  return { colorState, plainState, warnings };
+}
 
+// The pre-v0.7.0 bodies, byte-identical (golden contract): bare plain fence,
+// empty-diff text, and — via composeColorBody — the colored-only hybrid.
+function composeLegacyBody(tree, { empty, truncated, heading, advertise }) {
   const lines = [MARKER, `### ${heading}`, ""];
-
   if (empty) {
     lines.push("_No file changes between the base and this PR._");
   } else {
@@ -308,11 +352,137 @@ function composeBody(tree, opts = {}) {
       lines.push("", TRUNCATION_NOTICE);
     }
   }
-
   if (advertise) {
     lines.push("", ADVERTISEMENT);
   }
   return lines.join("\n");
+}
+
+// Dual-fold assembly (spec K): measure all fixed markup exactly, then give the
+// remaining capacity to the plain fold. Assembled once; never repaired by slice.
+function composeFoldedBody(tree, split, { truncated, heading, advertise, colorState, plainState }) {
+  const summary =
+    split.footerText && FOOTER_GRAMMAR.test(split.footerText)
+      ? `🌳 ${escapeHtml(split.footerText)}`
+      : COLOR_SUMMARY_FALLBACK;
+
+  const coloredParts = [];
+  if (split.header) coloredParts.push(split.header);
+  if (split.root) coloredParts.push(split.root);
+  coloredParts.push(...split.colored);
+
+  let coloredContent;
+  let suffixTruncated = false;
+  if (plainState === "hidden") {
+    // Colored-only mode keeps today's hybrid inside the fold (notice + fenced
+    // remainder + truncation notice), with the content-safe fence.
+    if (split.plain.length) {
+      const notice = `_…and ${split.plain.length} more lines below (plain — GitHub renders a limited number of colored lines per page)._`;
+      const plainText = split.plain.join("\n");
+      // Reserve the ACTUAL fence delimiter bytes (a suffix with a long backtick
+      // run needs a longer safeFence); a truncated prefix never needs more than
+      // the full text does. SCAFFOLD_BUDGET covers marker/heading/fold shell/ad
+      // and is handed back to truncateTree's limit convention below.
+      const delimBytes = safeFence(plainText).length - plainText.length;
+      const fixedSoFar =
+        coloredParts.join("\n").length + notice.length + delimBytes +
+        (split.footer ? split.footer.length : 0) + TRUNCATION_NOTICE.length + SCAFFOLD_BUDGET;
+      const capacity = GITHUB_COMMENT_LIMIT - fixedSoFar;
+      if (capacity <= 0) {
+        suffixTruncated = true;
+        coloredParts.push(notice, safeFence(""));
+      } else {
+        const r = truncateTree(plainText, capacity + SCAFFOLD_BUDGET);
+        suffixTruncated = r.truncated;
+        coloredParts.push(notice, safeFence(r.tree.replace(/\s+$/, "")));
+      }
+    }
+    if (truncated || suffixTruncated) coloredParts.push("", TRUNCATION_NOTICE);
+    if (split.footer) coloredParts.push("", split.footer);
+    coloredContent = coloredParts.join("\n");
+    const fold = renderDetails({ open: colorState === "open", summary, content: coloredContent });
+    const lines = [MARKER, `### ${heading}`, "", fold];
+    if (advertise) lines.push("", ADVERTISEMENT);
+    return lines.join("\n");
+  }
+
+  // Plain fold visible: the colored fold never duplicates the suffix — its
+  // pointer names the plain fold above (spec I.1); the single truncation
+  // notice lives in the plain fold (spec A).
+  if (split.plain.length) {
+    coloredParts.push(`_…and ${split.plain.length} more lines — see the plain text version above._`);
+  }
+  if (split.footer) coloredParts.push("", split.footer);
+  coloredContent = coloredParts.join("\n");
+  const coloredFold = renderDetails({ open: colorState === "open", summary, content: coloredContent });
+
+  const plainFullText = tree.replace(/\s+$/, "");
+  const assemble = (plainContent) => {
+    const plainFold = renderDetails({
+      open: plainState === "open",
+      summary: PLAIN_SUMMARY,
+      content: plainContent,
+    });
+    const lines = [MARKER, `### ${heading}`, "", plainFold, "", coloredFold];
+    if (advertise) lines.push("", ADVERTISEMENT);
+    return lines.join("\n");
+  };
+
+  // Fixed markup measured with an empty-content probe that carries the real
+  // fence delimiter bytes for the full text (a truncated prefix never has a
+  // longer backtick run than the full text, so the delimiter cannot grow).
+  const probeFence = safeFence(plainFullText);
+  const delimBytes = probeFence.length - plainFullText.length;
+  const fixedBytes = assemble(safeFence("")).length - safeFence("").length + delimBytes + TRUNCATION_NOTICE.length + 2;
+  const capacity = GITHUB_COMMENT_LIMIT - fixedBytes;
+
+  let plainTree = "";
+  let noticeNeeded = truncated;
+  if (capacity <= 0) {
+    noticeNeeded = true; // never call truncateTree with a limit ≤ its reserve (negative slice)
+  } else {
+    // fixedBytes already measured every real byte, so hand truncateTree exactly
+    // `capacity` of content: its limit convention subtracts SCAFFOLD_BUDGET.
+    const r = truncateTree(plainFullText, capacity + SCAFFOLD_BUDGET);
+    plainTree = r.tree.replace(/\s+$/, "");
+    noticeNeeded = noticeNeeded || r.truncated;
+  }
+  const plainContent = safeFence(plainTree) + (noticeNeeded ? `\n\n${TRUNCATION_NOTICE}` : "");
+  return assemble(plainContent);
+}
+
+function composeBody(tree, opts = {}) {
+  const {
+    empty = false,
+    truncated = false,
+    heading = HEADING,
+    advertise = true,
+    color = true,
+    colorSection = "open",
+    plainSection = "closed",
+  } = opts;
+
+  const { colorState, plainState, warnings } = resolveSections({ color, colorSection, plainSection });
+  const legacyOpts = { empty, truncated, heading, advertise };
+  const done = (body) => ({ body, warnings });
+
+  if (empty || colorState === "hidden") return done(composeLegacyBody(tree, legacyOpts));
+
+  // Renderer decline overrides the requested sections (spec M): legacy body + warning.
+  const declineToLegacy = (reason) => {
+    warnings.push(`colored rendering declined: ${reason}`);
+    const r = truncateTree(tree);
+    return r.truncated
+      ? done(composeLegacyBody(r.tree, { ...legacyOpts, truncated: true }))
+      : done(composeLegacyBody(tree, legacyOpts));
+  };
+
+  if (HTML_TAG_GUARD.test(tree)) return declineToLegacy("raw HTML tag delimiter in tree text");
+
+  const split = splitForColor(tree);
+  if (split.mode === "plain") return declineToLegacy(split.reason);
+
+  return done(composeFoldedBody(tree, split, { truncated, heading, advertise, colorState, plainState }));
 }
 
 // Ownership predicate: a comment is action-owned only when the marker is its
@@ -399,6 +569,9 @@ module.exports = {
   splitForColor,
   truncateTree,
   composeBody,
+  resolveSections,
+  renderDetails,
+  safeFence,
   pickExisting,
   upsertComment,
 };

@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.7.0](https://github.com/smorinlabs/difftree-action/compare/v0.6.2...v0.7.0) (2026-09-01)
+
+
+### Features
+
+* **comment:** foldable plain + colored sections (color-section / plain-section) ([930a76b](https://github.com/smorinlabs/difftree-action/commit/930a76bae22a03eb545b31c018576e187fd99cde))
+
+
+### Bug Fixes
+
+* **comment:** exact fence-delimiter reserves and no double SCAFFOLD subtraction; review fixes ([f964431](https://github.com/smorinlabs/difftree-action/commit/f96443156fb05d75e994a7b96ecdc04cccabc1c5))
+
+
+### Documentation
+
+* **readme:** sketch the output layout for each color-section/plain-section configuration ([fb22dfa](https://github.com/smorinlabs/difftree-action/commit/fb22dfa3018972826e4822b04f9c67b34f2a6454))
+
+## [0.6.2](https://github.com/smorinlabs/difftree-action/compare/v0.6.1...v0.6.2) (2026-09-01)
+
+
+### Documentation
+
+* flip T38 (template-press merged c0992d8); banksheets fan-out handoff; wording fix ([3d82873](https://github.com/smorinlabs/difftree-action/commit/3d828737ddada63d45bd2ff174e6edb381c4a090))
+* log fan-out wave 5 (final); tick T36,T39-T41,T43; close T19; T38 pending ci-ok ([07d8ec6](https://github.com/smorinlabs/difftree-action/commit/07d8ec692a9c1e18a1207ca69449c86899b2b698))
+* log final fan-out wave; tick T36,T39-T41,T43; close T19 ([81a1676](https://github.com/smorinlabs/difftree-action/commit/81a1676cd8c5c4e923ed57155620342dfd9901e5))
+* reconcile fleet count (39/39 targets + dogfood) in wave-5 standing ([eeee131](https://github.com/smorinlabs/difftree-action/commit/eeee131ea8cff9c7ec2b41716f4d8e23931728b1))
+
 ## [0.6.1](https://github.com/smorinlabs/difftree-action/compare/v0.6.0...v0.6.1) (2026-09-01)
 
 

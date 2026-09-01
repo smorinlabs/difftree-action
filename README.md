@@ -27,10 +27,14 @@ difftree-action
 4 dirs touched · 6 files changed (5 modified · 1 renamed) · +68 −28
 ```
 
-By default the comment is rendered **in color** — status marks by git state,
-`+N` green / `−M` red churn, and the summary line — using GitHub's inline-math
-renderer, the same coloring `difftree` shows in a terminal. Set `color: "false"`
-to get the plain code block above instead. See
+By default the comment carries **both renderings in foldable sections**: a
+closed fold labeled `📱 Plain text version (mobile / email)` holding the plain
+code block above (inline-math color does not render on mobile or in email), and
+an open fold whose `<summary>` is the stats line, holding the tree **in
+color** — status marks by git state, `+N` green / `−M` red churn — the same
+coloring `difftree` shows in a terminal. Configure the layout with
+`color-section` / `plain-section`; `color-section: "hidden"` (or the
+deprecated `color: "false"`) restores the bare plain code block. See
 [Color rendering — limits](#color-rendering--limits).
 
 > **Status — Phase 0 (composite).** This release builds difftree from
@@ -104,12 +108,71 @@ install the skill elsewhere, see
 | `base-ref` | PR base (`pull_request.base.ref`) | Ref to diff against; compared as `origin/<base-ref>`. |
 | `comment` | `true` | Post/update the PR comment. `false` computes outputs only. |
 | `advertise` | `true` | Append a small "Get your own diff tree" attribution footer (`<sub>` line linking to this repo). `false` disables. |
-| `color` | `true` | Render the comment in color via GitHub's inline-math renderer. `false` posts the plain code-fence comment. Only the posted comment is affected; the `tree` output is always plain. |
+| `color-section` | `open` | The colored tree, in a fold whose `<summary>` is the stats line: `open`, `closed`, or `hidden` (hidden posts the bare plain comment). |
+| `plain-section` | `closed` | The plain code-fence tree, in a fold labeled "📱 Plain text version (mobile / email)" above the colored fold: `closed`, `open`, or `hidden`. Ignored when the colored section is hidden. |
+| `color` | `true` | **Deprecated alias** — `false` forces `color-section: hidden`, overriding any `color-section` value. Only the posted comment is affected; the `tree` output is always plain. |
 | `level` | _(unset)_ | Max tree depth (`difftree --level N`). |
 | `dirs-only` | `false` | Show directories only (`difftree --dirs-only`). |
 | `extra-args` | `''` | Extra args appended verbatim to the difftree call. |
 | `difftree-version` | `0.3.1` | difftree crates.io version to install. |
 | `github-token` | `${{ github.token }}` | Token used to post the comment. |
+
+## Output layouts by configuration
+
+Sketches of the posted comment per configuration (`▾` = fold open, `▸` = fold
+closed; the reader can toggle every fold). Live rendered versions of these
+layouts are in
+[`examples/github-math-color-examples.md`](examples/github-math-color-examples.md)
+(example 9 is the default).
+
+**Default — `color-section: "open"`, `plain-section: "closed"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▸ 📱 Plain text version (mobile / email)
+▾ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+│   PR: origin/main...563a39c · committed        ← colored inline-math tree
+│   difftree-action
+│   ├── ● PROJECTS.md +6 −3   (● green, ↻ blue, +N green, −M red, …)
+│   └── …
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+**Mobile-first — `plain-section: "open"`, `color-section: "closed"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▾ 📱 Plain text version (mobile / email)
+│   ┌────────────────────────────────┐
+│   │ plain ASCII tree (code block)  │
+│   └────────────────────────────────┘
+▸ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+Collapsed folds still show the stats line, so the result is visible at a glance.
+
+**Colored-only — `plain-section: "hidden"`:**
+
+```text
+### 🌳 difftree — changes in this PR
+▾ 🌳 8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52
+│   (colored tree; trees longer than ~100 lines continue in a plain
+│    code block inside this fold)
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+**Legacy plain — `color-section: "hidden"` (or the deprecated `color: "false"`):**
+
+```text
+### 🌳 difftree — changes in this PR
+┌────────────────────────────────┐
+│ plain ASCII tree (code block)  │
+└────────────────────────────────┘
+🌳 Get your own diff tree at smorinlabs/difftree-action
+```
+
+Byte-identical to the pre-v0.6.0 comment — the rollback format.
 
 ## Outputs
 
@@ -127,7 +190,8 @@ On a `pull_request` event the action:
    with `actions/cache`);
 2. resolves the base ref (default: the PR base) and ensures its history is present;
 3. runs `difftree --pr=origin/<base> --committed --no-color`;
-4. colors the plain text for GitHub (unless `color: "false"`) and upserts
+4. composes the foldable body — plain fold + colored fold by default (see the
+   `color-section`/`plain-section` inputs) — and upserts
    **one** sticky comment (hidden marker `<!-- difftree-action -->`), updating
    it in place on each push rather than stacking duplicates.
 
@@ -149,8 +213,10 @@ GitHub's renderer imposes limits that were measured on 2026-09-01
   the tail of the colored section can show raw TeX; set `color: "false"`.
 - A filename containing a backtick cannot be encoded; that line and everything
   after it render plain.
-- Color shows on github.com only. Email notifications (and some mobile views)
-  show the TeX source, so teams that review by email should set `color: "false"`.
+- Color shows on github.com only. Email notifications and some mobile views show
+  the TeX source — which is why the default comment carries the plain tree in the
+  📱 fold; mobile-first teams can set `plain-section: "open"` and
+  `color-section: "closed"`.
 
 Writing your own colored trees or debugging a rendering problem? See the
 "don't do this" guide [`docs/github-math-color-guide.md`](docs/github-math-color-guide.md)

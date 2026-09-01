@@ -26,12 +26,28 @@ inputs:
     default: "true"
   color:
     description: >-
-      Render the PR comment with colored status marks and churn counts via
-      GitHub's inline-math renderer. Set to "false" for the plain code-fence
-      comment. Affects only the posted comment; the `tree` output and the
-      difftree invocation are always plain.
+      DEPRECATED alias — prefer `color-section`/`plain-section`. Set to "false"
+      to force `color-section: hidden` (the plain code-fence comment),
+      overriding any `color-section` value. Affects only the posted comment;
+      the `tree` output and the difftree invocation are always plain.
     required: false
     default: "true"
+  color-section:
+    description: >-
+      The colored tree, in a fold whose <summary> is the stats line.
+      "open" (default) = fold expanded, "closed" = fold collapsed,
+      "hidden" = no colored section (posts the plain code-fence comment).
+    required: false
+    default: "open"
+  plain-section:
+    description: >-
+      The plain code-fence tree, in a fold labeled "📱 Plain text version
+      (mobile / email)" above the colored fold. "closed" (default) = fold
+      collapsed, "open" = fold expanded, "hidden" = no plain section.
+      Ignored when the colored section is hidden (the plain tree is then the
+      whole comment).
+    required: false
+    default: "closed"
   level:
     description: Maximum tree depth (difftree --level N). Unset means no limit.
     required: false
@@ -188,6 +204,8 @@ runs:
         DIFFTREE_EMPTY: ${{ steps.difftree.outputs.empty }}
         DIFFTREE_ADVERTISE: ${{ inputs.advertise }}
         DIFFTREE_COLOR: ${{ inputs.color }}
+        DIFFTREE_COLOR_SECTION: ${{ inputs.color-section }}
+        DIFFTREE_PLAIN_SECTION: ${{ inputs.plain-section }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
@@ -200,8 +218,11 @@ runs:
           const empty = process.env.DIFFTREE_EMPTY === 'true';
           const advertise = process.env.DIFFTREE_ADVERTISE !== 'false';
           const color = process.env.DIFFTREE_COLOR !== 'false';
+          const colorSection = process.env.DIFFTREE_COLOR_SECTION || 'open';
+          const plainSection = process.env.DIFFTREE_PLAIN_SECTION || 'closed';
           const { tree, truncated } = mod.truncateTree(rawTree);
-          const body = mod.composeBody(tree, { empty, truncated, advertise, color });
+          const { body, warnings } = mod.composeBody(tree, { empty, truncated, advertise, color, colorSection, plainSection });
+          warnings.forEach((w) => core.warning(`difftree-action: ${w}`));
 
           try {
             const res = await mod.upsertComment({

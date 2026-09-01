@@ -133,7 +133,7 @@ Use the first method that fits the environment, then verify with
 4. The fleet install is verbatim — no `with:` block **on the `smorinlabs/difftree-action` step** (the `actions/checkout`
    step's `with:` is part of the template and stays). Only when the user
    explicitly asked for inputs (`level`, `dirs-only`, `difftree-version`,
-   `comment`, `advertise`, `color`; `action.yml` is authoritative) add just those and
+   `comment`, `advertise`, `color-section`, `plain-section`, `color` (deprecated); `action.yml` is authoritative) add just those and
    record the hash of the file **as written**, which later byte checks use:
    `shasum -a 256 .github/workflows/difftree-pr-comment.yml > "${TMPDIR:-/tmp}/difftree-pr-comment.sha256"`.
 

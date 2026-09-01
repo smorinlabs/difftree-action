@@ -13,8 +13,10 @@ const {
   GITHUB_COMMENT_LIMIT,
 } = require("../scripts/comment.js");
 
+const composeBodyStr = (tree, opts) => composeBody(tree, { plainSection: "hidden", ...opts }).body;
+
 test("composeBody embeds marker, heading, and a fenced tree (plain mode)", () => {
-  const body = composeBody("├── a\n└── b", { color: false });
+  const body = composeBodyStr("├── a\n└── b", { color: false });
   assert.ok(body.startsWith(MARKER), "must lead with the hidden marker");
   assert.match(body, /^### /m, "has a heading");
   assert.match(body, /```\n├── a\n└── b\n```/, "tree is inside a code fence");
@@ -22,20 +24,20 @@ test("composeBody embeds marker, heading, and a fenced tree (plain mode)", () =>
 });
 
 test("composeBody empty case has no code fence and a no-changes line", () => {
-  const body = composeBody("", { empty: true });
+  const body = composeBodyStr("", { empty: true });
   assert.ok(body.startsWith(MARKER));
   assert.ok(!body.includes("```"), "no code fence for an empty diff");
   assert.match(body, /no file changes/i);
 });
 
 test("composeBody adds a truncation notice when truncated (plain mode)", () => {
-  const body = composeBody("├── a", { truncated: true, color: false });
+  const body = composeBodyStr("├── a", { truncated: true, color: false });
   assert.match(body, /```\n├── a\n```/);
   assert.match(body, /truncat/i);
 });
 
 test("composeBody includes the advertisement footer by default", () => {
-  const body = composeBody("├── a", {});
+  const body = composeBodyStr("├── a", {});
   assert.ok(body.endsWith(ADVERTISEMENT), "footer is the last line by default");
   assert.match(ADVERTISEMENT, /^<sub>/, "footer uses GitHub small-print sub style");
   assert.ok(
@@ -45,15 +47,15 @@ test("composeBody includes the advertisement footer by default", () => {
 });
 
 test("composeBody omits the advertisement when advertise is false", () => {
-  const body = composeBody("├── a", { advertise: false });
+  const body = composeBodyStr("├── a", { advertise: false });
   assert.ok(!body.includes("<sub>"), "no footer when disabled");
   assert.ok(!body.includes("difftree-action</a>"));
 });
 
 test("composeBody keeps the advertisement on empty-diff comments by default", () => {
-  const body = composeBody("", { empty: true });
+  const body = composeBodyStr("", { empty: true });
   assert.ok(body.endsWith(ADVERTISEMENT));
-  const off = composeBody("", { empty: true, advertise: false });
+  const off = composeBodyStr("", { empty: true, advertise: false });
   assert.ok(!off.includes("<sub>"));
 });
 

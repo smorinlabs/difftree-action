@@ -1180,7 +1180,11 @@ prepped 9 worktrees → one PR-open gate (owner opted the fork mirror in) → 9 
 PR → §4 steps 1–5 → bot floor → thread inventory + step 7 → F75 re-derivation from the API → controller answered
 4 threads → one consolidated merge gate → 9 merges pinned → guarded cleanup. All 9 private, all first-ever
 `pull_request` workflows except `get-bank-sheets-web` and its fork. Template provenance `b70ce28`, SHA-256
-`c0e126bd…` (unchanged through the wave; the freeze held). 0 stalled agents (9/9 reported); 0 skill-text edits.
+`c0e126bd…` through the whole wave (every merged file re-verified at that hash). The freeze did **not** hold on the
+repo side: `#35` (foldable sections, v0.7.0) merged during the wave and moved the canonical to `a9abcf5` (73 lines,
+SHA-256 `ca489e89…`) — three commented example lines only, so the nine installs are functionally identical but one
+comment revision behind, exactly like the 33 smorinlabs repos vs `b70ce28`. 0 stalled agents (9/9 reported); 0
+skill-text edits.
 
 | Repo | PR | Merge | Notes |
 |---|---|---|---|
@@ -1234,7 +1238,8 @@ PR → §4 steps 1–5 → bot floor → thread inventory + step 7 → F75 re-de
 - **Class:** process.
 
 **Standing:** all 9 banksheets repos carry the canonical workflow at `c0e126bd…` (verified from `main` via the
-contents API after the merges). Open follow-ups: (a) `banksheets-landing`'s local clone still holds the
+contents API after the merges). Open follow-ups: (0) all 42 installed repos (33 smorinlabs + 9 banksheets) now trail the canonical by comment-only
+lines — one mechanical resync wave, owner's call; (a) `banksheets-landing`'s local clone still holds the
 `ci/difftree-pr-comment` branch and is one merge behind on `main` (owner's checkout is on another branch);
 (b) F79's skill-text note; (c) the `Validate PR Title` convention on `get-bank-sheets-web` and its fork rejects
 conventional-commit titles — a repo policy question, not a difftree one.
