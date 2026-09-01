@@ -31,15 +31,22 @@ release. References `GOAL.md` §7.3 (acceptance) and `PRD.md` §6.
 
 ## Rendering-flag check (resolves PRD OQ1 / GOAL OI3)
 
-While reviewing step 1's comment, confirm the tree renders legibly in GitHub's
-markdown code block:
+While reviewing step 1's comment, confirm the tree renders legibly:
 
-- box-drawing characters (`├──`, `└──`, `│`) align in the monospace block;
-- git status marks (`●`, `○`, `?`, …) are readable;
-- no stray ANSI escape sequences (the action passes `--no-color`).
+- box-drawing characters (`├──`, `└──`, `│`) align, and every row starts at the
+  same left edge (in color mode each line is one inline-math expression);
+- git status marks (`●`, `○`, `?`, …) are readable **and colored** (green
+  staged, yellow unstaged, blue renamed, red deleted); `+N` green, `−M` red;
+- no stray ANSI escape sequences (the action passes `--no-color`);
+- on a PR with more than ~100 tree lines, the comment shows the first lines in
+  color, a one-line notice, the remainder in a plain code block, then the
+  colored summary line — still one comment;
+- with `color: "false"` the comment is the plain code block (byte-identical to
+  the pre-v0.6.0 output).
 
 If anything renders poorly, tune the difftree flags in `action.yml`'s
 `Run difftree` step (`--format`, `--marks`) and re-verify. `--no-color` stays.
+Color-rendering limits are documented in the README ("Color rendering — limits").
 
 ## Notes
 

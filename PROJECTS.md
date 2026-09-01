@@ -141,3 +141,56 @@ $ gh api "search/code?q=org:smorinlabs+path:.github/workflows+filename:difftree-
 ### Manual Verification
 - On each install PR: the `PR Diff Tree` run is green, the `<!-- difftree-action -->`
   comment exists, and after a second push the same comment (same id) is updated.
+
+## [~] Project P04: Colored PR comment via GitHub inline math, plain as opt-in (v0.6.0)
+**Goal/Requirement**: The sticky PR comment renders in color by default —
+status marks by git state, `+N`/`−M` churn, and the summary line, mirroring
+`difftree`'s terminal colors — using GitHub's inline-math renderer
+(one `` $`…`$ `` expression per line). `color: "false"` restores today's plain
+code-fence comment byte-for-byte. Large trees are split inside one comment:
+the first lines (up to `MAX_COLOR_EXPRESSIONS = 100`) in color, the remainder
+in the plain fence under a one-line notice, the summary line colored last.
+- Rendering rules and limits were measured on GitHub (2026-09-01;
+  `smorinlabs/harness-kit` issues #14–#20, PR #13): ~145 expressions per page,
+  arrays cannot be left-aligned (MathML Core), `\phantom`/`\unicode` banned,
+  backtick unencodable. Design + evidence:
+  `docs/superpowers/specs/2026-09-01-color-comment-design.md`.
+- Codex adversarial review of the plan (v3 → v4) resolved: byte-budget for the
+  colored section, ordering with `truncateTree`, backtick coverage for
+  header/root/footer, canary + rollback for the `v0` flip.
+
+**Out of Scope**
+- Any change to the difftree CLI or to the `Run difftree` step (`--no-color`,
+  `--json`), the `tree`/`files-changed` outputs, or the job summary.
+- A configurable threshold input (constant `MAX_COLOR_EXPRESSIONS` for now).
+
+### Tests & Tasks
+- [x] [P04-T01] Probe GitHub's renderer; settle format, palette, escape table, limits (harness-kit #14–#20)
+- [x] [P04-T02] Plan v3 + Codex adversarial review → plan v4 (`scratchpad`, folded into the spec)
+- [x] [P04-TS01] Golden matrix: `color:false` × {empty, truncated, advertise} == pre-change bodies (`test/fixtures/plain-golden.json`)
+- [x] [P04-TS02] Escapes, mark/palette maps, line rendering, PR #24 fixture (`test/fixtures/pr24-tree.txt`), hybrid split, byte budget, CRLF (`test/color.test.js`)
+- [x] [P04-T03] `scripts/comment.js`: `escapeTexttt`, `renderColorLine`, `splitForColor`, `composeBody({ color })`
+- [x] [P04-T04] `action.yml`: `color` input (default `"true"`) → `DIFFTREE_COLOR` → `composeBody`
+- [x] [P04-T05] Docs: README (real sample, inputs row, limits), example workflow, PRD, SKILL input list, RUNBOOK check
+- [x] [P04-T06] Spec `docs/superpowers/specs/2026-09-01-color-comment-design.md`
+- [ ] [P04-TS03] Dogfood: implementation PR's own comment renders in color (light + dark); one run with `color: "false"` shows the fence
+- [ ] [P04-T07] Merge PR (merge commit) → `git pull --ff-only` in the main checkout
+- [ ] [P04-T08] Canary: bump the SHA pin in `ts-launch-blueprint` to the merge SHA on a PR; confirm colored comment
+- [ ] [P04-T09] Merge the release-please PR → v0.6.0 → `v0` moves; fleet renders in color on next PR events
+- [ ] Regression Test Status
+
+### Deliverable
+```bash
+$ node --test
+ℹ pass 37
+ℹ fail 0
+```
+A PR on any installed repo shows the colored tree; `color: "false"` shows the plain fence.
+
+### Automated Verification
+- `node --test` passes (golden matrix proves the plain path is unchanged)
+- `actionlint action.yml examples/difftree-pr-comment.yml` and the CI shellcheck step pass
+
+### Manual Verification
+- Dogfood comment on the implementation PR: colored marks/churn, left-aligned rows, light and dark theme
+- A >100-line PR shows colored head + notice + plain fence + colored footer in one comment

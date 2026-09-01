@@ -1,0 +1,20 @@
+PR: origin/main...563a39c · committed
+difftree-action
+├──   .claude (1 files, +32 −30)
+│   └──   skills (1 files, +32 −30)
+│       └──   difftree-action-setup (1 files, +32 −30)
+│           └── ● SKILL.md +32 −30
+├──   .github (1 files, +1 −1)
+│   └──   workflows (1 files, +1 −1)
+│       └── ● difftree.yml +1 −1
+├── ● PROJECTS.md +6 −3
+├── ● README.md +5 −5
+├──   docs (3 files, +54 −10)
+│   ├── ● RUNBOOK.md +4 −2
+│   ├── ● rollout-findings.md +40 −0
+│   └──   skills (1 files, +10 −8)
+│       └── ● difftree-action-setup.md +10 −8
+└──   examples (1 files, +3 −3)
+    └── ↻ pr-diff-tree.yml -> difftree-pr-comment.yml +3 −3
+
+8 dirs touched · 8 files changed (7 modified · 1 renamed) · +101 −52

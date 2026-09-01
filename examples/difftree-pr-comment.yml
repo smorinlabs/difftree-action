@@ -68,3 +68,4 @@ jobs:
         #   difftree-version: "0.3.1" # crates.io version the action installs
         #   comment: "true"           # set "false" to compute outputs only
         #   advertise: "true"         # set "false" to drop the attribution footer
+        #   color: "true"             # set "false" for the plain code-fence comment
