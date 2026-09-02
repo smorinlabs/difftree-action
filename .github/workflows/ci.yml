@@ -10,23 +10,26 @@ permissions:
 
 jobs:
   lint-and-test:
+    # Runs inside the repo's Flox environment (.flox/env/manifest.toml) so CI
+    # exercises the exact toolchain contributors get from `flox activate` —
+    # node, actionlint, shellcheck, and yq all come from the committed lock,
+    # not from runner preinstalls or per-tool setup actions.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+      - name: Install Flox
+        uses: flox/install-flox-action@v2
 
       - name: Unit tests
-        run: node --test
+        run: flox activate -- node --test
 
       - name: actionlint
-        uses: raven-actions/actionlint@v2
+        run: flox activate -- actionlint
 
       - name: shellcheck action.yml embedded bash
-        # Uses yq (preinstalled on the runner) — no PyYAML / pip dependency.
         run: |
+          eval "$(flox activate)"
           set -euo pipefail
           rc=0
           count="$(yq '.runs.steps | length' action.yml)"
@@ -46,6 +49,8 @@ jobs:
   smoke:
     # End-to-end smoke: actually install difftree and run the action against this
     # PR, computing outputs without posting a comment (works on forks too).
+    # Deliberately NOT floxified: this job must prove the action works on an
+    # unmodified runner, exactly the way consumers run it.
     runs-on: ubuntu-latest
     needs: lint-and-test
     if: github.event_name == 'pull_request'

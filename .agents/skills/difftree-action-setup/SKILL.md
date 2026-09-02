@@ -76,7 +76,7 @@ Use the first method that fits the environment, then verify with
    dev-symlinked, copied out); the file it must resolve to does not.
    Locate the template with the resolver below —
    it works from every placement: inside the difftree-action repo (under
-   `.claude/skills/` or its `.agents/skills/` symlink), dev-symlinked into
+   `.agents/skills/` or its `.claude/skills/` symlink), dev-symlinked into
    `~/.claude/skills` / `~/.agents/skills`, or copied anywhere, on any agent
    tool — then save it to the target's `.github/workflows/difftree-pr-comment.yml`.
 
